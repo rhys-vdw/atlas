@@ -32,15 +32,6 @@ export function fromString(string, initializer) {
   , leaf);
 }
 
-function logObject(...objects) {
-  console.log(
-    ...objects.map((object) =>
-      isObject(object) ? require('util').inspect(object, { depth: 10 }) : object
-    )
-  );
-}
-
-
 export function normalize(...relations) {
 
   return _(relations).map((relation) => {
