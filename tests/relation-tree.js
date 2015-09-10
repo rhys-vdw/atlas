@@ -1,15 +1,28 @@
-_ = require('lodash');
-test = require('tape');
+import _ from 'lodash';
+import test from 'tape';
 
-RelationTree = require('../lib/relation-tree');
+import RelationTree, {
+  isRelationTree,
+  fromString,
+  normalize
+} from '../lib/relation-tree';
 
-test('RelationTree', function(t) {
+test('RelationTree', (t) => {
 
-  t.test('fromString', function(t) {
+  t.test('isRelationTree', (t) => {
+    var tree = new RelationTree();
+    t.ok(RelationTree.isRelationTree(tree),
+      'correctly identifies a RelationTree'
+    );
 
-    initializerFn = function() {};
+    t.end();
+  });
 
-    tests = {
+  t.test('fromString', (t) => {
+
+    const initializerFn = function() {};
+
+    const tests = {
       'with single string input': {
         input: ['test'],
         output: { test: {} }
@@ -28,54 +41,107 @@ test('RelationTree', function(t) {
       },
       'simple recursive relation "test^1"': {
         input: ['test^1'],
-        output: {
-          test: {
-            nested: {
-              test: { recursions: 1 }
-            }
-          }
-        }
+        output: { test: { recursions: 1 } }
       },
       'default recursive depth "test^"': {
         input: ['test^'],
-        output: {
-          test: {
-            nested: {
-              test: { recursions: 1 }
-            }
-          }
-        }
+        output: { test: { recursions: 1 } }
       },
       'infinite recursion "test^Infinity"': {
         input: ['test^Infinity'],
-        output: {
-          test: {
-            nested: {
-              test: { recursions: Infinity }
-            }
-          }
-        }
+        output: { test: { recursions: Infinity } }
       },
       'recursion with further nesting "test^2.other"': {
         input: ['test^2.other'],
-        output: {
-          test: {
-            nested: {
-              test: { recursions: 2, nested: { other: {} } }
-            }
-          }
-        }
+        output: { test: { recursions: 2, nested: { other: {} } } }
       }
     }
 
-    _.each(tests, function (item, message) {
+    _.each(tests, (item, message) => {
       t.deepEqualDefined(
-        RelationTree.fromString.apply(null, item.input),
+        fromString(...item.input),
+        item.output,
+        message
+      );
+    })
+
+    t.throws(fromString.bind(), TypeError,
+      'Throws `TypeError` without argument'
+    );
+
+    t.throws(fromString.bind(5), TypeError,
+      'Throws `TypeError` with non-string argument'
+    );
+
+    t.end();
+  });
+
+  t.test('normalize', (t) => {
+
+    const initializerFnA = function() {};
+    const initializerFnB = function() {};
+
+    const tests = {
+      'with no arguments': {
+        input: [],
+        output: {}
+      },
+      'with nested empty arrays and objects': {
+        input: [[[[{}, {}], {}],[]]],
+        output: {}
+      },
+      'with single string relation': {
+        input: ['test'],
+        output: { test: {} }
+      },
+      'with single string in array': {
+        input: [['test']],
+        output: { test: {} }
+      },
+      'with two strings': {
+        input: ['a', 'b'],
+        output: { a: {}, b: {} }
+      },
+      'with an array of two strings': {
+        input: [['a', 'b']],
+        output: { a: {}, b: {} }
+      },
+      'an object {[relation]: initializer}': {
+        input: [{a: initializerFnA, b: initializerFnB}],
+        output: {
+          a: { initializer: initializerFnA },
+          b: { initializer: initializerFnB }
+        }
+      },
+      'an array with single string and an object': {
+        input: ['a', {b: initializerFnB}],
+        output: {
+          a: {}, b: { initializer: initializerFnB }
+        }
+      },
+      'two relations from a common child': {
+        input: ['a.b', 'a.c'],
+        output: {
+          a: { nested: { b: {}, c: {} } }
+        }
+      },
+      'two relations from a common child, one with initializer': {
+        input: [null, 'a.b', {'a.c': initializerFnA}],
+        output: {
+          a: { nested: { b: {}, c: { initializer: initializerFnA } } }
+        }
+      }
+    };
+
+    _.each(tests, (item, message) => {
+      t.deepEqual(
+        normalize(...item.input),
         item.output,
         message
       );
     })
 
     t.end();
+
   });
 });

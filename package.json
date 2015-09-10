@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npm run babel; node tests | ./node_modules/tap-spec/bin/cmd.js",
-    "babel": "rm -r lib/; babel src/ -d lib/"
+    "test": "npm run babel && npm run babel-tests && node compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
+    "babel-tests": "rm -rf compiled-tests && babel tests -d compiled-tests",
+    "babel": "rm -rf lib && babel src -d lib"
   },
   "author": "Rhys van der Waerden",
   "license": "to be announced",

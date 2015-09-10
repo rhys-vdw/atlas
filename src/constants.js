@@ -1,0 +1,1 @@
+export const RELATION_TREE_SENTINEL = '@@__RELATION_TREE__@@';
