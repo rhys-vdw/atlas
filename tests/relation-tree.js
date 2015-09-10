@@ -65,11 +65,11 @@ test('RelationTree', (t) => {
       );
     })
 
-    t.throws(fromString.bind(), TypeError,
+    t.throws(() => fromString(), TypeError,
       'Throws `TypeError` without argument'
     );
 
-    t.throws(fromString.bind(5), TypeError,
+    t.throws(() => fromString(5), TypeError,
       'Throws `TypeError` with non-string argument'
     );
 
@@ -126,15 +126,21 @@ test('RelationTree', (t) => {
         }
       },
       'two relations from a common child, one with initializer': {
-        input: [null, 'a.b', {'a.c': initializerFnA}],
+        input: ['a.b', {'a.c': initializerFnA}],
         output: {
           a: { nested: { b: {}, c: { initializer: initializerFnA } } }
+        }
+      },
+      'merges two `RelationTree` instances': {
+        input: [fromString('a.b'), fromString('a.c')],
+        output: {
+          a: { nested: { b: {}, c: {} } }
         }
       }
     };
 
     _.each(tests, (item, message) => {
-      t.deepEqual(
+      t.deepEqualDefined(
         normalize(...item.input),
         item.output,
         message
