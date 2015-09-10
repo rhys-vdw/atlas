@@ -61,7 +61,7 @@ export function normalize(...relations) {
 
     return [];
 
-  }).flattenDeep().reduce(merge, {});
+  }).flatten().reduce(merge, {});
 
 }
 
