@@ -2,20 +2,6 @@ import { RELATION_TREE_SENTINEL } from './constants';
 import _, { isEmpty, isArray, isObject, isString, merge, extend } from 'lodash';
 
 
-const b = [
-{ a:
-  { recursions: undefined,
-    nested: { b: { recursions: undefined, initializer: undefined } } } },
-{ a:
-  { recursions: undefined,
-    nested:
-    { c:
-      { recursions: undefined,
-        initializer: _.noop } } } } ]
-
-logObject(_.reduce(b, _.merge));
-
-
 function nodeFromString(string, properties) {
 
   if (!isString(string)) {
@@ -29,7 +15,8 @@ function nodeFromString(string, properties) {
     recursions = isEmpty(recursionsString) ? 1 : +recursionsString;
   }
 
-  return new RelationTree({ [name]: { recursions, ...properties } });
+  return { [name]: { recursions, ...properties } };
+  //return new RelationTree({ [name]: { recursions, ...properties } });
 }
 
 export function isRelationTree(maybeRelationTree) {
@@ -53,13 +40,6 @@ function logObject(...objects) {
   );
 }
 
-function doMerge(acc, value) {
-  console.log('----------------');
-  logObject('\nacc', acc, '\nvalue', value);
-  let r = merge({}, acc, value);
-  logObject('\nacc', acc, '\nvalue', value, '\nmerged', r);
-  return r;
-};
 
 export function normalize(...relations) {
 
@@ -81,7 +61,7 @@ export function normalize(...relations) {
 
     return [];
 
-  }).flatten().tap(logObject).reduce(doMerge, new RelationTree());
+  }).flattenDeep().reduce(merge, {});
 
 }
 
