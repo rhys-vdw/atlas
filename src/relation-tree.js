@@ -1,5 +1,8 @@
 import { RELATION_TREE_SENTINEL } from './constants';
-import _, { isEmpty, isArray, isObject, isString, merge, extend } from 'lodash';
+import _, {
+  isEmpty, isArray, isObject, isString,
+  merge, map, extend
+} from 'lodash';
 
 // This is just here for debugging. Should be removed.
 function logObject(...objects) {
@@ -25,6 +28,22 @@ export function isRelationTree(maybeRelationTree) {
   return !!(maybeRelationTree && maybeRelationTree[RELATION_TREE_SENTINEL]);
 }
 
+function assertType(value, name, testsByTypeName) {
+  const isValid = _.any(testsByTypeName, (test, typeName) => test(value));
+
+  if (!isValid) {
+    const validTypes = _(testsByTypeName).keys();
+    const humanized = [
+      _.dropRight(validTypes, 1).join(', '),
+      _.last(validTypes)
+    ].join(' or ');
+
+    throw new TypeError(
+      `Expected '${name}' to be a ${humanized}, got ${value}`
+    );
+  }
+}
+
 /**
  * @function fromString
  * @memberOf RelationTree
@@ -32,15 +51,13 @@ export function isRelationTree(maybeRelationTree) {
  *
  * @param {string} string
  *   Relation DSL string.
- * @param {Object|function} initializer
+ * @param {Object|function} [initializer]
  *   Initializer for the deepest child specified in the relation.
  * @returns {RelationTree}
  *   Compiled {@link RelationTree} instance.
  */
 export function fromString(string, initializer) {
-  if (!isString(string)) {
-    throw new TypeError(`Expected 'string' to be string, got '${string}'`);
-  }
+  assertType(string, 'string', {string: isString});
 
   const list = _(string).split('.');
   const leaf = nodeFromString(list.last(), { initializer });
@@ -50,17 +67,54 @@ export function fromString(string, initializer) {
   , leaf);
 }
 
+export function renestRecursives(relationTree) {
+  assertType(relationTree, 'relationTree', {RelationTree: isRelationTree});
+
+  _.each(relationTree, (node, relationName) => {
+    const { recursions } = node;
+    if (recursions > 0) {
+      const nestedRecursions = Math.max(recursions - 1, 0);
+
+      // See if recursion has already been renested. If it has, we don't need
+      // to do it again.
+      const existing = node.nested && node.nested[relationName]
+      if (existing) {
+
+        // Assert that the tree is valid. This should never be fired.
+        if (existing.recursions !== nestedRecursions) throw new Error(
+          `Invalid nesting of a recursive relation '${relationName}'`
+        );
+
+      } else {
+
+        // Push recursive node down from root by inserting a copy in its place
+        // and renesting it in with a decremented recursion count.
+        const nestedNode = new RelationTree(node);
+        nestedNode.recursions = nestedRecursions;
+        relationTree[relationName] = {
+          recursions,
+          nested: {
+            [relationName]: nestedNode
+          }
+        };
+      }
+    }
+  });
+
+  return relationTree;
+}
+
 /**
- * @function normalize
+ * @function compile
  * @memberOf RelationTree
  * @static
  *
  * @param {...(RelationTree|string|Array|Object)} relations
- *   Various relation definitions to be normalized.
+ *   Various relation definitions to be compiled.
  * @returns {RelationTree}
- *   A `RelationTree` instance composed of all given relations.
+ *   A `RelationTree` instance compiled of all given relations.
  */
-export function normalize(...relations) {
+export function compile(...relations) {
 
   return _(relations).map((relation) => {
 
@@ -71,18 +125,22 @@ export function normalize(...relations) {
       return fromString(relation);
     }
     if (isArray(relation)) {
-      return normalize(...relation);
+      return compile(...relation);
     }
     if (isObject(relation)) {
-      return _.map(relation, (initializer, name) =>
+      return map(relation, (initializer, name) =>
         fromString(name, initializer)
       );
     }
 
     return [];
 
-  }).flatten().reduce(mergeTrees, new RelationTree());
+  }).flatten().reduce(mergeTrees) || new RelationTree();
 
+}
+
+export function normalize(...relations) {
+  return renestRecursives(compile(...relations));
 }
 
 /**
@@ -98,7 +156,8 @@ export default class RelationTree {
 
 RelationTree.isRelationTree = isRelationTree;
 RelationTree.fromString = fromString;
-
+RelationTree.normalize = normalize;
+RelationTree.compile = compile;
 
 // -- Private helpers --
 
