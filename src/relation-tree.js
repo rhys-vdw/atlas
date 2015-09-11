@@ -20,6 +20,20 @@ export function isRelationTree(maybeRelationTree) {
   return !!(maybeRelationTree && maybeRelationTree[RELATION_TREE_SENTINEL]);
 }
 
+
+/**
+ * @function mergeTrees
+ * @memberOf RelationTree
+ * @static
+ *
+ * @param {RelationTree} destination
+ * @param {RelationTree} source
+ */
+export function mergeTrees(destination, source) {
+  assertType({destination, source}, {RelationTree: isRelationTree});
+  return merge(destination, source, mergeCustomizer);
+}
+
 /**
  * @function fromString
  * @memberOf RelationTree
@@ -33,7 +47,7 @@ export function isRelationTree(maybeRelationTree) {
  *   Compiled {@link RelationTree} instance.
  */
 export function fromString(string, initializer) {
-  assertType(string, 'string', {string: isString});
+  assertType({string}, {string: isString});
 
   const list = _(string).split('.');
   const leaf = nodeFromString(list.last(), { initializer });
@@ -44,7 +58,7 @@ export function fromString(string, initializer) {
 }
 
 export function renestRecursives(relationTree) {
-  assertType(relationTree, 'relationTree', {RelationTree: isRelationTree});
+  assertType({relationTree}, {RelationTree: isRelationTree});
 
   each(relationTree, (node, relationName) => {
     const { recursions } = node;
@@ -112,7 +126,6 @@ export function compile(...relations) {
     return [];
 
   }).flatten().reduce(mergeTrees) || new RelationTree();
-
 }
 
 export function normalize(...relations) {
@@ -134,17 +147,14 @@ RelationTree.isRelationTree = isRelationTree;
 RelationTree.fromString = fromString;
 RelationTree.normalize = normalize;
 RelationTree.compile = compile;
+RelationTree.mergeTrees = mergeTrees;
 
 // -- Private helpers --
 
-function mergeCustomizer(a, b) {
-  if (isRelationTree(a) || isRelationTree(b)) {
-    return merge(a, b);
+function mergeCustomizer(objectValue, sourceValue) {
+  if (isRelationTree(objectValue) && isRelationTree(sourceValue)) {
+    return mergeTrees(objectValue, sourceValue);
   }
-}
-
-function mergeTrees(a, b) {
-  return merge(a, b, mergeCustomizer);
 }
 
 function nodeFromString(string, properties) {

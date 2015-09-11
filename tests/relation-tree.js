@@ -1,8 +1,9 @@
-import _ from 'lodash';
-import test from 'tape';
+import _, { all } from 'lodash';
+import test from 'tape-catch';
 
 import RelationTree, {
   isRelationTree,
+  mergeTrees,
   fromString,
   compile,
   normalize,
@@ -12,9 +13,22 @@ import RelationTree, {
 test('RelationTree', (t) => {
 
   t.test('isRelationTree', (t) => {
-    var tree = new RelationTree();
-    t.ok(RelationTree.isRelationTree(tree),
+    t.equal(
+      RelationTree.isRelationTree(new RelationTree()),
+      true,
       'correctly identifies a RelationTree'
+    );
+
+    t.equal(
+      RelationTree.isRelationTree(undefined),
+      false,
+      'returns false for `undefined`'
+    );
+
+    t.equal(
+      RelationTree.isRelationTree('a.b.c'),
+      false,
+      'returns false for string'
     );
 
     t.end();
@@ -78,6 +92,26 @@ test('RelationTree', (t) => {
     t.end();
   });
 
+  t.test('mergeTrees', (t) => {
+
+    const a = fromString('a.b.c');
+    const b = fromString('a.b.d');
+
+    const merged = mergeTrees(a, b);
+
+    t.ok(
+      all([
+        merged,
+        merged,
+        merged.a.nested,
+        merged.a.nested.b.nested
+      ], isRelationTree),
+      'merged trees are RelationTree instances all the way down'
+    );
+
+    t.end();
+  });
+
   t.test('compile', (t) => {
 
     const initializerFnA = function() {};
@@ -121,10 +155,16 @@ test('RelationTree', (t) => {
           a: {}, b: { initializer: initializerFnB }
         }
       },
-      'two relations from a common child': {
+      'two relations sharing a child as common parent': {
         input: ['a.b', 'a.c'],
         output: {
           a: { nested: { b: {}, c: {} } }
+        }
+      },
+      'two relations sharing a deeply nested child as parent': {
+        input: ['a.b.c.d', 'a.b.c.e'],
+        output: {
+          a: { nested: { b: { nested: { c: { nested: { d: {}, e: {} } } } } } }
         }
       },
       'two relations from a common child, one with initializer': {
