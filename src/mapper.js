@@ -265,9 +265,16 @@ export default class Mapper {
     const newOptions = this._setMutability(this._options)
       .set(option, Immutable.fromJS(value));
 
-    // If there was a change, return the new instance.
-    return newOptions === this._options
-      ? this : new this.constructor(newOptions, this._query);
+    if (this._mutable) {
+      this._options = newOptions;
+      return this;
+    }
+
+    if (newOptions === this._options) {
+      return this;
+    }
+
+    return new this.constructor(newOptions, this._query);
   }
 
   /**

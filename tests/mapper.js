@@ -73,17 +73,18 @@ test('Mapper', (t) => {
   });
 
   t.test('extend', (t) => {
+
     const OPTION = 'testOption';
     const VALUE = 'testValue';
-
-    const parent = new Mapper()
-      .setOption(OPTION, VALUE);
 
     const methods = {
       a: function() {},
       b: function() {},
       c: function() {},
     }
+
+    const parent = new Mapper()
+      .setOption(OPTION, VALUE);
 
     const child = parent.extend(methods);
 
@@ -107,6 +108,60 @@ test('Mapper', (t) => {
     t.equal(
       child.getOption(OPTION), VALUE,
       'child has parent options'
+    );
+
+    t.end();
+  });
+
+  t.test('asMutable, asImmutable', (t) => {
+
+    const OPTION = 'testOption';
+    const VALUE_A = 'testValueA';
+    const VALUE_B = 'testValueB';
+
+    const mapper = new Mapper();
+    const mutable = mapper.asMutable();
+
+    t.notEqual(
+      mapper, mutable,
+      '`asMutable` creates a copy'
+    );
+
+    const mutated = mutable.setOption(OPTION, VALUE_A);
+
+    t.equal(
+      mutable, mutated,
+      '`setOption` on a mutable instance does not return a copy'
+    );
+
+    t.equal(
+      mutated.getOption(OPTION), VALUE_A,
+      '`setOption` correctly sets value on mutable instance'
+    );
+
+    const immutable = mutable.asImmutable();
+
+    t.equal(
+      mutable, immutable,
+      '`asImmutable` returns the same instance'
+    );
+
+    const immutableCopy = immutable.setOption(OPTION, VALUE_B);
+
+    t.notEqual(
+      immutable, immutableCopy,
+      '`setOption` returns a copy on an immutable instance that was ' +
+      'previously mutable...'
+    );
+
+    t.equal(
+      immutableCopy.getOption(OPTION), VALUE_B,
+      '...new instance is set correctly...'
+    );
+
+    t.equal(
+      immutable.getOption(OPTION), VALUE_A,
+      '...previous instance remains unchanged.'
     );
 
     t.end();
