@@ -1,18 +1,10 @@
+import _ from 'lodash';
+import { isEmpty, isArray, isObject, isString } from 'lodash/lang';
+import { merge, extend } from 'lodash/object';
+import { map, each } from 'lodash/collection';
+
 import { RELATION_TREE_SENTINEL } from './constants';
-import _, {
-  isEmpty, isArray, isObject, isString,
-  merge, map, extend
-} from 'lodash';
-
-// This is just here for debugging. Should be removed.
-function logObject(...objects) {
-  console.log(
-    ...objects.map((object) =>
-      isObject(object) ? require('util').inspect(object, { depth: 10 }) : object
-    )
-  );
-}
-
+import { assertType } from './assertions';
 
 /**
  * @function isRelationTree
@@ -26,22 +18,6 @@ function logObject(...objects) {
  */
 export function isRelationTree(maybeRelationTree) {
   return !!(maybeRelationTree && maybeRelationTree[RELATION_TREE_SENTINEL]);
-}
-
-function assertType(value, name, testsByTypeName) {
-  const isValid = _.any(testsByTypeName, (test, typeName) => test(value));
-
-  if (!isValid) {
-    const validTypes = _(testsByTypeName).keys();
-    const humanized = [
-      _.dropRight(validTypes, 1).join(', '),
-      _.last(validTypes)
-    ].join(' or ');
-
-    throw new TypeError(
-      `Expected '${name}' to be a ${humanized}, got ${value}`
-    );
-  }
 }
 
 /**
@@ -70,7 +46,7 @@ export function fromString(string, initializer) {
 export function renestRecursives(relationTree) {
   assertType(relationTree, 'relationTree', {RelationTree: isRelationTree});
 
-  _.each(relationTree, (node, relationName) => {
+  each(relationTree, (node, relationName) => {
     const { recursions } = node;
     if (recursions > 0) {
       const nestedRecursions = Math.max(recursions - 1, 0);
