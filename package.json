@@ -12,11 +12,13 @@
   "license": "to be announced",
   "devDependencies": {
     "babel": "^5.8.23",
+    "knex": "^0.8.6",
     "tap-spec": "^4.1.0",
     "tape": "^4.2.0",
     "tape-catch": "^1.0.4"
   },
   "dependencies": {
+    "immutable": "^3.7.4",
     "lodash": "^3.10.1"
   }
 }

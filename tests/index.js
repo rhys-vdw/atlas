@@ -1,11 +1,11 @@
 
 // Extend Test here.
 
-var Test = require('tape/lib/test');
-var _ = require('lodash');
+import { Test } from 'tape';
+import _, { isObject } from 'lodash';
 
 function omitUndefined(object) {
-  if (!_.isObject(object)) return object;
+  if (!isObject(object)) return object;
   return _(object).omit(_.isUndefined).mapValues(omitUndefined).value();
 }
 
@@ -14,3 +14,4 @@ Test.prototype.deepEqualDefined = function(a, b, msg) {
 }
 
 require('./relation-tree');
+require('./mapper');
