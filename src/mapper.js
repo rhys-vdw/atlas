@@ -142,9 +142,9 @@ export default class Mapper {
    *   Mutated copy of this Mapper.
    */
   withMutations(initializer) {
-    if (isEmpty(initializer)) return this;
+    if (!isFunction(initializer) && isEmpty(initializer)) return this;
 
-    assertType( { initializer }, { function: isFunction, Object: isObject });
+    assertType({ initializer }, { function: isFunction, Object: isObject });
 
     const wasMutable = this._mutable;
 

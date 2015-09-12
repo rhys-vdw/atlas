@@ -1,14 +1,15 @@
 import test from 'tape-catch';
 import { each } from 'lodash/collection';
+import { noop } from 'lodash/utility';
 
 import Knex from 'knex';
 import Mapper from '../lib/mapper';
 
 const knex = Knex({});
 
-test('Mapper', (t) => {
+test('Mapper', t => {
 
-  t.test('constructor', (t) => {
+  t.test('constructor', t => {
 
     const mapper = new Mapper();
 
@@ -19,7 +20,7 @@ test('Mapper', (t) => {
     t.end();
   });
 
-  t.test('setOption, getOption', (t) => {
+  t.test('setOption, getOption', t => {
     const OPTION = 'testOption';
     const VALUE = 'testValue';
 
@@ -49,7 +50,7 @@ test('Mapper', (t) => {
     t.end();
   });
 
-  t.test('getOptions', (t) => {
+  t.test('getOptions', t => {
 
     const mapper = new Mapper()
       .setOption('a', 'a')
@@ -72,7 +73,7 @@ test('Mapper', (t) => {
     t.end();
   });
 
-  t.test('extend', (t) => {
+  t.test('extend', t => {
 
     const OPTION = 'testOption';
     const VALUE = 'testValue';
@@ -113,18 +114,29 @@ test('Mapper', (t) => {
     t.end();
   });
 
-  t.test('asMutable, asImmutable', (t) => {
+  t.test('asMutable, asImmutable', t => {
 
     const OPTION = 'testOption';
     const VALUE_A = 'testValueA';
     const VALUE_B = 'testValueB';
 
     const mapper = new Mapper();
+
+    t.equal(
+      mapper, mapper.asImmutable(),
+      '`asImmutable` is a no-op on an immutable instance'
+    );
+
     const mutable = mapper.asMutable();
 
     t.notEqual(
       mapper, mutable,
-      '`asMutable` creates a copy'
+      '`asMutable` creates a copy of a mutable instance'
+    );
+
+    t.equal(
+      mutable, mutable.asMutable(),
+      '`asMutable` is a no-op on a mutable instance'
     );
 
     const mutated = mutable.setOption(OPTION, VALUE_A);
@@ -167,6 +179,67 @@ test('Mapper', (t) => {
     t.end();
   });
 
+  t.test('withMutations', t => {
+
+    const OPTION = 'OPTION';
+    const VALUE = 'VALUE';
+    
+    const mapper = new Mapper();
+
+    t.equal(
+      mapper, mapper.withMutations(),
+      'returns self with no arguments'
+    );
+
+    t.equal(
+      mapper, mapper.withMutations({}),
+      'returns self with an empty initializer object'
+    );
+
+    let mutatedOnce = null;
+
+    const result = mapper.withMutations(scopedMutable => {
+
+      mutatedOnce = scopedMutable.setOption(OPTION_A, VALUE_A);
+
+      t.equal(
+        mutatedOnce, scopedMutable,
+        'callback argument is mutable'
+      );
+
+    });
+
+    t.equal(
+      mutatedOnce, result,
+      'mutated instance is returned from `withMutations`'
+    );
+
+    t.equal(
+      result._mutable, false,
+      'returned mutated instance is no longer mutable'
+    );
+
+    const mutable = new Mapper().asMutable();
+
+    const alreadyMutableResult = mutable.withMutations(alreadyMutable => {
+      t.equal(
+        mutable, alreadyMutable,
+        'callback is original instance if already mutable'
+      );
+    });
+
+    t.equal(
+      mutable, alreadyMutableResult,
+      'returned instance is original instance if already mutable'
+    );
+
+    t.equal(
+      alreadyMutableResult._mutable, true,
+      'returned instance retains its original mutability'
+    );
+
+    t.end();
+  });
 
   t.end();
 });
