@@ -1,6 +1,6 @@
 import Immutable, { Iterable } from 'immutable';
 import _ from 'lodash';
-import { isFunction, isObject, isEmpty } from 'lodash/lang';
+import { isFunction, isObject, isEmpty, isString } from 'lodash/lang';
 import { each } from 'lodash/collection';
 import { assign } from 'lodash/object';
 
@@ -25,7 +25,8 @@ export default class Mapper {
     this._options = Immutable.fromJS(options).asImmutable();
 
     // Copy `query` here to prevent leaking mutable state.
-    this._query = query ? query.clone() : null;
+    // TODO: Consider not cloning here, because now we clone twice in `query`.
+    this._query = query == null ? null : query.clone();
 
     // This instance is mutable for the duration of the constructor.
     this._mutable = true;
@@ -299,4 +300,117 @@ export default class Mapper {
   _setMutability(object) {
     return object[this._mutable ? 'asMutable' : 'asImmutable']();
   }
+
+  // -- Query --
+
+  /**
+   * @method knex
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Set the underlying knex instance of this mapper.
+   *
+   * @param {Knex} knex
+   *   The new name of this table.
+   * @returns {Mapper}
+   *   Mapper instance with reference to given `Knex` instance.
+   */
+  knex(knex) {
+    const mapper = this.setOption('knex', knex);
+    if (mapper !== this && mapper._query) {
+      mapper._query.client = knex.client;
+    }
+    return mapper;
+  }
+
+  /**
+   * @method table
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Sets the name of the table targeted by this Mapper.
+   *
+   * @param {string} table
+   *   The new name of this table.
+   * @returns {Mapper}
+   *   Mapper instance targeting given table.
+   */
+  table(table) {
+    const mapper = this.setOption('table', table);
+    if (mapper !== this && mapper._query) {
+      mapper._query.from(table);
+    }
+    return mapper;
+  }
+
+  /**
+   * @method toQueryBuilder
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Return a copy of the underlying `QueryBuilder` instance.
+   *
+   * @see {@link http://knexjs.org}
+   *
+   * @returns {QueryBuilder} QueryBuilder instance.
+   */
+  toQueryBuilder() {
+    return this._queryBuilder().clone();
+  }
+
+  /**
+   * @method query
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Modify the underlying Knex `QueryBuilder` instance directly.
+   *
+   * @see {@link http://knexjs.org}
+   *
+   * @param {function|string} method
+   *   A callback that modifies the underlying `QueryBuilder`, or the
+   *   name of the method to call.
+   * @param {...mixed} [args]
+   *   Arguments to be passed to the `QueryBuilder` method.
+   * @returns {Mapper} Self, this method is chainable.
+   */
+  query(method, ...args) {
+
+    if (!isFunction(method) && isEmpty(method)) return this;
+
+    const queryBuilder = this._mutable
+      ? this._queryBuilder()
+      : this._queryBuilder().clone();
+
+    if (isFunction(method)) {
+      method(queryBuilder);
+    }
+
+    if (isString(method)) {
+      queryBuilder[method](...args);
+    }
+
+    return this._mutable
+      ? this
+      : new this.constructor(this._options, queryBuilder);
+  }
+
+  /**
+   * @method _queryBuilder
+   * @belongsTo Mapper
+   * @private
+   * @summary
+   *
+   * Return or lazily create `QueryBuilder` instance for this mapper.
+   *
+   * @returns {QueryBuilder} QueryBuilder instance.
+   */
+  _queryBuilder() {
+    if (this._query == null) {
+      const { knex, table } = this.getOptions('knex', 'table');
+      this._query = knex(table);
+    }
+    return this._query;
+  }
+
 }

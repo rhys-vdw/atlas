@@ -5,11 +5,9 @@ import { noop } from 'lodash/utility';
 import Knex from 'knex';
 import Mapper from '../lib/mapper';
 
-const knex = Knex({});
-
 test('Mapper', t => {
 
-  t.test('constructor', t => {
+  t.test('Mapper#constructor()', t => {
 
     const mapper = new Mapper();
 
@@ -20,7 +18,7 @@ test('Mapper', t => {
     t.end();
   });
 
-  t.test('setOption, getOption', t => {
+  t.test('Mapper#setOption(), Mapper#getOption()', t => {
     const OPTION = 'testOption';
     const VALUE = 'testValue';
 
@@ -50,7 +48,7 @@ test('Mapper', t => {
     t.end();
   });
 
-  t.test('getOptions', t => {
+  t.test('Mapper#getOptions()', t => {
 
     const mapper = new Mapper()
       .setOption('a', 'a')
@@ -73,7 +71,7 @@ test('Mapper', t => {
     t.end();
   });
 
-  t.test('extend', t => {
+  t.test('Mapper#extend()', t => {
 
     const OPTION = 'testOption';
     const VALUE = 'testValue';
@@ -114,7 +112,7 @@ test('Mapper', t => {
     t.end();
   });
 
-  t.test('asMutable, asImmutable', t => {
+  t.test('Mapper#asMutable(), Mapper#asImmutable()', t => {
 
     const OPTION = 'testOption';
     const VALUE_A = 'testValueA';
@@ -179,7 +177,7 @@ test('Mapper', t => {
     t.end();
   });
 
-  t.test('withMutations', t => {
+  t.test('Mapper#withMutations()', t => {
 
     const OPTION = 'OPTION';
     const VALUE = 'VALUE';
@@ -200,7 +198,7 @@ test('Mapper', t => {
 
     const result = mapper.withMutations(scopedMutable => {
 
-      mutatedOnce = scopedMutable.setOption(OPTION_A, VALUE_A);
+      mutatedOnce = scopedMutable.setOption(OPTION, VALUE);
 
       t.equal(
         mutatedOnce, scopedMutable,
@@ -236,6 +234,64 @@ test('Mapper', t => {
     t.equal(
       alreadyMutableResult._mutable, true,
       'returned instance retains its original mutability'
+    );
+
+    t.end();
+  });
+
+  t.test('Mapper#knex()', t => {
+
+    const knexA = new Knex({});
+    const knexB = new Knex({});
+    const TABLE = 'TABLE';
+
+    const mapperA = new Mapper().knex(knexA).table(TABLE);
+
+    t.equal(
+      mapperA.getOption('knex'), knexA,
+      'assigns `knex`'
+    );
+
+    const mapperAWithQuery = mapperA.query('where', 'x', 5);
+
+    t.equal(
+      mapperAWithQuery._query.client, knexA.client,
+      '`QueryBuilder` has correct client'
+    );
+
+    const mapperB = mapperAWithQuery.knex(knexB);
+
+    t.equal(
+      mapperB._query.client, knexB.client,
+      'Reassigns client on existing query'
+    );
+
+    t.end();
+  });
+
+  t.test('Mapper#toQueryBuilder(), Mapper#table()', t => {
+
+    const TABLE = 'TABLE';
+
+    const knex = Knex({});
+
+    const configured = new Mapper().knex(knex).table(TABLE);
+    const queryBuilder = configured.toQueryBuilder();
+
+    t.equal(
+      queryBuilder.client, knex.client,
+      'returns `QueryBuilder` with correct client'
+    );
+
+    t.equal(
+      queryBuilder.toString(),
+      `select * from "${TABLE}"`,
+      'generates query with correct table'
+    );
+
+    t.notEqual(
+      queryBuilder, configured._query,
+      'returns a copy of the stored `QueryBuilder`'
     );
 
     t.end();
