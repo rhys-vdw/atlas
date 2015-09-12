@@ -114,18 +114,26 @@ test('Mapper', t => {
 
   t.test('Mapper#asMutable(), Mapper#asImmutable()', t => {
 
-    const OPTION = 'testOption';
-    const VALUE_A = 'testValueA';
-    const VALUE_B = 'testValueB';
+    const OPTION = 'OPTION';
+    const TABLE = 'TABLE';
+    const VALUE_A = 'VALUE_A';
+    const VALUE_B = 'VALUE_B';
 
-    const mapper = new Mapper();
+    const COLUMN_A = 'COLUMN_A';
+    const COLUMN_VALUE_A = 'COLUMN_VALUE_A';
+    const COLUMN_B = 'COLUMN_B';
+    const COLUMN_VALUE_B = 'COLUMN_VALUE_B';
+
+    const knex = Knex({});
+
+    const mapper = new Mapper().knex(knex);
 
     t.equal(
       mapper, mapper.asImmutable(),
       '`asImmutable` is a no-op on an immutable instance'
     );
 
-    const mutable = mapper.asMutable();
+    const mutable = mapper.asMutable().table(TABLE);
 
     t.notEqual(
       mapper, mutable,
@@ -137,16 +145,23 @@ test('Mapper', t => {
       '`asMutable` is a no-op on a mutable instance'
     );
 
-    const mutated = mutable.setOption(OPTION, VALUE_A);
+    const withOption = mutable.setOption(OPTION, VALUE_A);
 
     t.equal(
-      mutable, mutated,
+      mutable, withOption,
       '`setOption` on a mutable instance does not return a copy'
     );
 
     t.equal(
-      mutated.getOption(OPTION), VALUE_A,
+      withOption.getOption(OPTION), VALUE_A,
       '`setOption` correctly sets value on mutable instance'
+    );
+
+    const withQuery = mutable.query('where', COLUMN_A, COLUMN_VALUE_A);
+
+    t.equal(
+      mutable, withQuery,
+      '`query` on a mutable instance does not return a copy'
     );
 
     const immutable = mutable.asImmutable();
@@ -156,21 +171,43 @@ test('Mapper', t => {
       '`asImmutable` returns the same instance'
     );
 
-    const immutableCopy = immutable.setOption(OPTION, VALUE_B);
+    const immutableWithOption = immutable.setOption(OPTION, VALUE_B);
 
     t.notEqual(
-      immutable, immutableCopy,
+      immutable, immutableWithOption,
       '`setOption` returns a copy on an immutable instance that was ' +
       'previously mutable...'
     );
 
     t.equal(
-      immutableCopy.getOption(OPTION), VALUE_B,
+      immutableWithOption.getOption(OPTION), VALUE_B,
       '...new instance is set correctly...'
     );
 
     t.equal(
       immutable.getOption(OPTION), VALUE_A,
+      '...previous instance remains unchanged.'
+    );
+
+    const immutableWithQuery = immutable.query('where', COLUMN_B, COLUMN_VALUE_B);
+
+    t.notEqual(
+      immutable, immutableWithQuery,
+      '`query` returns a copy on an immutable instance that was ' +
+      'previously mutable...'
+    );
+
+    t.equal(
+      immutableWithQuery.toQueryBuilder().toString(),
+      knex(TABLE)
+        .where(COLUMN_A, COLUMN_VALUE_A)
+        .where(COLUMN_B, COLUMN_VALUE_B).toString(),
+      '...new instance query is set correctly...'
+    );
+
+    t.equal(
+      immutable.toQueryBuilder().toString(),
+      knex(TABLE).where(COLUMN_A, COLUMN_VALUE_A).toString(),
       '...previous instance remains unchanged.'
     );
 
@@ -272,7 +309,6 @@ test('Mapper', t => {
   t.test('Mapper#toQueryBuilder(), Mapper#table()', t => {
 
     const TABLE = 'TABLE';
-
     const knex = Knex({});
 
     const configured = new Mapper().knex(knex).table(TABLE);

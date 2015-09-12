@@ -15,9 +15,9 @@ export default class Mapper {
    * A {@link Mapper} should never be instantiated directly.
    *
    * @param {Object|Immutable.Map} options
-   * @param {?QueryBuilder} [query]
+   * @param {QueryBuilder} [queryBuilder]
    */
-  constructor(options = {}, query = null) {
+  constructor(options = {}, queryBuilder = null) {
 
     // Convert options to Immutable.
     // Call to `AsImmutable` ensures that `options` object is not currently in a
@@ -25,8 +25,7 @@ export default class Mapper {
     this._options = Immutable.fromJS(options).asImmutable();
 
     // Copy `query` here to prevent leaking mutable state.
-    // TODO: Consider not cloning here, because now we clone twice in `query`.
-    this._query = query == null ? null : query.clone();
+    this._query = queryBuilder && queryBuilder.clone();
 
     // This instance is mutable for the duration of the constructor.
     this._mutable = true;
@@ -351,7 +350,6 @@ export default class Mapper {
    * Return a copy of the underlying `QueryBuilder` instance.
    *
    * @see {@link http://knexjs.org}
-   *
    * @returns {QueryBuilder} QueryBuilder instance.
    */
   toQueryBuilder() {
