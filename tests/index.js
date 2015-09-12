@@ -15,3 +15,4 @@ Test.prototype.deepEqualDefined = function(a, b, msg) {
 
 require('./relation-tree');
 require('./mapper');
+require('./mapper-identification');

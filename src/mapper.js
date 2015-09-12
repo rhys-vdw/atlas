@@ -3,9 +3,11 @@ import { reduce } from 'lodash/array';
 import { pluck } from 'lodash/collection';
 
 import Mapper from './mapper-base';
+import MapperRecordAdapter from './mapper-record-adapter';
 import MapperIdentification from './mapper-identification';
 
 const mixins = [
+  MapperRecordAdapter,
   MapperIdentification
 ];
 
@@ -21,4 +23,6 @@ const defaultOptions = assign(
   ...pluck(mixins, 'defaultOptions')
 );
 
-export { defaultOptions };
+const instance = new Mapper(defaultOptions);
+
+export { defaultOptions, instance };
