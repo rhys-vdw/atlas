@@ -13,6 +13,74 @@ test('Mapper - identification', t => {
     t.end();
   });
 
+  t.test('Mapper#isNew() - single primary key', t => {
+    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
+
+    const withIdAttribute = mapper.idAttribute(ID_ATTRIBUTE);
+
+    t.equal(
+      withIdAttribute.isNew({ [ID_ATTRIBUTE]: 5 }),
+      false,
+      'determines that record with `idAttribute` set is not new'
+    );
+
+    t.equal(
+      withIdAttribute.isNew({}),
+      true,
+      'determines that record without `idAttribute` set is new'
+    );
+
+    t.equal(
+      withIdAttribute.isNew({ [ID_ATTRIBUTE]: null }),
+      true,
+      'determines that record with null `idAttribute` is new'
+    );
+
+    t.end();
+  });
+
+  t.test('Mapper#isNew() - composite primary key', t => {
+
+    const ID_ATTRIBUTE_A = 'ID_ATTRIBUTE_A';
+    const ID_ATTRIBUTE_B = 'ID_ATTRIBUTE_B';
+    const ID_ATTRIBUTE = [ID_ATTRIBUTE_A, ID_ATTRIBUTE_B];
+
+    const withIdAttribute = mapper.idAttribute(ID_ATTRIBUTE);
+
+    t.equal(
+      withIdAttribute.isNew({
+        [ID_ATTRIBUTE_A]: 5,
+        [ID_ATTRIBUTE_B]: 6
+      }),
+      false,
+      'determines that record with both `idAttribute`s set is not new'
+    );
+
+    t.equal(
+      withIdAttribute.isNew({}),
+      true,
+      'determines that record with no `idAttribute`s set is new'
+    );
+
+    t.equal(
+      withIdAttribute.isNew({ [ID_ATTRIBUTE_A]: 5 }),
+      true,
+      'determines that record with one `idAttribute` unset is new'
+    );
+
+    t.equal(
+      withIdAttribute.isNew({
+        [ID_ATTRIBUTE_A]: null,
+        [ID_ATTRIBUTE_B]: 5,
+      }),
+      true,
+      'determines that record with one null `idAttribute` is new'
+    );
+
+    t.end();
+  });
+
+
   t.test('Mapper#identify() - single primary key', t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';

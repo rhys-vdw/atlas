@@ -1,4 +1,5 @@
 import { isString, isArray, isObject, isNumber } from 'lodash/lang';
+import { any } from 'lodash/collection';
 import { head } from 'lodash/array';
 import { assertType } from './assertions';
 import { List } from 'immutable';
@@ -11,10 +12,87 @@ const defaultOptions = {
 
 const methods = {
 
+  /**
+   * @method isNew
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Check if the record exists in the database.
+   *
+   * @description
+   *
+   * By default `isNew` will simply check for the existance of the {@link
+   * Mapper#idAttribute idAttribute} on the given record. This method
+   * can be overridden for custom behavior.
+   *
+   * @param {Object} record
+   *   Record to check.
+   * @returns {bool}
+   *   `true` if the model exists in database, otherwise `false`.
+   */
+  isNew(record) {
+    const id = this.identify(record);
+    return isArray(id)
+      ? any(id, id => id == null)
+      : id == null;
+  },
+
+  /**
+   * @method idAttribute
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Set the primary key attribute (or attributes).
+   *
+   * @param {string|string[]} idAttribute
+   *   Name of primary key attribute.
+   * @returns {Mapper}
+   *   Mapper with primary key attribute set.
+   */
   idAttribute(idAttribute) {
     return this.setOption('idAttribute', idAttribute);
   },
 
+  /**
+   * @method identify
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Get the ID value for one or more records.
+   *
+   * @description
+   *
+   * Helper method used internally. Uses the currently set {@link
+   * Mapper#idAttribute} to determine the ID value of a record (or an array of
+   * records). Also accepts ID values instead of records, allowing it to be used
+   * to normalize results.
+   *
+   * @example
+   *
+   * Person = Mapper.idAttribute('id');
+   *
+   * Person.identify({ id: 5, name: 'John Smith' });
+   * // -> 5
+   *
+   * Person.identify([{ id: 2, name: 'Jane' }, { id: 3, name: 'Bill' }]);
+   * // -> [2, 3]
+   *
+   * const Membership = Mapper.idAttribute(['person_id', 'group_id']);
+   *
+   * Membership.identify([
+   *   { person_id: 2, group_id: 10 },
+   *   { person_id: 3, group_id: 10 }
+   * ]);
+   * // -> [[2, 10], [3, 10]]
+   *
+   * Membership.identify([10, 20]);
+   * // -> [10, 20]
+   *
+   * @param {mixed} record
+   *   One or more records or IDs.
+   * @returns {mixed|mixed[]}
+   *   ID or IDs of given records.
+   */
   identify(record) {
     let idAttribute = this.getOption('idAttribute');
 
@@ -31,7 +109,8 @@ const methods = {
     // first element of the array is either an object or an array (ie. not
     // a valid key value) we assume that this a collection.
     //
-    // Use `isObject` because the attribute may be an Immutable collection.
+    // Use `isObject` because the attribute may be an Immutable collection or
+    // array.
     const isComposite = isObject(attribute);
     const isSingle = !isArray(record) || isComposite && !isObject(head(record));
 
