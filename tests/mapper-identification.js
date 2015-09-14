@@ -1,4 +1,4 @@
-import test from 'tape-catch';
+import test from 'tape';
 import Mapper, { instance as mapper } from '../lib/mapper';
 
 test('Mapper - identification', t => {

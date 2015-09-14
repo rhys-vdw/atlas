@@ -1,7 +1,15 @@
-import { any } from 'lodash/collection';
+import { any, each } from 'lodash/collection';
 import { dropRight, last, compact } from 'lodash/array';
-import { each } from 'lodash/collection';
 import { keys } from 'lodash/object';
+import { isEmpty } from 'lodash/lang';
+
+import { NoRecordsFoundError } from './errors';
+
+export function assertFound(mapper, response) {
+  if (isEmpty(response)) throw new NoRecordsFoundError(
+    mapper
+  );
+}
 
 export function assertType(variables, testsByTypeName) {
   each(variables, (value, name) => {

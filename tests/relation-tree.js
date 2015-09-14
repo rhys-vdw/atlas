@@ -1,5 +1,5 @@
 import _, { all } from 'lodash';
-import test from 'tape-catch';
+import test from 'tape';
 
 import RelationTree, {
   isRelationTree,

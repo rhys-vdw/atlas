@@ -379,7 +379,7 @@ export default class Mapper {
 
     const queryBuilder = this._mutable
       ? this._queryBuilder()
-      : this._queryBuilder().clone();
+      : this.toQueryBuilder();
 
     if (isFunction(method)) {
       method(queryBuilder);

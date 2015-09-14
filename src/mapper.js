@@ -5,10 +5,12 @@ import { pluck } from 'lodash/collection';
 import Mapper from './mapper-base';
 import MapperRecordAdapter from './mapper-record-adapter';
 import MapperIdentification from './mapper-identification';
+import MapperRetrieval from './mapper-retrieval';
 
 const mixins = [
   MapperRecordAdapter,
-  MapperIdentification
+  MapperIdentification,
+  MapperRetrieval
 ];
 
 assign(

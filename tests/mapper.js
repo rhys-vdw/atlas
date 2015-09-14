@@ -1,4 +1,4 @@
-import test from 'tape-catch';
+import test from 'tape';
 import { each } from 'lodash/collection';
 import { noop } from 'lodash/utility';
 
