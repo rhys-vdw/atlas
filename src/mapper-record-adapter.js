@@ -1,6 +1,7 @@
 import { isArray, isObject } from 'lodash/lang';
 import { identity } from 'lodash/utility';
-import { defaults } from 'lodash/object';
+import { defaults, assign, pick } from 'lodash/object';
+import { reduce } from 'lodash/collection';
 
 const defaultOptions = {
   defaultAttributes: null
@@ -8,11 +9,7 @@ const defaultOptions = {
 
 const methods = {
 
-  // -- Parse/format hooks
-
-  getAttribute(attribute, record) {
-    return record[attribute];
-  },
+  // -- Parse/format hooks --
 
   columnToAttribute: identity,
 
@@ -20,9 +17,30 @@ const methods = {
 
   columnsToAttributes: identity,
 
-  attributeToColumns: identity,
+  attributesToColumns: identity,
 
   // -- Model adapter --
+
+  getAttributes: identity,
+
+  getAttribute(attribute, record) {
+    return record[attribute];
+  },
+
+  pickAttributes(attributes, record) {
+    return pluck(record, attributes);
+  },
+
+  setAttribute(attribute, value, record) {
+    record[attribute] = value;
+    return record;
+  },
+
+  setAttributes(attributes, record) {
+    return reduce(attributes, (recordAccumulator, value, attribute) =>
+      this.setAttribute(attribute, value, recordAccumulator)
+    , record);
+  },
 
   createRecord(attributes = {}) {
     return attributes;
@@ -31,6 +49,8 @@ const methods = {
   destroyRecord(record) {
     return null;
   },
+
+  // TODO: Move `forge` and `defaultAttributes` methods to `mapper-creation.js`.
 
   // Private helper.
 
