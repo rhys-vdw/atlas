@@ -56,8 +56,8 @@ const methods = {
     } 
 
     const attributes = _(rows)
-      .map(this.columnsToAttributes)
-      .map(this.createRecord);
+      .map(this.columnsToAttributes, this)
+      .map(this.createRecord, this);
 
     return this.forge(isSingle ? attributes.head() : attributes.value());
   }
