@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npm run babel && npm run babel-tests && ./node_modules/istanbul/lib/cli.js cover compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
+    "test": "npm run babel && npm run babel-tests && node compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
+    "cover": "npm run babel && npm run babel-tests && ./node_modules/istanbul/lib/cli.js cover compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
     "babel-tests": "rm -rf compiled-tests && ./node_modules/babel/bin/babel.js tests -d compiled-tests",
     "babel": "rm -rf lib && ./node_modules/babel/bin/babel.js src -d lib"
   },
