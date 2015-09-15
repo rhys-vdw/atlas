@@ -412,4 +412,15 @@ export default class Mapper {
     return this._query;
   }
 
+  toString() {
+    return `
+      options:
+      --------
+      ${this._options.toString()}
+
+      query:
+      ------
+      ${this._query && this._query.toString()}
+      `
+  }
 }
