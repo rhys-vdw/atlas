@@ -30,7 +30,7 @@ test('Mapper - retrieval', t => {
     
     t.plan(2);
 
-    const mocked = MockedQueryBuilder((query) => {
+    const mocked = MockedQueryBuilder(query => {
       t.queriesEqual(
         query,
         knex(TABLE).select(`${TABLE}.*`).limit(1)
@@ -53,7 +53,7 @@ test('Mapper - retrieval', t => {
 
     t.plan(2);
 
-    const mocked = MockedQueryBuilder((query) => {
+    const mocked = MockedQueryBuilder(query => {
       t.queriesEqual(
         query,
         knex(TABLE).select(`${TABLE}.*`)
@@ -74,7 +74,7 @@ test('Mapper - retrieval', t => {
     const EMPTY_ROWS = [];
     const FULL_ROWS = [{ id: 1 }, { id: 2 }];
     const knex = Knex({});
-    
+
     t.plan(2);
 
     const mockedEmpty = MockedQueryBuilder(() => { return { rows: EMPTY_ROWS }});
