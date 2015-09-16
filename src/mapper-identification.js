@@ -126,7 +126,7 @@ const methods = {
     // Just return if this is a basic data type. We assume it's a key value
     // already.
     //
-    //     (5, 'id') -> 5
+    //     ('id', 5) -> 5
     //
     if (!isObject(record)) {
       return record;
@@ -134,7 +134,7 @@ const methods = {
 
     // Simple non-composite key.
     //
-    //     ({id: 5}, 'id') -> 5
+    //     ('id', {id: 5}) -> 5
     //
     const isComposite = isObject(attribute);
 
@@ -147,7 +147,7 @@ const methods = {
     // If this is an array, assume it contains composite key values, and return
     // it.
     //
-    //     ([0, 1], ['id_a', 'id_b']) -> [0, 1]
+    //     (['id_a', 'id_b'], [0, 1]) -> [0, 1]
     //
     if (isArray(record)) {
 
@@ -163,9 +163,7 @@ const methods = {
     // 
     //     (['id_a', 'id_b'], {id_a: 0, id_b: 1}) -> [0, 1]
     //
-    return attribute.map(a => {
-      return this.getAttribute(a, record)
-    });
+    return attribute.map(a => this.getAttribute(a, record));
   },
 
   identifyAllBy(attribute, records) {
