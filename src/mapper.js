@@ -3,14 +3,16 @@ import { reduce } from 'lodash/array';
 import { pluck } from 'lodash/collection';
 
 import Mapper from './mapper-base';
-import MapperRecordAdapter from './mapper-record-adapter';
-import MapperIdentification from './mapper-identification';
-import MapperRetrieval from './mapper-retrieval';
+import RecordAdapter from './mapper-record-adapter';
+import Identification from './mapper-identification';
+import Retrieval from './mapper-retrieval';
+import Persistence from './mapper-persistence';
 
 const mixins = [
-  MapperRecordAdapter,
-  MapperIdentification,
-  MapperRetrieval
+  RecordAdapter,
+  Identification,
+  Retrieval,
+  Persistence
 ];
 
 assign(

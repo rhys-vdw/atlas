@@ -23,13 +23,26 @@ export class InvalidOptionError extends AtlasError {
   }
 }
 
-export class NoRecordsFoundError extends AtlasError {
-  constructor(Mapper) {
+export class NotFoundError extends AtlasError {
+  constructor(Mapper, queryBuilder, method) {
     super(
-      `Failed to find any records when calling 'fetch()' on mapper:
+      `No row found when calling '${method}' on mapper:
       ${Mapper}`
     );
 
     this.Mapper = Mapper;
+    this.queryBuilder = queryBuilder;
+  }
+}
+
+export class NoRowsFoundError extends AtlasError {
+  constructor(Mapper, queryBuilder, method) {
+    super(
+      `Failed to find any records when calling '${method}' on mapper:
+      ${Mapper}`
+    );
+
+    this.Mapper = Mapper;
+    this.queryBuilder = queryBuilder;
   }
 }

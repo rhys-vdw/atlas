@@ -109,9 +109,7 @@ const methods = {
     // first element of the array is either an object or an array (ie. not
     // a valid key value) we assume that this a collection.
     //
-    // Use `isObject` because the attribute may be an Immutable collection or
-    // array.
-    const isComposite = isObject(attribute);
+    const isComposite = isArray(attribute);
     const isSingle = !isArray(record) || isComposite && !isObject(head(record));
 
     return isSingle

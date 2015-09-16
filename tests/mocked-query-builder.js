@@ -1,13 +1,14 @@
 import Knex from 'knex';
 import QueryBuilder from 'knex/lib/query/builder';
 import Promise from 'bluebird';
-import { assign } from 'lodash/object';
+import { assign, isFunction } from 'lodash';
 
 class MockedQueryBuilder extends QueryBuilder {
 
   then(...args) {
     return Promise.resolve(this.toString())
-      .then(this._mockCallback.bind(this));
+      .then(this._mockCallback.bind(this))
+      .then(...args);
   }
 
   mockCallback(callback) {
@@ -22,9 +23,14 @@ class MockedQueryBuilder extends QueryBuilder {
   }
 }
 
-export default function (callback) {
+export default function (client, callback) {
 
-  const knex = Knex({});
+  if (isFunction(client)) {
+    callback = client;
+    client = null;
+  }
+
+  const knex = Knex({ client });
 
   return function(tableName) {
     return new MockedQueryBuilder(knex.client)

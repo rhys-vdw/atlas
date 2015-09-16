@@ -30,10 +30,12 @@ Test.prototype.resolvesTo = function(promise, expected, message, extra) {
   let error;
 
   Promise.resolve(promise)
-  .then((result) => {
+  .then(result => {
     passed = deepEqual(result, expected);
     actual = result;
-  }).catch((err) => {
+  }).catch(err => {
+    // TOOD: work out how to get tape to display error.
+    console.error('error caught!', err);
     error = err;
   }).then(() => {
     this._assert(passed, {
@@ -87,3 +89,4 @@ require('./relation-tree');
 require('./mapper');
 require('./mapper-identification');
 require('./mapper-retrieval');
+require('./mapper-persistence');
