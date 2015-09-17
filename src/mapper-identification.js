@@ -131,7 +131,7 @@ const methods = {
     const isComposite = isObject(attribute);
 
     if (!isComposite) {
-      return this.getAttribute(attribute, record);
+      return this.getAttribute(record, attribute);
     }
 
     // Composite keys are handled differently, return an array.
@@ -155,7 +155,7 @@ const methods = {
     // 
     //     (['id_a', 'id_b'], {id_a: 0, id_b: 1}) -> [0, 1]
     //
-    return attribute.map(a => this.getAttribute(a, record));
+    return attribute.map(a => this.getAttribute(record, a));
   },
 
   identifyAllBy(attribute, records) {

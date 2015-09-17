@@ -24,17 +24,17 @@ const methods = {
 
   getAttributes: identity,
 
-  getAttribute(attribute, record) {
+  getAttribute(record, attribute) {
     return record[attribute];
   },
 
-  pickAttributes(attributes, record) {
+  pickAttributes(record, attributes) {
     if (!isArray(attributes)) {
       attributes = [attributes];
     }
 
     return reduce(attributes, (result, attribute) => {
-      const value = this.getAttribute(attribute, record);
+      const value = this.getAttribute(record, attribute);
       if (!isUndefined(value)) {
         result[attribute] = value;
       }
@@ -42,14 +42,14 @@ const methods = {
     }, {});
   },
 
-  setAttribute(attribute, value, record) {
+  setAttribute(record, attribute, value) {
     record[attribute] = value;
     return record;
   },
 
-  setAttributes(attributes, record) {
-    return reduce(attributes, (recordAccumulator, value, attribute) =>
-      this.setAttribute(attribute, value, recordAccumulator)
+  setAttributes(record, attributes) {
+    return reduce(attributes, (accumulator, value, attribute) =>
+      this.setAttribute(accumulator, attribute, value)
     , record);
   },
 

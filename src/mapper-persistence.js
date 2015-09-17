@@ -197,7 +197,7 @@ const methods = {
     //
     if (isObject(returned)) {
       const attributes = this.columnsToAttributes(response);
-      return this.setAttributes(attributes, record);
+      return this.setAttributes(record, attributes);
     }
 
     // We can't update a composite key. As I understand, any DBMS other than
@@ -206,7 +206,7 @@ const methods = {
     //
     const idAttribute = this.getOption('idAttribute');
     if (!isArray(idAttribute)) {
-      return this.setAttribute(idAttribute, returned, record);
+      return this.setAttribute(record, idAttribute, returned);
     }
   },
 
@@ -378,7 +378,7 @@ const methods = {
 
     // Get ID attribute/value pairs for this record.
     //
-    const attributes = this.pickAttributes(attributeNames, record);
+    const attributes = this.pickAttributes(record, attributeNames);
 
     // If fewer attributes were picked than ID attributes on the Mapper, then
     // it cannot reliably be updated.
