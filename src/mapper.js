@@ -8,13 +8,15 @@ import Identification from './mapper-identification';
 import Retrieval from './mapper-retrieval';
 import Persistence from './mapper-persistence';
 import Forge from './mapper-forge';
+import KeyConversion from './mapper-key-conversion';
 
 const mixins = [
   RecordAdapter,
   Identification,
   Retrieval,
   Persistence,
-  Forge
+  Forge,
+  KeyConversion
 ];
 
 assign(

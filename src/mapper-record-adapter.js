@@ -5,18 +5,6 @@ import { reduce } from 'lodash/collection';
 
 const methods = {
 
-  // -- Parse/format hooks --
-
-  columnToAttribute: identity,
-
-  attributeToColumn: identity,
-
-  columnsToAttributes: identity,
-
-  attributesToColumns: identity,
-
-  // -- Model adapter --
-
   getAttributes: identity,
 
   getAttribute(record, attribute) {
