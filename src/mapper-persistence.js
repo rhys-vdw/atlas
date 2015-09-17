@@ -94,27 +94,27 @@ const methods = {
     //
     const isSingle = records.length <= 1 && !isArray(head(records));
 
-    // Normalize records into a flat array without null/undefined values.
+    // Normalize records into a flat array, normalizing falsey values to `null`.
     //
-    const recordChain = _(records).flatten().compact();
+    const recordChain = _(records).map(r => r || null).flatten();
 
-    // Short circuit if no values are supplied.
+    // Short circuit if no truthy values are supplied.
     //
-    if (recordChain.isEmpty()) {
-      return Promise.resolve(isSingle ? null : []);
+    if (!recordChain.some()) {
+      return Promise.resolve(isSingle ? null : recordChain.value());
     }
 
-    // Now get the record(s) in their return format.
-    //
     const insertRecords = isSingle
       ? recordChain.head()
       : recordChain.value();
 
-    return this.toInsertQueryBuilder(insertRecords).then(response => {
-      return isSingle
-        ? this._handleInsertOneResponse(response, insertRecords)
-        : this._handleInsertManyResponse(response, insertRecords);
-    });
+    // Pass non-null records to `QueryBuilder`.
+    //
+    return this.toInsertQueryBuilder(insertRecords)
+    .then(response => isSingle
+      ? this._handleInsertOneResponse(response, insertRecords)
+      : this._handleInsertManyResponse(response, insertRecords)
+    );
   },
 
   /**
@@ -136,15 +136,15 @@ const methods = {
    */
   toInsertQueryBuilder(...records) {
 
-    // There is no difference between passing a single record or an array of
-    // records to `QueryBuilder#insert`.
+    // `QueryBuilder#insert` accepts a single row or an array of rows.
     //
-    records = flatten(records);
-
+    // Not necessary to remove `null` values here, Knex handles this for us.
+    //
     // Apply any necessary processing to the records. If these methods haven't
     // been overridden they just default to `_.identity`, and this is a noop.
     //
     const rows = _(records)
+      .flatten()
       .map(this.getAttributes, this)
       .map(this.attributesToColumns, this)
       .value();
@@ -173,6 +173,11 @@ const methods = {
    */
   _handleInsertOneResponse(response, record) {
 
+    // We handle inserting `null` records here.
+    if (record == null) {
+      return null;
+    }
+
     // Handle either an entire response array (if just one model has been
     // inserted). Or handle just a single element from the response array.
     //
@@ -184,7 +189,7 @@ const methods = {
     // with a DBMS other than PostgreSQL, in the case for all records after the
     // first in a bulk insert.
     //
-    if (!returned) {
+    if (returned == null) {
       return record;
     }
 
@@ -224,7 +229,37 @@ const methods = {
    *   Records updated with response data.
    */
   _handleInsertManyResponse(response, records) {
-    return zipWith(response, records, this._handleInsertOneResponse, this);
+
+    let mappedRows;
+    if (response.length !== records.length) {
+
+      // TODO: Test this
+      //
+      // Space out the response object to match the format of the insert records.
+      // This allows this contract:
+      //
+      //     ([
+      //       { id: 1, a: 'a' },
+      //       { id: 2, b: 'b' }
+      //     ], [
+      //       { a: 'a' }, null, { b: 'b' }
+      //     ]) -> [{ id: 1, a: 'a' }, null, { id: 2, b: 'b' }]
+      //
+      mappedRows = [];
+      for (let i = 0, j = 0; i < records.length && j < response.length; i++) {
+        const record = records[i];
+        const row = response[j];
+        if (record == null) {
+          mappedRows.push(null)
+        } else {
+          mappedRows.push(row)
+          j++;
+        }
+      }
+    } else {
+      mappedRows = response;
+    }
+    return zipWith(mappedRows, records, this._handleInsertOneResponse, this);
   },
 
   /**
@@ -239,11 +274,22 @@ const methods = {
    * @returns {Promise<Object|Object[]>}
    *   A promise resolving to the updated record or records.
    */
-  update(records) {
+  update(...records) {
 
-    return isArray(records)
-      ? this.updateAll(records)
-      : this.updateOne(records);
+    // Check if we're saving just one record...
+    //
+    const isSingle = records.length <= 1 && !isArray(head(records));
+
+    records = flatten(records);
+
+    // If so, we can just distribute it directly to the correct method.
+    //
+    if (isSingle) {
+      const record = head(records);
+      return this.updateOne(record);
+    }
+
+    return this.updateAll(records);
   },
 
   /**

@@ -27,14 +27,14 @@ test('Mapper - persistence', t => {
       'resolves empty array to empty array'
     );
 
-    t.resolvesTo(
-      mapper.insert([null, null]), [],
-      'resolves array of null values to an empty array'
+   t.resolvesTo(
+      mapper.insert([null, null]), [null, null],
+      'resolves array of `null` values to an array of `null` values'
     );
 
     t.resolvesTo(
-      mapper.insert(null, null), [],
-      'resolves multiple null value arguments to an empty array'
+      mapper.insert(null, null), [null, null],
+      'resolves multiple `null` value arguments to an array of `null` values'
     );
   });
 
@@ -183,6 +183,35 @@ test('Mapper - persistence', t => {
     );
   });
 
+  t.test('Mapper#update()', t => {
+
+    t.plan(5);
+
+    t.resolvesTo(
+      mapper.update(), null,
+      'resolves no arguments to `null`'
+    );
+
+    t.resolvesTo(
+      mapper.update(null), null,
+      'resolves `null` to `null`'
+    );
+
+    t.resolvesTo(
+      mapper.update([]), [],
+      'resolves empty array to empty array'
+    );
+
+    t.resolvesTo(
+      mapper.update([null, null]), [null, null],
+      'resolves array of `null` values to an array of `null` values'
+    );
+
+    t.resolvesTo(
+      mapper.update(null, null), [null, null],
+      'resolves multiple `null` value arguments to an array of `null` values'
+    );
+  });
 
   t.end();
 })
