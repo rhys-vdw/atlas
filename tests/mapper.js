@@ -1,4 +1,5 @@
 import test from 'tape';
+import { isEmpty } from 'lodash/lang';
 import { each } from 'lodash/collection';
 import { noop } from 'lodash/utility';
 
@@ -13,7 +14,7 @@ test('Mapper', t => {
 
     t.equal(mapper._mutable, false, 'is immutable');
     t.equal(mapper._query, null, 'query is null');
-    t.ok(mapper._options.isEmpty(), 'no options');
+    t.ok(isEmpty(mapper._options), 'no options');
 
     t.end();
   });
@@ -29,6 +30,12 @@ test('Mapper', t => {
       before, after,
       'should copy Mapper'
     );
+
+    t.notEqual(
+      before._options, after._options,
+      'should have a different options object'
+    );
+
 
     t.equal(
       after, after.setOption(OPTION, VALUE),
@@ -133,12 +140,22 @@ test('Mapper', t => {
       '`asImmutable` is a no-op on an immutable instance'
     );
 
-    const mutable = mapper.asMutable().table(TABLE);
+    const mutable = mapper.asMutable();
 
     t.notEqual(
       mapper, mutable,
-      '`asMutable` creates a copy of a mutable instance'
+      '`asMutable` creates a copy of an immutable instance'
     );
+
+    t.notEqual(
+      mapper._options, mutable._options,
+      'mutable copy has a different `_options` instance'
+    )
+
+    t.deepEqual(
+      mapper._options, mutable._options,
+      'mutable copy has the same options set'
+    )
 
     t.equal(
       mutable, mutable.asMutable(),
@@ -157,7 +174,7 @@ test('Mapper', t => {
       '`setOption` correctly sets value on mutable instance'
     );
 
-    const withQuery = mutable.query('where', COLUMN_A, COLUMN_VALUE_A);
+    const withQuery = mutable.table(TABLE).query('where', COLUMN_A, COLUMN_VALUE_A);
 
     t.equal(
       mutable, withQuery,

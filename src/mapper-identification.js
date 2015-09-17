@@ -2,9 +2,6 @@ import { isString, isArray, isObject, isNumber } from 'lodash/lang';
 import { any } from 'lodash/collection';
 import { head } from 'lodash/array';
 import { assertType } from './assertions';
-import { List } from 'immutable';
-const { isList } = List;
-
 
 const defaultOptions = {
   idAttribute: 'id'
@@ -95,11 +92,6 @@ const methods = {
    */
   identify(record) {
     let idAttribute = this.getOption('idAttribute');
-
-    if (isList(idAttribute)) {
-      idAttribute = idAttribute.toArray();
-    }
-
     return this.identifyBy(idAttribute, record);
   },
 

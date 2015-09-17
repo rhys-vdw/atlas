@@ -3,12 +3,9 @@ import { isArray, isEmpty, isObject } from 'lodash/lang';
 import { map, groupBy, size } from 'lodash/collection';
 import { flatten, head, zipObject, zipWith } from 'lodash/array';
 import { mapValues } from 'lodash/object';
-import { List } from 'immutable';
 import Promise from 'bluebird';
 
 import { UnidentifiableRecordError } from './errors';
-
-const { isList } = List;
 
 const methods = {
 
@@ -208,7 +205,7 @@ const methods = {
     // so this shouldn't be a problem.
     //
     const idAttribute = this.getOption('idAttribute');
-    if (!isList(idAttribute)) {
+    if (!isArray(idAttribute)) {
       return this.setAttribute(idAttribute, returned, record);
     }
   },
@@ -375,7 +372,7 @@ const methods = {
     // Get ID attributes as an array.
     //
     const idAttribute = this.getOption('idAttribute');
-    const attributeNames = isList(idAttribute)
+    const attributeNames = isArray(idAttribute)
       ? idAttribute.toArray()
       : [idAttribute];
 

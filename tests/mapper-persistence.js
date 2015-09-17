@@ -281,18 +281,13 @@ test('Mapper - persistence', t => {
     t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
-    const ID_VALUE = 'ID_VALUE';
     const TABLE = 'TABLE';
-    const RECORD = { text: 'a' };
-    const knex = Knex({});
-
-    const updateMapper = mapper.idAttribute(ID_ATTRIBUTE);
-    const updatePromise = updateMapper.update(RECORD);
+    const RECORD = {};
 
     t.plan(1);
 
     t.rejects(
-      updatePromise,
+      mapper.idAttribute(ID_ATTRIBUTE).update(RECORD),
       UnidentifiableRecordError,
       'rejects with `UnidentifiableRecordError`'
     );

@@ -1,7 +1,6 @@
-import Immutable, { Iterable } from 'immutable';
 import _ from 'lodash';
 import { isFunction, isObject, isEmpty, isString } from 'lodash/lang';
-import { each } from 'lodash/collection';
+import { each, every } from 'lodash/collection';
 import { assign } from 'lodash/object';
 
 import { InvalidOptionError } from './errors';
@@ -12,50 +11,83 @@ export default class Mapper {
   /**
    * @class Mapper
    * @constructor
+   * @summary
    *
-   * A {@link Mapper} should never be instantiated directly.
+   * Construct a new `Mapper`.
    *
-   * @param {Object|Immutable.Map} options
+   * @description
+   *
+   * {@link Mapper}'s constructor should never be called directly. This
+   * constructor is utilized internally by Atlas. New `Mapper` instances are
+   * created automatically whenever an option is {@link Mapper#setOption set},
+   * or when the underlying `QueryBuilder` is {@link Mapper#query modified}.
+   *
+   * @param {Object} [options={}]
+   *   Initial options object. It's assumed that this instance will not be
+   *   mutated.
    * @param {QueryBuilder} [queryBuilder]
+   *   Initial `QueryBuilder` instance. It's assumed that this instance not be
+   *   mutated.
+   * @param {bool} [mutable=false]
+   *   Initialize the instance as mutable?
    */
-  constructor(options = {}, queryBuilder = null) {
-
-    // Convert options to Immutable.
-    // Call to `AsImmutable` ensures that `options` object is not currently in a
-    // mutable state (eg. if `options = new Map().AsMutable()`).
-    this._options = Immutable.fromJS(options).asImmutable();
-
-    // Copy `query` here to prevent leaking mutable state.
-    this._query = queryBuilder && queryBuilder.clone();
-
-    // This instance is mutable for the duration of the constructor.
-    this._mutable = true;
-
-    // Now allow extra mutations to be set by inheriting class. Typically
-    // setting options or the query.
-    this.withMutations(this.initialize);
-
-    // Now lock it down. We return it in the off chance that `extend` was called
-    // in a callback.
-    this.asImmutable();
+  constructor(options = {}, queryBuilder = null, mutable = false) {
+    if (mutable) {
+      this._options = { ...options};
+      this._query = queryBuilder && queryBuilder.clone();
+    } else {
+      this._options = options;
+      this._query = queryBuilder;
+    }
+    this._mutable = mutable;
   }
 
 
   /**
    * @method extend
    * @belongsTo Mapper
+   * @summary
    *
-   * Create a new Mapper instance with given methods.
+   * Create a new Mapper instance with custom methods.
+   *
+   * @description
+   *
+   * Creates an inheriting `Mapper` class with supplied `methods`. Returns an
+   * instance of this class.
+   *
+   * @param {Object} methods
+   *   
    */
   extend(methods) {
+
+    // Don't leak mutable state into the new instance.
+    if (this._mutable) throw new Error(
+      'cannot call `extend` on a mutable `Mapper`'
+    );
+
     // Create a clone of self.
     class ChildMapper extends this.constructor {}
+
+    // `initialize` is a special case.
+    const initializer = methods.initialize;
+    if (initializer) {
+      delete methods.initialize;
+    }
+
+    // Don't allow assigning values directly to the prototype. This can cause
+    // problems when reassigning values (eg. `this.x` is shared between all
+    // instances).
+    if (!every(methods, isFunction)) throw new Error(
+      '`methods` must all be functions'
+    );
 
     // Mix in the new methods.
     assign(ChildMapper.prototype, methods);
 
-    // Instantiate the instance.
-    return new ChildMapper(this._options, this._query);
+    // Instantiate the instance as 
+    return new ChildMapper(this._options, this._query, true)
+      .withMutations(initializer)
+      .asImmutable();
   }
 
   // -- Mutability Controls --
@@ -81,13 +113,9 @@ export default class Mapper {
    * @returns {Mapper} Mutable copy of this Mapper.
    */
   asMutable() {
-    if (this._mutable) {
-      return this;
-    }
-
-    const result = new this.constructor(this._options, this._query);
-    result._mutable = true;
-    return result;
+    return this._mutable
+      ? this
+      : new this.constructor(this._options, this._query, true);
   }
 
   /**
@@ -196,24 +224,18 @@ export default class Mapper {
    * @param {string} option
    *   Name of the option to set.
    * @returns {mixed}
-   *   Value previously assigned to option.
+   *   Value previously assigned to option. Do not mutate this value.
    * @throws InvalidOptionError
    *   If the option has not been set.
    */
   getOption(option) {
 
     // Options must be initialized before they are accessed.
-    if (!this._options.has(option)) {
+    if (!(option in this._options)) {
       throw new InvalidOptionError(option, this);
     }
 
-    const result = this._options.get(option);
-
-    // Have to ensure references are immutable. Mutable mapper chains
-    // could leak.
-    return Iterable.isIterable(result)
-      ? result.asImmutable()
-      : result;
+    return this._options[option];
   }
 
   /**
@@ -252,30 +274,20 @@ export default class Mapper {
    */
   setOption(option, value) {
 
-    // The first time we call 'setMutability' on `_options` while mutable,
-    // it will return a mutable copy. Each additional call will return the
-    // same instance.
-    //
-    // Wrapping the value in `Immutable.fromJS` will cause all Arrays and
-    // Objects to be converted into their immutable counterparts.
-    //
-    // Calls to `_setMutability` and `Immutable.fromJS` will often be
-    // called redundantly. This is meant to ensure that the fewest possible
-    // copies are constructed.
-    //
-    const newOptions = this._setMutability(this._options)
-      .set(option, Immutable.fromJS(value));
+    // Setting an option to its current value is a no-op.
+    if (this._options[option] === value) {
+      return this;
+    }
 
+    // If mutable, set the option and return.
     if (this._mutable) {
-      this._options = newOptions;
+      this._options[option] = value;
       return this;
     }
 
-    if (newOptions === this._options) {
-      return this;
-    }
-
-    return new this.constructor(newOptions, this._query);
+    // Otherwise duplicate the options object and pass it on in a new instance.
+    const options = { ...this._options, [option]: value };
+    return new this.constructor(options, this._query);
   }
 
   /**
@@ -284,6 +296,16 @@ export default class Mapper {
    * @summary
    *
    * Update an option on the Mapper.
+   *
+   * @description
+   *
+   * Accepts an `update` callback invoked with the current value for the
+   * specified `option`. The value returned from `update` will be set
+   * on the `Mapper`'s option hash.
+   *
+   * Never mutate the previous value directly. If the option is a mutable value
+   * such as an `Object` or `Array` it must be copied before being returned by
+   * the `updater`.
    *
    * @param {string} option
    *   Name of the option to set.
@@ -295,10 +317,6 @@ export default class Mapper {
   updateOption(option, updater) {
     const value = this.getOption(option);
     return this.setOption(option, updater(value));
-  }
-
-  _setMutability(object) {
-    return object[this._mutable ? 'asMutable' : 'asImmutable']();
   }
 
   // -- Query --
@@ -367,11 +385,12 @@ export default class Mapper {
    * @see {@link http://knexjs.org}
    *
    * @param {function|string} method
-   *   A callback that modifies the underlying `QueryBuilder`, or the
-   *   name of the method to call.
+   *   A callback that modifies the underlying `QueryBuilder` instance, or the
+   *   name of a `QueryBuilder` method to invoke.
    * @param {...mixed} [args]
    *   Arguments to be passed to the `QueryBuilder` method.
-   * @returns {Mapper} Self, this method is chainable.
+   * @returns {Mapper}
+   *   Mapper with a modified underlying `QueryBuilder` instance.
    */
   query(method, ...args) {
 
@@ -382,7 +401,7 @@ export default class Mapper {
       : this.toQueryBuilder();
 
     if (isFunction(method)) {
-      method(queryBuilder);
+      method.call(queryBuilder, queryBuilder);
     }
 
     if (isString(method)) {
