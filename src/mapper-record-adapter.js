@@ -1,6 +1,7 @@
-import { isArray, isObject } from 'lodash/lang';
+import _ from 'lodash';
+import { isArray, isObject, isUndefined } from 'lodash/lang';
 import { identity } from 'lodash/utility';
-import { defaults, assign, pick } from 'lodash/object';
+import { defaults, assign } from 'lodash/object';
 import { reduce } from 'lodash/collection';
 
 const defaultOptions = {
@@ -28,7 +29,17 @@ const methods = {
   },
 
   pickAttributes(attributes, record) {
-    return pluck(record, attributes);
+    if (!isArray(attributes)) {
+      attributes = [attributes];
+    }
+
+    return reduce(attributes, (result, attribute) => {
+      const value = this.getAttribute(attribute, record);
+      if (!isUndefined(value)) {
+        result[attribute] = value;
+      }
+      return result;
+    }, {});
   },
 
   setAttribute(attribute, value, record) {

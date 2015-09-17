@@ -10,6 +10,20 @@ class AtlasError extends Error {
   }
 }
 
+export class UnidentifiableRecordError extends AtlasError {
+  constructor(Mapper, record, idAttribute) {
+    super(
+      'UnidentifiableRecordError',
+      `Expected record '${JSON.stringify(record)}' to have ID key(s) '${idAttribute}', mapper:'
+      ${Mapper}`
+    );
+
+    this.Mapper = Mapper;
+    this.record = record;
+    this.idAttribute = idAttribute;
+  }
+}
+
 export class InvalidOptionError extends AtlasError {
   constructor(option, Mapper) {
     super(

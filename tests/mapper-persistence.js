@@ -4,7 +4,7 @@ import MockedQueryBuilder from './mocked-query-builder'
 
 import { zipObject } from 'lodash/array';
 import Mapper, { instance as mapper } from '../lib/mapper';
-import { NotFoundError } from '../lib/errors';
+import { NotFoundError, UnidentifiableRecordError } from '../lib/errors';
 
 test('Mapper - persistence', t => {
 
@@ -210,6 +210,91 @@ test('Mapper - persistence', t => {
     t.resolvesTo(
       mapper.update(null, null), [null, null],
       'resolves multiple `null` value arguments to an array of `null` values'
+    );
+  });
+
+  t.test(
+    'Mapper#update() - single record, returning one record updated',
+    t => {
+
+    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
+    const ID_VALUE = 'ID_VALUE';
+    const TABLE = 'TABLE';
+    const RECORD = { [ID_ATTRIBUTE]: ID_VALUE, text: 'a' };
+    const knex = Knex({});
+
+    t.plan(2);
+
+    const mocked = MockedQueryBuilder(query => {
+      t.queriesEqual(
+        query,
+        knex(TABLE).where(ID_ATTRIBUTE, ID_VALUE).update(RECORD, '*')
+      );
+
+      return 1;
+    });
+
+    const updateMapper = mapper
+      .knex(mocked)
+      .table(TABLE)
+      .idAttribute(ID_ATTRIBUTE);
+
+    const updatePromise = updateMapper.update(RECORD);
+
+    t.resolvesTo(
+      updatePromise,
+      { ...RECORD },
+      'resolves successfully'
+    );
+  });
+
+  t.test(
+    'Mapper#update() - single record, returning no records updated',
+    t => {
+
+    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
+    const ID_VALUE = 'ID_VALUE';
+    const TABLE = 'TABLE';
+    const RECORD = { [ID_ATTRIBUTE]: ID_VALUE, text: 'a' };
+    const knex = Knex({});
+
+    const mocked = MockedQueryBuilder(query => 0);
+
+    const updateMapper = mapper
+      .knex(mocked)
+      .table(TABLE)
+      .idAttribute(ID_ATTRIBUTE);
+
+    const updatePromise = updateMapper.update(RECORD);
+
+    t.plan(1);
+
+    t.rejects(
+      updatePromise,
+      NotFoundError,
+      'rejects with `NotFoundError`'
+    );
+  });
+
+  t.test(
+    'Mapper#update() - single record with no `idAttribute` present',
+    t => {
+
+    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
+    const ID_VALUE = 'ID_VALUE';
+    const TABLE = 'TABLE';
+    const RECORD = { text: 'a' };
+    const knex = Knex({});
+
+    const updateMapper = mapper.idAttribute(ID_ATTRIBUTE);
+    const updatePromise = updateMapper.update(RECORD);
+
+    t.plan(1);
+
+    t.rejects(
+      updatePromise,
+      UnidentifiableRecordError,
+      'rejects with `UnidentifiableRecordError`'
     );
   });
 

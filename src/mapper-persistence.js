@@ -6,6 +6,8 @@ import { mapValues } from 'lodash/object';
 import { List } from 'immutable';
 import Promise from 'bluebird';
 
+import { UnidentifiableRecordError } from './errors';
+
 const { isList } = List;
 
 const methods = {
@@ -326,9 +328,9 @@ const methods = {
       return Promise.resolve(null);
     }
 
-    const queryBuilder = this.toUpdateOneQueryBuilder(record);
-
-    return queryBuilder.tap((response) => {
+    return Promise.try(() =>
+      this.toUpdateOneQueryBuilder(record)
+    ).tap(response => {
 
       // Handle either rows or changed count.
       //
@@ -379,20 +381,20 @@ const methods = {
 
     // Get ID attribute/value pairs for this record.
     //
-    const idAttributes = this.pickAttributes(record, attributeNames);
+    const attributes = this.pickAttributes(attributeNames, record);
 
     // If fewer attributes were picked than ID attributes on the Mapper, then
     // it cannot reliably be updated.
     //
-    if (size(idAttributes) !== attributeNames.length) {
-      throw new UnidentifiableRecordError(this, record, idAttributes);
+    if (size(attributes) !== attributeNames.length) {
+      throw new UnidentifiableRecordError(this, record, attributeNames);
     }
 
     // Process attributes for insertion. This is a no-op unless these methods
     // have been overridden.
     //
     const updateColumns = this.attributesToColumns(this.getAttributes(record));
-    const whereColumns = this.attributesToColumns(idObject);
+    const whereColumns = this.attributesToColumns(attributes);
 
     // Update the specific row, appending a `RETURNS` clause if PostgreSQL.
     //
