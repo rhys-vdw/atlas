@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { assertFound } from './assertions';
+import { assertFound } from '../assertions';
 import { Promise } from 'bluebird';
 
 const defaultOptions = {

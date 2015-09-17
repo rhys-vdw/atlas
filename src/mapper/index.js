@@ -2,13 +2,13 @@ import { assign } from 'lodash/object';
 import { reduce } from 'lodash/array';
 import { pluck } from 'lodash/collection';
 
-import Mapper from './mapper-base';
-import RecordAdapter from './mapper-record-adapter';
-import Identification from './mapper-identification';
-import Retrieval from './mapper-retrieval';
-import Persistence from './mapper-persistence';
-import Forge from './mapper-forge';
-import KeyConversion from './mapper-key-conversion';
+import Mapper from './base';
+import RecordAdapter from './record-adapter';
+import Identification from './identification';
+import Retrieval from './retrieval';
+import Persistence from './persistence';
+import Forge from './forge';
+import KeyConversion from './key-conversion';
 
 const mixins = [
   RecordAdapter,

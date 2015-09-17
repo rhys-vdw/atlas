@@ -3,8 +3,8 @@ import { isFunction, isObject, isEmpty, isString } from 'lodash/lang';
 import { each, every } from 'lodash/collection';
 import { assign } from 'lodash/object';
 
-import { InvalidOptionError } from './errors';
-import { assertType } from './assertions';
+import { InvalidOptionError } from '../errors';
+import { assertType } from '../assertions';
 
 export default class Mapper {
 

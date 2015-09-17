@@ -1,7 +1,7 @@
 import { isString, isArray, isObject, isNumber } from 'lodash/lang';
 import { any } from 'lodash/collection';
 import { head } from 'lodash/array';
-import { assertType } from './assertions';
+import { assertType } from '../assertions';
 
 const defaultOptions = {
   idAttribute: 'id'

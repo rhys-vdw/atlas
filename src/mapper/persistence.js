@@ -5,7 +5,7 @@ import { flatten, head, zipObject, zipWith } from 'lodash/array';
 import { mapValues } from 'lodash/object';
 import Promise from 'bluebird';
 
-import { UnidentifiableRecordError } from './errors';
+import { UnidentifiableRecordError } from '../errors';
 
 const methods = {
 
