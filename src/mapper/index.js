@@ -9,6 +9,7 @@ import Retrieval from './retrieval';
 import Persistence from './persistence';
 import Forge from './forge';
 import KeyConversion from './key-conversion';
+import Destruction from './key-conversion';
 
 const mixins = [
   RecordAdapter,
@@ -16,7 +17,8 @@ const mixins = [
   Retrieval,
   Persistence,
   Forge,
-  KeyConversion
+  KeyConversion,
+  Destruction
 ];
 
 assign(
