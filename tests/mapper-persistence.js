@@ -3,7 +3,7 @@ import Knex from 'knex';
 import MockedQueryBuilder from './mocked-query-builder'
 
 import { zipObject } from 'lodash/array';
-import Mapper, { instance as mapper } from '../lib/mapper';
+import Mapper, { mapper } from '../lib/mapper';
 import { NotFoundError, UnidentifiableRecordError } from '../lib/errors';
 
 test('Mapper - persistence', t => {

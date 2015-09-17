@@ -3,7 +3,7 @@ import { any } from 'lodash/collection';
 import { head } from 'lodash/array';
 import { assertType } from '../assertions';
 
-const defaultOptions = {
+const options = {
   idAttribute: 'id'
 }
 
@@ -165,4 +165,4 @@ const methods = {
   }
 }
 
-export default { methods, defaultOptions };
+export default { options, methods };

@@ -2,20 +2,11 @@ import _ from 'lodash';
 import { assertFound } from '../assertions';
 import { Promise } from 'bluebird';
 
-const defaultOptions = {
-  isSingle: false,
+const options = {
   isRequired: false
-};
+}
 
 const methods = {
-
-  all() {
-    return this.setOption('isSingle', false);
-  },
-
-  one() {
-    return this.setOption('isSingle', true);
-  },
 
   require() {
     return this.setOption('isRequired', true);
@@ -63,4 +54,4 @@ const methods = {
   }
 };
 
-export default { defaultOptions, methods };
+export default { options, methods };

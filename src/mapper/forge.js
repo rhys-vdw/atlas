@@ -1,7 +1,7 @@
 import { defaults } from 'lodash/object';
 import { isArray, isObject } from 'lodash/lang';
 
-const defaultOptions = {
+const options = {
   defaultAttributes: null
 }
 
@@ -35,4 +35,4 @@ const methods = {
   }
 }
 
-export default { defaultOptions, methods };
+export default { options, methods };

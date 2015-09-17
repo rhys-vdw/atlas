@@ -1,6 +1,4 @@
-import { assign } from 'lodash/object';
-import { reduce } from 'lodash/array';
-import { pluck } from 'lodash/collection';
+import _, { assign } from 'lodash';
 
 import Mapper from './base';
 import RecordAdapter from './record-adapter';
@@ -9,7 +7,8 @@ import Retrieval from './retrieval';
 import Persistence from './persistence';
 import Forge from './forge';
 import KeyConversion from './key-conversion';
-import Destruction from './key-conversion';
+import Destruction from './destruction';
+import Plurality from './plurality';
 
 const mixins = [
   RecordAdapter,
@@ -18,21 +17,20 @@ const mixins = [
   Persistence,
   Forge,
   KeyConversion,
-  Destruction
+  Destruction,
+  Plurality
 ];
 
-assign(
-  Mapper.prototype,
-  ...pluck(mixins, 'methods')
-);
+const combine = (mixins, property) =>
+  _(mixins).pluck(property).reduce(assign, {});
 
+const methods = combine(mixins, 'methods');
+const options = combine(mixins, 'options');
+
+assign(Mapper.prototype, methods);
 export default Mapper;
 
-const defaultOptions = assign(
-  {},
-  ...pluck(mixins, 'defaultOptions')
-);
 
-const instance = new Mapper(defaultOptions);
+const mapper = new Mapper(options);
 
-export { defaultOptions, instance };
+export { options, mapper };

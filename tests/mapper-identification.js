@@ -1,5 +1,5 @@
 import test from 'tape';
-import Mapper, { instance as mapper } from '../lib/mapper';
+import Mapper, { mapper } from '../lib/mapper';
 
 test('Mapper - identification', t => {
 
