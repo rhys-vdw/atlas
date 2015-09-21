@@ -126,7 +126,7 @@ const methods = {
    * @description
    *
    * Generates a Knex `QueryBuilder` object that inserts given `records` into
-   * the table assigned to this`Mapper`.
+   * the table assigned to this `Mapper`.
    *
    * @param {...Object|Object[]} records
    *   Record, or records, to insert into this `Mapper`'s table.
