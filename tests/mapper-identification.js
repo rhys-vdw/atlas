@@ -80,14 +80,51 @@ test('Mapper - identification', t => {
     t.end();
   });
 
+  t.test('Mapper#identify() - bad input', t => {
+
+    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
+    const withId = mapper.idAttribute(ID_ATTRIBUTE);
+
+    t.equal(
+      withId.identify(),
+      undefined,
+      'identifies no arguments as `undefined`'
+    );
+
+    t.equal(
+      withId.identify(null),
+      null,
+      'identifies `null` as `null`'
+    );
+
+    t.deepEqual(
+      withId.identify(null, null),
+      [null, null],
+      'identifies `null, null` as `[null, null]`'
+    );
+
+    t.deepEqual(
+      withId.identify([null, null]),
+      [null, null],
+      'identifies `[null, null]` as `[null, null]`'
+    );
+
+    t.deepEqual(
+      withId.identify([]),
+      [],
+      'identifies `[]` as `[]`'
+    );
+
+    t.end();
+  });
 
   t.test('Mapper#identify() - single primary key', t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
+    const RECORD = { [ID_ATTRIBUTE]: 10 };
 
     const withIdAttribute = mapper.idAttribute(ID_ATTRIBUTE);
 
-    const RECORD = { [ID_ATTRIBUTE]: 10 };
 
     t.equal(
       withIdAttribute.identify(RECORD), 10,

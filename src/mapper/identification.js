@@ -1,6 +1,6 @@
-import { isString, isArray, isObject, isNumber } from 'lodash/lang';
+import { isArray, isNumber, isObject, isString } from 'lodash/lang';
 import { any } from 'lodash/collection';
-import { head } from 'lodash/array';
+import { head, flatten } from 'lodash/array';
 import { assertType } from '../assertions';
 
 const options = {
@@ -29,6 +29,28 @@ const methods = {
    */
   isNew(record) {
     const id = this.identify(record);
+    return this.isValidId(id);
+  },
+
+  /**
+   * @method isValidId
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Validate an ID value.
+   *
+   * @description
+   *
+   * Checks if a supplied ID value is a valid identifier. For a single value
+   * this will return false only for `undefined` or `null`. For an array, will
+   * return false if any of the elements are `null` or `undefined`.
+   *
+   * @param {mixed|mixed[]} id
+   *   Either a single ID value or, for composite IDs, an array of values.
+   * @returns {bool}
+   *   True if this ID is valid. Otherwise false.
+   */
+  isValidId(id) {
     return isArray(id)
       ? any(id, id => id == null)
       : id == null;
@@ -90,23 +112,23 @@ const methods = {
    * @returns {mixed|mixed[]}
    *   ID or IDs of given records.
    */
-  identify(record) {
+  identify(...records) {
     let idAttribute = this.getOption('idAttribute');
-    return this.identifyBy(idAttribute, record);
+    return this.identifyBy(idAttribute, ...records);
   },
 
-  identifyBy(attribute, record) {
+  identifyBy(attribute, ...records) {
 
-    // If records is an array it might be multiple records. However, if the
-    // first element of the array is either an object or an array (ie. not
-    // a valid key value) we assume that this a collection.
-    //
     const isComposite = isArray(attribute);
-    const isSingle = !isArray(record) || isComposite && !isObject(head(record));
+    const record = head(records); 
+    const isSingle =
+      records.length <= 1 &&
+      !isArray(record) ||
+      isComposite && !isObject(head(record));
 
     return isSingle
       ? this.identifyOneBy(attribute, record)
-      : this.identifyAllBy(attribute, record);
+      : this.identifyAllBy(attribute, flatten(records));
   },
 
   identifyOneBy(attribute, record) {
@@ -162,6 +184,11 @@ const methods = {
     return records.map(
       record => this.identifyOneBy(attribute, record)
     );
+  },
+
+  pickIdentity(record) {
+    const idAttribute = this.getOption('idAttribute');
+    return this.pickAttributes(record, idAttribute);
   }
 }
 
