@@ -4,7 +4,7 @@ import { each } from 'lodash/collection';
 import { noop } from 'lodash/utility';
 
 import Knex from 'knex';
-import Mapper from '../lib/mapper';
+import Mapper from '../../lib/mapper';
 
 test('Mapper', t => {
 

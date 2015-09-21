@@ -87,6 +87,3 @@ Test.prototype.rejects = function(promise, ErrorType, message, extra) {
 
 require('./relation-tree');
 require('./mapper');
-require('./mapper-identification');
-require('./mapper-retrieval');
-require('./mapper-persistence');
