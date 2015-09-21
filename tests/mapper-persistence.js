@@ -1,6 +1,6 @@
 import test from 'tape';
 import Knex from 'knex';
-import MockedQueryBuilder from './mocked-query-builder'
+import MockedKnex from './mocked-knex'
 
 import { zipObject } from 'lodash/array';
 import Mapper, { mapper } from '../lib/mapper';
@@ -48,7 +48,7 @@ test('Mapper - persistence', t => {
 
     t.plan(2);
 
-    const mocked = MockedQueryBuilder(query => {
+    const mocked = MockedKnex(query => {
       t.queriesEqual(
         query,
         knex(TABLE).insert(RECORD, '*')
@@ -82,7 +82,7 @@ test('Mapper - persistence', t => {
 
     t.plan(2);
 
-    const mocked = MockedQueryBuilder(query => {
+    const mocked = MockedKnex(query => {
       t.queriesEqual(
         query,
         knex(TABLE).insert(RECORD)
@@ -117,7 +117,7 @@ test('Mapper - persistence', t => {
 
     t.plan(2);
 
-    const mocked = MockedQueryBuilder('pg', query => {
+    const mocked = MockedKnex('pg', query => {
       t.queriesEqual(
         query,
         knex(TABLE).insert(RECORDS, '*')
@@ -155,7 +155,7 @@ test('Mapper - persistence', t => {
 
     t.plan(2);
 
-    const mocked = MockedQueryBuilder('pg', query => {
+    const mocked = MockedKnex('pg', query => {
       t.queriesEqual(
         query,
         knex(TABLE).insert(RECORDS, '*')
@@ -225,7 +225,7 @@ test('Mapper - persistence', t => {
 
     t.plan(2);
 
-    const mocked = MockedQueryBuilder(query => {
+    const mocked = MockedKnex(query => {
       t.queriesEqual(
         query,
         knex(TABLE).where(ID_ATTRIBUTE, ID_VALUE).update(RECORD, '*')
@@ -258,7 +258,7 @@ test('Mapper - persistence', t => {
     const RECORD = { [ID_ATTRIBUTE]: ID_VALUE, text: 'a' };
     const knex = Knex({});
 
-    const mocked = MockedQueryBuilder(query => 0);
+    const mocked = MockedKnex(query => 0);
 
     const updateMapper = mapper
       .knex(mocked)
