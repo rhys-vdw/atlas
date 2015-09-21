@@ -4,9 +4,9 @@ import { each } from 'lodash/collection';
 import { noop } from 'lodash/utility';
 
 import Knex from 'knex';
-import Mapper from '../../lib/mapper';
+import { constructor as Mapper } from '../../lib/mapper';
 
-test('Mapper', t => {
+test('Mapper - base', t => {
 
   t.test('Mapper#constructor()', t => {
 

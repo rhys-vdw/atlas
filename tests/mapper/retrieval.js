@@ -2,7 +2,7 @@ import test from 'tape';
 import Knex from 'knex';
 import MockedKnex from '../mocked-knex'
 
-import Mapper, { mapper } from '../../lib/mapper';
+import mapper from '../../lib/mapper';
 import { NoRecordsFoundError } from '../../lib/errors';
 
 test('Mapper - retrieval', t => {

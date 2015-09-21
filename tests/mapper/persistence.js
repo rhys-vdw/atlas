@@ -3,7 +3,7 @@ import Knex from 'knex';
 import MockedKnex from '../mocked-knex'
 
 import { zipObject } from 'lodash/array';
-import Mapper, { mapper } from '../../lib/mapper';
+import mapper from '../../lib/mapper';
 import { NotFoundError, UnidentifiableRecordError } from '../../lib/errors';
 
 test('Mapper - persistence', t => {
