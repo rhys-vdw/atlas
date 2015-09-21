@@ -9,6 +9,7 @@ import Forge from './forge';
 import KeyConversion from './key-conversion';
 import Destruction from './destruction';
 import Plurality from './plurality';
+import Where from './where';
 
 const mixins = [
   RecordAdapter,
@@ -18,7 +19,8 @@ const mixins = [
   Forge,
   KeyConversion,
   Destruction,
-  Plurality
+  Plurality,
+  Where
 ];
 
 const combine = (mixins, property) =>
@@ -28,9 +30,7 @@ const methods = combine(mixins, 'methods');
 const options = combine(mixins, 'options');
 
 assign(Mapper.prototype, methods);
-export default Mapper;
 
+export default new Mapper(options);
 
-const mapper = new Mapper(options);
-
-export { options, mapper };
+export { Mapper as constructor, options };
