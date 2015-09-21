@@ -22,9 +22,10 @@ const methods = {
    *   Mapper targeting a single row.
    */
   one(id) {
-    return isUndefined(id)
+    const normalized = this.identify(id);
+    return isUndefined(normalized)
       ? this.setOption('isSingle', true)
-      : this.oneId(id);
+      : this.oneId(normalized);
   },
 
   /**
@@ -41,30 +42,29 @@ const methods = {
    *   Mapper targeting a single row.
    */
   all(...ids) {
-    return isEmpty(ids)
+    const normalized = this.identify(...ids);
+    return isEmpty(normalized)
       ? this.setOption('isSingle', false)
-      : this.allIds(...ids);
+      : this.allIds(normalized);
   },
 
   /** @private */
   oneId(id) {
     return this.withMutations(mapper => {
       const idAttribute = this.getOption('idAttribute');
-      const normalized = this.identify(id);
       mapper
         .setOption('isSingle', true)
-        .where(idAttribute, normalized);
+        .where(idAttribute, id);
     });
   },
 
   /** @private */
-  allIds(...ids) {
+  allIds(ids) {
     return this.withMutations(mapper => {
       const idAttribute = this.getOption('idAttribute');
-      const normalized = this.identify(...ids);
       mapper
         .setOption('isSingle', false)
-        .whereIn(idAttribute, normalized)
+        .whereIn(idAttribute, ids)
     });
   }
 };

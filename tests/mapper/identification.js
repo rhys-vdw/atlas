@@ -98,6 +98,12 @@ test('Mapper - identification', t => {
     );
 
     t.deepEqual(
+      withId.identify([null]),
+      [null],
+      'identifies `[null]` as `[null]`'
+    );
+
+    t.deepEqual(
       withId.identify(null, null),
       [null, null],
       'identifies `null, null` as `[null, null]`'
