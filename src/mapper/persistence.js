@@ -275,20 +275,12 @@ const methods = {
    */
   update(...records) {
 
-    // Check if we're saving just one record...
-    //
     const isSingle = records.length <= 1 && !isArray(head(records));
+    const flattened = flatten(records);
 
-    records = flatten(records);
-
-    // If so, we can just distribute it directly to the correct method.
-    //
-    if (isSingle) {
-      const record = head(records);
-      return this.updateOne(record);
-    }
-
-    return this.updateAll(records);
+    return isSingle
+      ? this.updateOne(head(flattened))
+      : this.updateAll(flattened);
   },
 
   /**
