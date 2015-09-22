@@ -192,20 +192,14 @@ export default class Mapper {
   }
 
   _applyInitializerCallback(callback) {
-
-    const initializer = callback.bind(this)(this);
-
-    if (initializer) {
-      this._applyInitializer(initializer);
-    }
-
+    callback.bind(this)(this);
     return this;
   }
 
   _applyInitializerObject(object) {
 
     each(object, (argument, method) => {
-      assertType({method: mapper[method]}, {function: isFunction});
+      assertType({method: this[method]}, {function: isFunction});
       this[method](argument);
     });
 

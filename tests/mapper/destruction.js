@@ -33,7 +33,7 @@ test('Mapper', t => {
     const COUNT = 1;
 
     const mocked = MockedKnex(query => {
-      t.queriesEqual(query, knex(TABLE).whereIn(ID_ATTRIBUTE, [ID_VALUE]).delete());
+      t.queriesEqual(query, knex(TABLE).where(ID_ATTRIBUTE, ID_VALUE).delete());
       return COUNT;
     });
 
@@ -53,7 +53,7 @@ test('Mapper', t => {
     const COUNT = 0;
 
     const mocked = MockedKnex(query => {
-      t.queriesEqual(query, knex(TABLE).whereIn(ID_ATTRIBUTE, [ID_VALUE]).delete());
+      t.queriesEqual(query, knex(TABLE).where(ID_ATTRIBUTE, ID_VALUE).delete());
       return COUNT;
     });
 

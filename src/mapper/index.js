@@ -10,6 +10,7 @@ import KeyConversion from './key-conversion';
 import Destruction from './destruction';
 import Plurality from './plurality';
 import Where from './where';
+import Target from './target';
 
 const mixins = [
   RecordAdapter,
@@ -20,7 +21,8 @@ const mixins = [
   KeyConversion,
   Destruction,
   Plurality,
-  Where
+  Where,
+  Target
 ];
 
 const combine = (mixins, property) =>

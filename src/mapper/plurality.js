@@ -14,18 +14,17 @@ const methods = {
    *
    * Query a single row.
    *
-   * @param {mixed} [id]
-   *   ID value unique to target row, or record with ID value. Supply
-   *   an array for compoud keys. Omit to simply limit the result of any
-   *   queries to one row.
+   * @description
+   *
+   * Limit query to a single row. Causes subsequent calls to {@link
+   * Mapper#fetch fetch} to resolve to a single record (rather
+   * than an array). Opposite of {@link Mapper#all all}.
+   *
    * @returns {Mapper}
    *   Mapper targeting a single row.
    */
-  one(id) {
-    const normalized = this.identify(id);
-    return isUndefined(normalized)
-      ? this.setOption('isSingle', true)
-      : this.oneId(normalized);
+  one() {
+    return this.setOption('isSingle', true);
   },
 
   /**
@@ -33,40 +32,18 @@ const methods = {
    * @belongsTo Mapper
    * @summary
    *
-   * Query multiple rows.
+   * Query multiple rows. Default behaviour.
    *
-   * @param {...mixed|mixed[]} ids
-   *   ID values, or records with ID values, for target rows. If omitted this
-   *   unlimits any subsequent query.
+   * @description
+   *
+   * Unlimits query. Opposite of {@link Mapper#one one}.
+   *
    * @returns {Mapper}
    *   Mapper targeting a single row.
    */
-  all(...ids) {
-    const normalized = this.identify(...ids);
-    return isEmpty(normalized)
-      ? this.setOption('isSingle', false)
-      : this.allIds(normalized);
+  all() {
+    return this.setOption('isSingle', false);
   },
-
-  /** @private */
-  oneId(id) {
-    return this.withMutations(mapper => {
-      const idAttribute = this.getOption('idAttribute');
-      mapper
-        .setOption('isSingle', true)
-        .where(idAttribute, id);
-    });
-  },
-
-  /** @private */
-  allIds(ids) {
-    return this.withMutations(mapper => {
-      const idAttribute = this.getOption('idAttribute');
-      mapper
-        .setOption('isSingle', false)
-        .whereIn(idAttribute, ids)
-    });
-  }
 };
 
 export default { options, methods };

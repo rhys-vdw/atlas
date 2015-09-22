@@ -49,7 +49,7 @@ const methods = {
    *   Promise resolving to the number of rows deleted.
    */
   destroy(...ids) {
-    const mapper = this.all(...ids);
+    const mapper = this.target(...ids);
     const queryBuilder = mapper.toDestroyQuery();
     return queryBuilder.then(response =>
       this._handleDestroyResponse({ response, queryBuilder })
