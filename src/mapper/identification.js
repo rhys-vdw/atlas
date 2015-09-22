@@ -1,4 +1,4 @@
-import { isArray, isNumber, isObject, isString } from 'lodash/lang';
+import { isArray, isEmpty, isNumber, isObject, isString } from 'lodash/lang';
 import { any } from 'lodash/collection';
 import { head, flatten } from 'lodash/array';
 import { assertType } from '../assertions';
@@ -119,10 +119,14 @@ const methods = {
 
   identifyBy(attribute, ...records) {
 
+    if (isEmpty(records)) {
+      return undefined;
+    }
+
     const isComposite = isArray(attribute);
     const record = head(records); 
     const isSingle =
-      records.length <= 1 &&
+      records.length === 1 &&
       !isArray(record) ||
       isComposite && !isObject(head(record));
 

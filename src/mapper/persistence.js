@@ -23,9 +23,13 @@ const methods = {
    */
   save(...records) {
 
+    if (isEmpty(records)) {
+      return undefined;
+    }
+
     // Check if we're saving just one record...
     //
-    const isSingle = records.length <= 1 && !isArray(head(records));
+    const isSingle = records.length === 1 && !isArray(head(records));
 
     // If so, we can just distribute it directly to the correct method.
     //
@@ -274,8 +278,12 @@ const methods = {
    *   A promise resolving to the updated record or records.
    */
   update(...records) {
+    
+    if (isEmpty(records)) {
+      return Promise.resolve(undefined);
+    }
 
-    const isSingle = records.length <= 1 && !isArray(head(records));
+    const isSingle = records.length === 1 && !isArray(head(records));
     const flattened = flatten(records);
 
     return isSingle
