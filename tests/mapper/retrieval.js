@@ -36,7 +36,7 @@ test('Mapper - retrieval', t => {
         knex(TABLE).select(`${TABLE}.*`).limit(1)
       );
 
-      return { rows: ROWS }
+      return ROWS;
     })
 
     mapper.table(TABLE).knex(mocked).fetchOne().then(record =>
@@ -59,7 +59,7 @@ test('Mapper - retrieval', t => {
         knex(TABLE).select(`${TABLE}.*`)
       );
 
-      return { rows: ROWS }
+      return ROWS;
     });
 
     mapper.table(TABLE).knex(mocked).fetchAll().then(record =>
@@ -77,7 +77,7 @@ test('Mapper - retrieval', t => {
 
     t.plan(2);
 
-    const mockedEmpty = MockedKnex(() => { return { rows: EMPTY_ROWS }});
+    const mockedEmpty = MockedKnex(() => EMPTY_ROWS);
 
     t.rejects(
       mapper.knex(mockedEmpty).table(TABLE).require().fetch(),
@@ -85,7 +85,7 @@ test('Mapper - retrieval', t => {
       'rejects on empty result set with `NoRecordsFoundError`'
     );
 
-    const mockedFull = MockedKnex(() => { return { rows: FULL_ROWS }});
+    const mockedFull = MockedKnex(() => FULL_ROWS);
 
     t.resolvesTo(
       mapper.knex(mockedFull).table(TABLE).fetch(),

@@ -22,7 +22,7 @@ test('Mapper', t => {
         knex(TABLE).where(ID_ATTRIBUTE, ID_VALUE).select(`${TABLE}.*`).limit(1)
       );
 
-      return { rows: ROWS }
+      return ROWS;
     });
 
     const findMapper = mapper
@@ -67,7 +67,7 @@ test('Mapper', t => {
         knex(TABLE).where(ID_ATTRIBUTES, ID_VALUES).select(`${TABLE}.*`).limit(1)
       );
 
-      return { rows: ROWS }
+      return ROWS;
     });
 
     const findMapper = mapper
@@ -105,7 +105,7 @@ test('Mapper', t => {
         knex(TABLE).whereIn(ID_ATTRIBUTE, [1, 2]).select(`${TABLE}.*`)
       );
 
-      return { rows: ROWS }
+      return ROWS;
     });
 
     const allMapper = mapper
@@ -147,7 +147,7 @@ test('Mapper', t => {
         knex(TABLE).whereIn(ID_ATTRIBUTES, ID_VALUES).select(`${TABLE}.*`)
       );
 
-      return { rows: ROWS }
+      return ROWS;
     });
 
     const allMapper = mapper

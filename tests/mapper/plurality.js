@@ -21,7 +21,7 @@ test('Mapper', t => {
         knex(TABLE).select(`${TABLE}.*`).limit(1)
       );
 
-      return { rows: ROWS }
+      return ROWS;
     });
 
     const oneMapper = mapper.knex(mocked).table(TABLE).one();
@@ -50,7 +50,7 @@ test('Mapper', t => {
         knex(TABLE).select(`${TABLE}.*`)
       );
 
-      return { rows: ROWS }
+      return ROWS;
     });
 
     const allMapper = mapper.knex(mocked).table(TABLE).all();

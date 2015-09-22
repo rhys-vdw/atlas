@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { assertFound } from '../assertions';
 import { Promise } from 'bluebird';
+import { NotFoundError, NoRowsFoundError } from '../errors';
 
 const options = {
   isRequired: false
@@ -38,15 +39,17 @@ const methods = {
     return queryBuilder.select(`${table}.*`);
   },
 
-  _handleFetchResponse({ rows }) {
+  _handleFetchResponse(response) {
     const isRequired = this.getOption('isRequired');
     const isSingle   = this.getOption('isSingle');
 
-    if (isRequired) {
-      assertFound(this, rows);
+    if (isRequired && isEmpty(response)) {
+      throw isSingle
+        ? new NotFoundError(this, queryBuilder, 'fetch')
+        : new NoRowsFoundError(this, queryBuilder, 'fetch');
     } 
 
-    const attributes = _(rows)
+    const attributes = _(response)
       .map(this.columnsToAttributes, this)
       .map(this.createRecord, this);
 

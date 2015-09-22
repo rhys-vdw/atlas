@@ -11,6 +11,7 @@ import Destruction from './destruction';
 import Plurality from './plurality';
 import Where from './where';
 import Target from './target';
+import Patch from './patch';
 
 const mixins = [
   RecordAdapter,
@@ -22,7 +23,8 @@ const mixins = [
   Destruction,
   Plurality,
   Where,
-  Target
+  Target,
+  Patch
 ];
 
 const combine = (mixins, property) =>
