@@ -21,6 +21,10 @@ const methods = {
     return this.all().fetch();
   },
 
+  find(...ids) {
+    return this.target(...ids).fetch();
+  },
+
   fetch() {
     return this.toFetchQueryBuilder()
       .bind(this)
