@@ -3,8 +3,6 @@ import MockedKnex from '../mocked-knex';
 import Knex from 'knex';
 import mapper from '../../lib/mapper';
 
-const knex = Knex({});
-
 test('Mapper', t => {
 
   t.test('Mapper#target() - one record with single primary key', t => {
@@ -18,9 +16,12 @@ test('Mapper', t => {
     t.plan(3);
 
     const mocked = MockedKnex(query => {
-      t.queriesEqual(query,
-        knex(TABLE).where(ID_ATTRIBUTE, ID_VALUE).select(`${TABLE}.*`).limit(1)
-      );
+      t.queriesEqual(query, `
+        select "${TABLE}".*
+        from "${TABLE}"
+        where "${ID_ATTRIBUTE}" = '${ID_VALUE}'
+        limit 1
+      `);
 
       return ROWS;
     });
@@ -66,9 +67,13 @@ test('Mapper', t => {
     t.plan(3);
 
     const mocked = MockedKnex(query => {
-      t.queriesEqual(query,
-        knex(TABLE).where(ID_ATTRIBUTES, ID_VALUES).select(`${TABLE}.*`).limit(1)
-      );
+      t.queriesEqual(query, `
+        select "${TABLE}".*
+        from "${TABLE}"
+        where "${ID_ATTRIBUTE_A}" = '${ID_VALUE_A}'
+        and   "${ID_ATTRIBUTE_B}" = '${ID_VALUE_B}'
+        limit 1
+      `);
 
       return ROWS;
     });
@@ -104,9 +109,11 @@ test('Mapper', t => {
     t.plan(3);
 
     const mocked = MockedKnex(query => {
-      t.queriesEqual(query,
-        knex(TABLE).whereIn(ID_ATTRIBUTE, [1, 2]).select(`${TABLE}.*`)
-      );
+      t.queriesEqual(query, `
+        select "${TABLE}".*
+        from "${TABLE}"
+        where "${ID_ATTRIBUTE}" in (1, 2)
+      `);
 
       return ROWS;
     });
@@ -149,9 +156,12 @@ test('Mapper', t => {
     t.plan(3);
 
     const mocked = MockedKnex(query => {
-      t.queriesEqual(query,
-        knex(TABLE).whereIn(ID_ATTRIBUTES, ID_VALUES).select(`${TABLE}.*`)
-      );
+
+      t.queriesEqual(query, `
+        select "${TABLE}".*
+        from "${TABLE}"
+        where ("${ID_ATTRIBUTE_A}", "${ID_ATTRIBUTE_B}") in ((1, 2),(3, 4))
+      `);
 
       return ROWS;
     });

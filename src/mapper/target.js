@@ -1,5 +1,5 @@
 import { isArray, isEmpty } from 'lodash/lang';
-import { head } from 'lodash/array';
+import { head, zipObject } from 'lodash/array';
 
 const methods = {
 
@@ -27,11 +27,17 @@ const methods = {
     const isSingle = !isArray(normalized) ||
       isComposite && !isArray(head(normalized));
 
-    return this.withMutations(mapper =>
-      isSingle
-        ? mapper.one().where(idAttribute, normalized)
-        : mapper.all().whereIn(idAttribute, normalized)
-    );
+    return this.withMutations(mapper => {
+      if (isSingle) {
+        if (isComposite) {
+          mapper.one().where(zipObject(idAttribute, normalized))
+        } else {
+          mapper.one().where(idAttribute, normalized)
+        }
+      } else {
+        mapper.all().whereIn(idAttribute, normalized)
+      }
+    });
   }
 };
 
