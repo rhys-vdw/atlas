@@ -26,14 +26,12 @@ test('Mapper - retrieval', t => {
 
     const TABLE = 'TABLE';
     const ROWS = [{ id: 1 }];
-    const knex = Knex({});
     
     t.plan(2);
 
     const mocked = MockedKnex(query => {
       t.queriesEqual(
-        query,
-        knex(TABLE).select(`${TABLE}.*`).limit(1)
+        query, `select "${TABLE}".* from "${TABLE}" limit 1`
       );
 
       return ROWS;
@@ -49,14 +47,12 @@ test('Mapper - retrieval', t => {
 
     const TABLE = 'TABLE';
     const ROWS = [{ id: 1 }, { id: 2 }];
-    const knex = Knex({});
 
     t.plan(2);
 
     const mocked = MockedKnex(query => {
       t.queriesEqual(
-        query,
-        knex(TABLE).select(`${TABLE}.*`)
+        query, `select "${TABLE}".* from "${TABLE}"`
       );
 
       return ROWS;
@@ -73,7 +69,6 @@ test('Mapper - retrieval', t => {
     const TABLE = 'TABLE';
     const EMPTY_ROWS = [];
     const FULL_ROWS = [{ id: 1 }, { id: 2 }];
-    const knex = Knex({});
 
     t.plan(2);
 

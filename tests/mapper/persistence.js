@@ -49,10 +49,7 @@ test('Mapper - persistence', t => {
     t.plan(2);
 
     const mocked = MockedKnex(query => {
-      t.queriesEqual(
-        query,
-        knex(TABLE).insert(RECORD, '*')
-      );
+      t.queriesEqual(query, `insert into "${TABLE}" ("text") values ('a')`);
 
       return [ID_VALUE];
     });
@@ -78,15 +75,11 @@ test('Mapper - persistence', t => {
     const ID_ATTRIBUTES = ['ID_ATTRIBUTE_A', 'ID_ATTRIBUTE_B'];
     const TABLE = 'TABLE';
     const RECORD = { text: 'a' };
-    const knex = Knex({});
 
     t.plan(2);
 
     const mocked = MockedKnex(query => {
-      t.queriesEqual(
-        query,
-        knex(TABLE).insert(RECORD)
-      );
+      t.queriesEqual(query, `insert into "${TABLE}" ("text") values ('a')`);
 
       return [];
     });
@@ -100,8 +93,8 @@ test('Mapper - persistence', t => {
 
     t.resolvesTo(
       insertPromise,
-      RECORD,
-      'assigns ID attributes'
+      { text: 'a' },
+      'returns unmodified record'
     );
   });
 
@@ -113,14 +106,12 @@ test('Mapper - persistence', t => {
     const ID_VALUES = ['ID_VALUE_1'];
     const TABLE = 'TABLE';
     const RECORDS = [{ text: 'a' }, { text: 'b'}];
-    const knex = Knex({ client: 'pg' });
 
     t.plan(2);
 
     const mocked = MockedKnex('pg', query => {
-      t.queriesEqual(
-        query,
-        knex(TABLE).insert(RECORDS, '*')
+      t.queriesEqual(query,
+        `insert into "${TABLE}" ("text") values ('a'), ('b') returning *`
       );
 
       return ID_VALUES;
@@ -145,20 +136,14 @@ test('Mapper - persistence', t => {
 
   t.test('Mapper#insert() - multiple records, returning "*"', t => {
 
-    const ID_VALUES = [
-      ['ID_VALUE_A', 'ID_VALUE_B'],
-      ['ID_VALUE_A', 'ID_VALUE_C']
-    ];
     const TABLE = 'TABLE';
     const RECORDS = [{ text: 'a' }, { text: 'b'}];
-    const knex = Knex({ client: 'pg' });
 
     t.plan(2);
 
     const mocked = MockedKnex('pg', query => {
-      t.queriesEqual(
-        query,
-        knex(TABLE).insert(RECORDS, '*')
+      t.queriesEqual(query,
+        `insert into "${TABLE}" ("text") values ('a'), ('b') returning *`
       );
 
       return [
@@ -221,15 +206,17 @@ test('Mapper - persistence', t => {
     const ID_VALUE = 'ID_VALUE';
     const TABLE = 'TABLE';
     const RECORD = { [ID_ATTRIBUTE]: ID_VALUE, text: 'a' };
-    const knex = Knex({});
 
     t.plan(2);
 
     const mocked = MockedKnex(query => {
-      t.queriesEqual(
-        query,
-        knex(TABLE).where(ID_ATTRIBUTE, ID_VALUE).update(RECORD, '*')
-      );
+      t.queriesEqual(query, `
+        update "${TABLE}"
+        set
+          "${ID_ATTRIBUTE}" = '${ID_VALUE}',
+          "text" = 'a'
+        where "ID_ATTRIBUTE" = 'ID_VALUE'
+      `);
 
       return 1;
     });
@@ -256,7 +243,6 @@ test('Mapper - persistence', t => {
     const ID_VALUE = 'ID_VALUE';
     const TABLE = 'TABLE';
     const RECORD = { [ID_ATTRIBUTE]: ID_VALUE, text: 'a' };
-    const knex = Knex({});
 
     const mocked = MockedKnex(query => 0);
 
