@@ -7,12 +7,23 @@ function omitUndefined(object) {
   return _(object).omit(_.isUndefined).mapValues(omitUndefined).value();
 };
 
+function compactWhitespace(string) {
+  return string
+    .replace(/\s+/g, ' ')
+    .replace(/^\s+/g, '')
+    .replace(/\s+$/g, '');
+}
+
 Test.prototype.deepEqualDefined = function(a, b, msg) {
   this.deepEqual(omitUndefined(a), omitUndefined(b), msg);
 };
 
-Test.prototype.queriesEqual = function(a, b, msg) {
-  this.equal(a.toString(), b.toString(), 'query as expected');
+Test.prototype.queriesEqual = function(a, b, message = 'query as expected') {
+  this.equal(
+    compactWhitespace(a.toString()),
+    compactWhitespace(b.toString()),
+    message
+  );
 };
 
 Test.prototype.resolvesTo = function(promise, expected, message, extra) {

@@ -1,30 +1,36 @@
 import _, { assign } from 'lodash';
 
-import Mapper from './base';
-import RecordAdapter from './record-adapter';
-import Identification from './identification';
-import Retrieval from './retrieval';
-import Persistence from './persistence';
-import Forge from './forge';
-import KeyConversion from './key-conversion';
+import Options from '../options';
+
 import Destruction from './destruction';
-import Plurality from './plurality';
-import Where from './where';
-import Target from './target';
+import Forge from './forge';
+import Identification from './identification';
+import KeyConversion from './key-conversion';
 import Patch from './patch';
+import Persistence from './persistence';
+import Plurality from './plurality';
+import Query from './query';
+import RecordAdapter from './record-adapter';
+import Retrieval from './retrieval';
+import Target from './target';
+import Where from './where';
+
+class Mapper extends Options {
+}
 
 const mixins = [
-  RecordAdapter,
-  Identification,
-  Retrieval,
-  Persistence,
-  Forge,
-  KeyConversion,
   Destruction,
+  Forge,
+  Identification,
+  KeyConversion,
+  Patch,
+  Persistence,
   Plurality,
-  Where,
+  Query,
+  RecordAdapter,
+  Retrieval,
   Target,
-  Patch
+  Where,
 ];
 
 const combine = (mixins, property) =>

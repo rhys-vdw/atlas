@@ -1,34 +1,20 @@
 import test from 'tape';
-import { isEmpty } from 'lodash/lang';
-import { each } from 'lodash/collection';
-import { noop } from 'lodash/utility';
+import { omit } from 'lodash/object';
 
-import Knex from 'knex';
-import { constructor as Mapper } from '../../lib/mapper';
+import Options from '../lib/options';
 
-test('Mapper - base', t => {
+test('Options', t => {
 
-  t.test('Mapper#constructor()', t => {
-
-    const mapper = new Mapper();
-
-    t.equal(mapper._mutable, false, 'is immutable');
-    t.equal(mapper._query, null, 'query is null');
-    t.ok(isEmpty(mapper._options), 'no options');
-
-    t.end();
-  });
-
-  t.test('Mapper#setOption(), Mapper#getOption()', t => {
+  t.test('Options#setOption(), Options#getOption()', t => {
     const OPTION = 'testOption';
     const VALUE = 'testValue';
 
-    const before = new Mapper();
+    const before = new Options();
     const after = before.setOption(OPTION, VALUE);
 
     t.notEqual(
       before, after,
-      'should copy Mapper'
+      'should create a copy'
     );
 
     t.notEqual(
@@ -55,30 +41,7 @@ test('Mapper - base', t => {
     t.end();
   });
 
-  t.test('Mapper#getOptions()', t => {
-
-    const mapper = new Mapper()
-      .setOption('a', 'a')
-      .setOption('b', 'b')
-      .setOption('c', 'c')
-      .setOption('d', 'd');
-
-    t.deepEqual(
-      mapper.getOptions('a', 'b', 'd'),
-      { a: 'a', b: 'b', d: 'd' },
-      'can retrieve with varargs syntax'
-    );
-
-    t.deepEqual(
-      mapper.getOptions(['a', 'c']),
-      { a: 'a', c: 'c' },
-      'can retrieve with array syntax'
-    );
-
-    t.end();
-  });
-
-  t.test('Mapper#extend()', t => {
+  t.test('Options#extend()', t => {
 
     const OPTION = 'testOption';
     const VALUE = 'testValue';
@@ -89,7 +52,7 @@ test('Mapper - base', t => {
       c: function() {},
     }
 
-    const parent = new Mapper()
+    const parent = new Options()
       .setOption(OPTION, VALUE);
 
     const child = parent.extend(methods);
@@ -119,7 +82,7 @@ test('Mapper - base', t => {
     t.end();
   });
 
-  t.test('Mapper#asMutable(), Mapper#asImmutable()', t => {
+  t.test('Options#asMutable(), Options#asImmutable()', t => {
 
     const OPTION = 'OPTION';
     const TABLE = 'TABLE';
@@ -131,30 +94,29 @@ test('Mapper - base', t => {
     const COLUMN_B = 'COLUMN_B';
     const COLUMN_VALUE_B = 'COLUMN_VALUE_B';
 
-    const knex = Knex({});
-
-    const mapper = new Mapper().knex(knex);
+    const options = new Options({ a: 'a', b: 'b' });
 
     t.equal(
-      mapper, mapper.asImmutable(),
+      options, options.asImmutable(),
       '`asImmutable` is a no-op on an immutable instance'
     );
 
-    const mutable = mapper.asMutable();
+    const mutable = options.asMutable();
 
     t.notEqual(
-      mapper, mutable,
+      options, mutable,
       '`asMutable` creates a copy of an immutable instance'
     );
 
     t.notEqual(
-      mapper._options, mutable._options,
+      options._options, mutable._options,
       'mutable copy has a different `_options` instance'
     )
 
     t.deepEqual(
-      mapper._options, mutable._options,
-      'mutable copy has the same options set'
+      omit(options._options, 'isMutable'),
+      omit(mutable._options, 'isMutable'),
+      'mutable copy has the same options set (other than `isMutable`)'
     )
 
     t.equal(
@@ -172,13 +134,6 @@ test('Mapper - base', t => {
     t.equal(
       withOption.getOption(OPTION), VALUE_A,
       '`setOption` correctly sets value on mutable instance'
-    );
-
-    const withQuery = mutable.table(TABLE).query('where', COLUMN_A, COLUMN_VALUE_A);
-
-    t.equal(
-      mutable, withQuery,
-      '`query` on a mutable instance does not return a copy'
     );
 
     const immutable = mutable.asImmutable();
@@ -206,51 +161,29 @@ test('Mapper - base', t => {
       '...previous instance remains unchanged.'
     );
 
-    const immutableWithQuery = immutable.query('where', COLUMN_B, COLUMN_VALUE_B);
-
-    t.notEqual(
-      immutable, immutableWithQuery,
-      '`query` returns a copy on an immutable instance that was ' +
-      'previously mutable...'
-    );
-
-    t.equal(
-      immutableWithQuery.toQueryBuilder().toString(),
-      knex(TABLE)
-        .where(COLUMN_A, COLUMN_VALUE_A)
-        .where(COLUMN_B, COLUMN_VALUE_B).toString(),
-      '...new instance query is set correctly...'
-    );
-
-    t.equal(
-      immutable.toQueryBuilder().toString(),
-      knex(TABLE).where(COLUMN_A, COLUMN_VALUE_A).toString(),
-      '...previous instance remains unchanged.'
-    );
-
     t.end();
   });
 
-  t.test('Mapper#withMutations()', t => {
+  t.test('Options#withMutations()', t => {
 
     const OPTION = 'OPTION';
     const VALUE = 'VALUE';
     
-    const mapper = new Mapper();
+    const options = new Options();
 
     t.equal(
-      mapper, mapper.withMutations(),
+      options, options.withMutations(),
       'returns self with no arguments'
     );
 
     t.equal(
-      mapper, mapper.withMutations({}),
+      options, options.withMutations({}),
       'returns self with an empty initializer object'
     );
 
     let mutatedOnce = null;
 
-    const result = mapper.withMutations(scopedMutable => {
+    const result = options.withMutations(scopedMutable => {
 
       mutatedOnce = scopedMutable.setOption(OPTION, VALUE);
 
@@ -267,11 +200,11 @@ test('Mapper - base', t => {
     );
 
     t.equal(
-      result._mutable, false,
+      result.isMutable(), false,
       'returned mutated instance is no longer mutable'
     );
 
-    const mutable = new Mapper().asMutable();
+    const mutable = new Options().asMutable();
 
     const alreadyMutableResult = mutable.withMutations(alreadyMutable => {
       t.equal(
@@ -286,65 +219,8 @@ test('Mapper - base', t => {
     );
 
     t.equal(
-      alreadyMutableResult._mutable, true,
+      alreadyMutableResult.isMutable(), true,
       'returned instance retains its original mutability'
-    );
-
-    t.end();
-  });
-
-  t.test('Mapper#knex()', t => {
-
-    const knexA = new Knex({});
-    const knexB = new Knex({});
-    const TABLE = 'TABLE';
-
-    const mapperA = new Mapper().knex(knexA).table(TABLE);
-
-    t.equal(
-      mapperA.getOption('knex'), knexA,
-      'assigns `knex`'
-    );
-
-    const mapperAWithQuery = mapperA.query('where', 'x', 5);
-
-    t.equal(
-      mapperAWithQuery._query.client, knexA.client,
-      '`QueryBuilder` has correct client'
-    );
-
-    const mapperB = mapperAWithQuery.knex(knexB);
-
-    t.equal(
-      mapperB._query.client, knexB.client,
-      'Reassigns client on existing query'
-    );
-
-    t.end();
-  });
-
-  t.test('Mapper#toQueryBuilder(), Mapper#table()', t => {
-
-    const TABLE = 'TABLE';
-    const knex = Knex({});
-
-    const configured = new Mapper().knex(knex).table(TABLE);
-    const queryBuilder = configured.toQueryBuilder();
-
-    t.equal(
-      queryBuilder.client, knex.client,
-      'returns `QueryBuilder` with correct client'
-    );
-
-    t.equal(
-      queryBuilder.toString(),
-      `select * from "${TABLE}"`,
-      'generates query with correct table'
-    );
-
-    t.notEqual(
-      queryBuilder, configured._query,
-      'returns a copy of the stored `QueryBuilder`'
     );
 
     t.end();

@@ -1,7 +1,7 @@
-import './base';
+import './destruction';
 import './identification';
-import './retrieval';
 import './persistence';
 import './plurality';
-import './destruction';
+import './query';
+import './retrieval';
 import './target';

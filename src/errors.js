@@ -3,6 +3,14 @@ class AtlasError extends Error {
     super(message);
     this.name = name
     this.message = message;
+
+    const temp = new Error()
+    temp.name = name
+    this._stack = temp.stack;
+  }
+
+  get stack() {
+    return this._stack;
   }
 
   toString() {

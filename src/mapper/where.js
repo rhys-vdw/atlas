@@ -23,10 +23,13 @@ const methods = {
   },
 
   whereIn(attribute, values) {
+
     const columns = isArray(attribute)
       ? map(attribute, this.attributeToColumn, this)
       : this.attributeToColumn(attribute);
+
     return this.query('whereIn', columns, values);
-  }}
+  }
+}
 
 export default { methods };

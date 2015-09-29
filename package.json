@@ -24,6 +24,7 @@
   "dependencies": {
     "bluebird": "^2.10.0",
     "immutable": "^3.7.4",
-    "lodash": "^3.10.1"
+    "lodash": "^3.10.1",
+    "object-to-string": "^1.0.0"
   }
 }

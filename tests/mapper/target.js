@@ -31,7 +31,10 @@ test('Mapper', t => {
       .idAttribute(ID_ATTRIBUTE)
       .target(RECORD);
 
-    t.equals(findMapper.getOption('isSingle'), true, '`isSingle` is set to `true`');
+    t.equals(
+      findMapper.getOption('isSingle'), true,
+      '`isSingle` is set to `true`'
+    );
 
     t.resolvesTo(
       findMapper.fetch(),
@@ -114,7 +117,10 @@ test('Mapper', t => {
       .idAttribute(ID_ATTRIBUTE)
       .target(RECORDS);
 
-    t.equals(allMapper.getOption('isSingle'), false, '`isSingle` is set to `false`');
+    t.equals(
+      allMapper.getOption('isSingle'), false,
+      '`isSingle` is set to `false`'
+    );
 
     t.resolvesTo(
       allMapper.fetch(),
@@ -156,7 +162,10 @@ test('Mapper', t => {
       .idAttribute(ID_ATTRIBUTES)
       .target(RECORDS);
 
-    t.equals(allMapper.getOption('isSingle'), false, '`isSingle` is set to `true`');
+    t.equals(
+      allMapper.getOption('isSingle'), false,
+      '`isSingle` is set to `false`'
+    );
 
     t.resolvesTo(
       allMapper.fetch(),

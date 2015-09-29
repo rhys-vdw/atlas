@@ -3,3 +3,4 @@ import './custom-tests';
 
 import './relation-tree';
 import './mapper';
+import './options';
