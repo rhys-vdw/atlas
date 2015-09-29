@@ -5,7 +5,7 @@ import mapper from '../../lib/mapper';
 
 const knex = Knex({});
 
-test('Mapper', t => {
+test('Mapper - plurality', t => {
 
   t.test('Mapper#one()', t => {
 

@@ -1,3 +1,4 @@
+import { isArray } from 'lodash/lang';
 import { map } from 'lodash/collection';
 import { flow } from 'lodash/function';
 import { NotFoundError, NoRowsFoundError } from '../errors';
@@ -11,7 +12,7 @@ const methods = {
    *   Number of attributes
    */
   patch(attributes) {
-    const queryBuilder = this.toPatchQueryBuilder();
+    const queryBuilder = this.toPatchQueryBuilder(attributes);
     return queryBuilder.then(response =>
       this._handlePatchResponse({ attributes, queryBuilder, response })
     );
@@ -26,7 +27,20 @@ const methods = {
     return this.toQueryBuilder().update(columns, '*');
   },
 
-  /** @private */
+  /**
+   * @param {Object} info
+   * @param {Object} info.attributes
+   *   Attributes passed to `patch()`.
+   * @param {Object} info.queryBuilder
+   *   The `QueryBuilder` instance that generated the `patch` query.
+   * @param {Object[]|Number} info.reponse
+   *   Either a count of updated rows, or an array of updated rows.
+   * @returns {Object[]|Number}
+   *   Either a count of updated rows, or an array of updated rows.
+   * @throws NotFoundError
+   * @throws NoRowsFoundError
+   * @private
+   */
   _handlePatchResponse({ attributes, queryBuilder, response }) {
 
     const isRequired = this.getOption('isRequired');
