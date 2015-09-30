@@ -45,7 +45,7 @@ export default class Options {
 
   /**
    * @method getOption
-   * @belongsTo Mapper
+   * @belongsTo Options
    * @summary
    *
    * Get an option that has previously been set on the model.
@@ -69,17 +69,17 @@ export default class Options {
 
   /**
    * @method setOption
-   * @belongsTo Mapper
+   * @belongsTo Options
    * @summary
    *
-   * Set an option on the Mapper.
+   * Set an option on the Options.
    *
    * @param {string} option
    *   Name of the option to set.
    * @param {mixed} value
    *   New option value.
-   * @returns {Mapper}
-   *   Mapper instance with option set to value.
+   * @returns {Options}
+   *   Options instance with option set to value.
    */
   setOption(option, value) {
 
@@ -101,16 +101,16 @@ export default class Options {
 
   /**
    * @method updateOption
-   * @belongsTo Mapper
+   * @belongsTo Options
    * @summary
    *
-   * Update an option on the Mapper.
+   * Update an option on the Options.
    *
    * @description
    *
    * Accepts an `update` callback invoked with the current value for the
    * specified `option`. The value returned from `update` will be set
-   * on the `Mapper`'s option hash.
+   * on the `Options`'s option hash.
    *
    * Never mutate the previous value directly. If the option is a mutable value
    * such as an `Object` or `Array` it must be copied before being returned by
@@ -120,8 +120,8 @@ export default class Options {
    *   Name of the option to set.
    * @param {function} updater
    *   Callback receiving the current option value, and returning the new value.
-   * @returns {Mapper}
-   *   Mapper instance with option updated to value returned by `updater`.
+   * @returns {Options}
+   *   Options instance with option updated to value returned by `updater`.
    */
   updateOption(option, updater) {
     const value = this.getOption(option);
@@ -130,14 +130,14 @@ export default class Options {
 
   /**
    * @method extend
-   * @belongsTo Mapper
+   * @belongsTo Options
    * @summary
    *
-   * Create a new Mapper instance with custom methods.
+   * Create a new Options instance with custom methods.
    *
    * @description
    *
-   * Creates an inheriting `Mapper` class with supplied `methods`. Returns an
+   * Creates an inheriting `Options` class with supplied `methods`. Returns an
    * instance of this class.
    *
    * @param {Object} methods
@@ -184,23 +184,23 @@ export default class Options {
 
   /**
    * @method asMutable
-   * @belongsTo Mapper
+   * @belongsTo Options
    * @summary
    *
-   * Create a mutable copy of this Mapper.
+   * Create a mutable copy of this instance.
    *
    * @description
    *
-   * Calling {@link Mapper#query}, {@link Mapper#setOption} or other methods
-   * usually return new instaces of Mapper. A mutable Mapper instance can
+   * Calling {@link Options#query}, {@link Options#setOption} or other methods
+   * usually return new instaces of `Options`. A mutable `Options` instance can
    * be modified in place.
    *
-   * Usually using {@link Mapper#withMutations} is preferable to `asMutable`.
+   * Usually using {@link Options#withMutations} is preferable to `asMutable`.
    *
-   * @see {@link Mapper#asImmutable}
-   * @see {@link Mapper#withMutations}
+   * @see {@link Options#asImmutable}
+   * @see {@link Options#withMutations}
    *
-   * @returns {Mapper} Mutable copy of this Mapper.
+   * @returns {Options} Mutable copy of this instance.
    */
   asMutable() {
     return this.setOption('isMutable', true);
@@ -208,12 +208,12 @@ export default class Options {
 
   /**
    * @method asImmutable
-   * @belongsTo Mapper
+   * @belongsTo Options
    * @summary
    *
    * Prevent this instance from being mutated further.
    *
-   * @returns {Mapper} This Mapper.
+   * @returns {Options} This instance.
    */
   asImmutable() {
     return this.setOption('isMutable', false);
@@ -221,10 +221,10 @@ export default class Options {
 
   /**
    * @method withMutations
-   * @belongsTo Mapper
+   * @belongsTo Options
    * @summary
    *
-   * Create a mutated copy of this Mapper.
+   * Create a mutated copy of this instance.
    *
    * @example <caption>Using a callback initializer</caption>
    *
@@ -251,11 +251,11 @@ export default class Options {
    * });
    *
    * @param {?(Object|function)} initializer
-   *  An initializer callback, taking the Mapper instance as its first argument.
-   *  Alternatively an object of {[method]: argument} pairs to be invoked upon
-   *  the mapper. If a function is provided it may also return an initializer.
-   * @returns {Mapper}
-   *   Mutated copy of this Mapper.
+   *  An initializer callback, taking the Options instance as its first argument.
+   *  Alternatively an object of {[method]: argument} pairs to be invoked.
+   * 
+   * @returns {Options}
+   *   Mutated copy of this instance.
    */
   withMutations(initializer) {
     if (!isFunction(initializer) && isEmpty(initializer)) return this;
@@ -264,9 +264,9 @@ export default class Options {
 
     const wasMutable = this.isMutable();
 
-    const mapper = this.asMutable()._applyInitializer(initializer);
+    const instance = this.asMutable()._applyInitializer(initializer);
 
-    return wasMutable ? mapper : mapper.asImmutable();
+    return wasMutable ? instance : instance.asImmutable();
   }
 
   _applyInitializer(initializer) {
