@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { isArray, isUndefined } from 'lodash/lang';
 import { identity } from 'lodash/utility';
 import { reduce } from 'lodash/collection';

@@ -1,5 +1,4 @@
-import _ from 'lodash';
-import { isFunction, isObject, isEmpty, isString } from 'lodash/lang';
+import { isFunction, isEmpty, isString } from 'lodash/lang';
 
 const options = {
   queryBuilder: null

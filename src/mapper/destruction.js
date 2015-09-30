@@ -1,4 +1,3 @@
-import { isEmpty } from 'lodash/lang';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 
 const methods = {

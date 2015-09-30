@@ -5,7 +5,7 @@ import deepEqual from 'deep-equal';
 function omitUndefined(object) {
   if (!isObject(object)) return object;
   return _(object).omit(_.isUndefined).mapValues(omitUndefined).value();
-};
+}
 
 function compactWhitespace(string) {
   return string

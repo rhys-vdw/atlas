@@ -1,4 +1,4 @@
-import { isArray, isEmpty, isObject, isString } from 'lodash/lang';
+import { isArray, isObject, isString } from 'lodash/lang';
 import { map } from 'lodash/collection';
 
 const methods = {

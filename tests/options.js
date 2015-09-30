@@ -85,14 +85,8 @@ test('Options', t => {
   t.test('Options#asMutable(), Options#asImmutable()', t => {
 
     const OPTION = 'OPTION';
-    const TABLE = 'TABLE';
     const VALUE_A = 'VALUE_A';
     const VALUE_B = 'VALUE_B';
-
-    const COLUMN_A = 'COLUMN_A';
-    const COLUMN_VALUE_A = 'COLUMN_VALUE_A';
-    const COLUMN_B = 'COLUMN_B';
-    const COLUMN_VALUE_B = 'COLUMN_VALUE_B';
 
     const options = new Options({ a: 'a', b: 'b' });
 

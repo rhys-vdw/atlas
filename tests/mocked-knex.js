@@ -1,7 +1,7 @@
 import Knex from 'knex';
 import QueryBuilder from 'knex/lib/query/builder';
 import Promise from 'bluebird';
-import { assign, isFunction } from 'lodash';
+import isFunction from 'lodash/lang/isFunction';
 
 class MockedQueryBuilder extends QueryBuilder {
 

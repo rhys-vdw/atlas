@@ -1,6 +1,5 @@
 import _ from 'lodash';
-import { assertFound } from '../assertions';
-import { Promise } from 'bluebird';
+import { isEmpty } from 'lodash/lang';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 
 const options = {
@@ -26,9 +25,10 @@ const methods = {
   },
 
   fetch() {
-    return this.toFetchQueryBuilder()
-      .bind(this)
-      .then(this._handleFetchResponse);
+    const queryBuilder = this.toFetchQueryBuilder()
+    return queryBuilder.then(response =>
+      this._handleFetchResponse({ queryBuilder, response })
+    );
   },
 
   toFetchQueryBuilder() {
@@ -43,7 +43,7 @@ const methods = {
     return queryBuilder.select(`${table}.*`);
   },
 
-  _handleFetchResponse(response) {
+  _handleFetchResponse({ queryBuilder, response }) {
     const isRequired = this.getOption('isRequired');
     const isSingle   = this.getOption('isSingle');
 

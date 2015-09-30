@@ -1,7 +1,6 @@
-import { isArray, isEmpty, isNumber, isObject, isString } from 'lodash/lang';
+import { isArray, isEmpty, isObject } from 'lodash/lang';
 import { any } from 'lodash/collection';
 import { head, flatten } from 'lodash/array';
-import { assertType } from '../assertions';
 
 const options = {
   idAttribute: 'id'

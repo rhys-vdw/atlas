@@ -1,5 +1,3 @@
-import { isArray, isEmpty, isString, isUndefined } from 'lodash/lang';
-import { each, head } from 'lodash/collection';
 
 const options = {
   isSingle: false

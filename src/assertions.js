@@ -1,9 +1,6 @@
 import { any, each } from 'lodash/collection';
 import { dropRight, last, compact } from 'lodash/array';
 import { keys } from 'lodash/object';
-import { isEmpty } from 'lodash/lang';
-
-import { NoRecordsFoundError } from './errors';
 
 export function assertType(variables, testsByTypeName) {
   each(variables, (value, name) => {
@@ -12,7 +9,7 @@ export function assertType(variables, testsByTypeName) {
 }
 
 function singleAssertType(value, name, testsByTypeName) {
-  const isValid = any(testsByTypeName, (test, typeName) =>
+  const isValid = any(testsByTypeName, (test) =>
     value instanceof test || test(value)
   );
 

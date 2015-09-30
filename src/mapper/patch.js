@@ -33,7 +33,7 @@ const methods = {
    *   Attributes passed to `patch()`.
    * @param {Object} info.queryBuilder
    *   The `QueryBuilder` instance that generated the `patch` query.
-   * @param {Object[]|Number} info.reponse
+   * @param {Object[]|Number} info.response
    *   Either a count of updated rows, or an array of updated rows.
    * @returns {Object[]|Number}
    *   Either a count of updated rows, or an array of updated rows.
@@ -41,7 +41,7 @@ const methods = {
    * @throws NoRowsFoundError
    * @private
    */
-  _handlePatchResponse({ attributes, queryBuilder, response }) {
+  _handlePatchResponse({ attributes,  queryBuilder, response }) {
 
     const isRequired = this.getOption('isRequired');
     const isSingle = this.getOption('isSingle');

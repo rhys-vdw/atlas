@@ -1,6 +1,5 @@
 import test from 'tape';
 import MockedKnex from '../mocked-knex';
-import Knex from 'knex';
 import Mapper from '../../lib/mapper';
 
 test('Mapper - patch', t => {
@@ -15,7 +14,6 @@ test('Mapper - patch', t => {
 
     t.plan(2);
 
-    const knex = new Knex({ client: 'pg' });
     const mocked = MockedKnex('pg', query => {
       t.queriesEqual(query, `
         update "users"
@@ -41,7 +39,6 @@ test('Mapper - patch', t => {
 
   t.test('Mapper#patch() - receiving count', t => {
 
-    const knex = new Knex({ client: 'pg' });
     const response = 3;
 
     t.plan(2);

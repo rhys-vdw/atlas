@@ -1,6 +1,5 @@
 import test from 'tape';
 import MockedKnex from '../mocked-knex';
-import Knex from 'knex';
 import mapper from '../../lib/mapper';
 
 test('Mapper', t => {
@@ -51,7 +50,6 @@ test('Mapper', t => {
     const ID_VALUE_A = 'ID_VALUE_A';
     const ID_VALUE_B = 'ID_VALUE_B';
     const ID_ATTRIBUTES = [ID_ATTRIBUTE_A, ID_ATTRIBUTE_B];
-    const ID_VALUES = [ID_VALUE_A, ID_VALUE_B];
 
     const TABLE = 'TABLE';
     const RECORD = {
@@ -141,7 +139,6 @@ test('Mapper', t => {
     const ID_ATTRIBUTE_A = 'ID_ATTRIBUTE_A';
     const ID_ATTRIBUTE_B = 'ID_ATTRIBUTE_B';
     const ID_ATTRIBUTES = [ID_ATTRIBUTE_A, ID_ATTRIBUTE_B];
-    const ID_VALUES = [[1, 2], [3, 4]];
 
     const TABLE = 'TABLE';
     const RECORDS = [

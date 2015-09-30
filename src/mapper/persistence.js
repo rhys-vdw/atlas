@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import { isArray, isEmpty, isObject } from 'lodash/lang';
-import { map, groupBy, size } from 'lodash/collection';
-import { flatten, head, zipObject, zipWith } from 'lodash/array';
+import { map, size } from 'lodash/collection';
+import { flatten, head, zipWith } from 'lodash/array';
 import { mapValues } from 'lodash/object';
 import Promise from 'bluebird';
 
-import { UnidentifiableRecordError } from '../errors';
+import { NotFoundError, UnidentifiableRecordError } from '../errors';
 
 const methods = {
 
@@ -317,17 +317,17 @@ const methods = {
    * @returns {Promise<Object>}
    *   A promise resolving to the updated record.
    */
-  updateOne(record) {
+  updateOne: Promise.method(function(record) {
 
     // Short circuit if no argument is provided.
     //
     if (!record) {
-      return Promise.resolve(null);
+      return null;
     }
 
-    return Promise.try(() =>
-      this.toUpdateOneQueryBuilder(record)
-    ).tap(response => {
+    const queryBuilder = this.toUpdateOneQueryBuilder(record);
+
+    return queryBuilder.then(response => {
 
       // Handle either rows or changed count.
       //
@@ -342,9 +342,9 @@ const methods = {
         this, queryBuilder, 'update'
       );
 
+      return record;
     })
-    .return(record);
-  },
+  }),
 
   /**
    * @method updateAll

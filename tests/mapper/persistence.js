@@ -1,8 +1,6 @@
 import test from 'tape';
-import Knex from 'knex';
 import MockedKnex from '../mocked-knex'
 
-import { zipObject } from 'lodash/array';
 import mapper from '../../lib/mapper';
 import { NotFoundError, UnidentifiableRecordError } from '../../lib/errors';
 
@@ -44,7 +42,6 @@ test('Mapper - persistence', t => {
     const ID_VALUE = 'ID_VALUE';
     const TABLE = 'TABLE';
     const RECORD = { text: 'a' };
-    const knex = Knex({});
 
     t.plan(2);
 
@@ -267,7 +264,6 @@ test('Mapper - persistence', t => {
     t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
-    const TABLE = 'TABLE';
     const RECORD = {};
 
     t.plan(1);
