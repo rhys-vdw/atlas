@@ -10,7 +10,7 @@ const methods = {
       column = this.attributeToColumn(attribute);
     } else if (isArray(attribute)) {
       // (string[], mixed[])
-      column = map(attribute, this.attributeToColumn, this)
+      column = map(attribute, this.attributeToColumn, this);
     } else if (isObject(attribute)) {
       // ({ [string]: mixed })
       column = this.attributesToColumns(attribute);
