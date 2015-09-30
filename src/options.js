@@ -203,9 +203,7 @@ export default class Options {
    * @returns {Mapper} Mutable copy of this Mapper.
    */
   asMutable() {
-    return this.isMutable()
-      ? this
-      : this.setOption('isMutable', true);
+    return this.setOption('isMutable', true);
   }
 
   /**
