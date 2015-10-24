@@ -24,8 +24,12 @@ const methods = {
     return this.target(...ids).fetch();
   },
 
+  findBy(attribute, ...ids) {
+    return this.targetBy(attribute, ...ids).fetch();
+  },
+
   fetch() {
-    const queryBuilder = this.toFetchQueryBuilder()
+    const queryBuilder = this.toFetchQueryBuilder();
     return queryBuilder.then(response =>
       this._handleFetchResponse({ queryBuilder, response })
     );
@@ -51,7 +55,7 @@ const methods = {
       throw isSingle
         ? new NotFoundError(this, queryBuilder, 'fetch')
         : new NoRowsFoundError(this, queryBuilder, 'fetch');
-    } 
+    }
 
     const attributes = _(response)
       .map(this.columnsToAttributes, this)
