@@ -77,7 +77,7 @@ const methods = {
    * Mapper#idAttribute idAttribute}.
    *
    * @todo
-   * 
+   *
    * Do something better for non-PostgreSQL databases. It could do each insert
    * as an individual query (allowing update of the `idAttribute`). Or fetch the
    * rows (`SELECT *`) in range after the insert. For instance, if ten records
@@ -135,7 +135,8 @@ const methods = {
    * @param {...Object|Object[]} records
    *   Record, or records, to insert into this `Mapper`'s table.
    * @returns {QueryBuilder}
-   *   A Knex `QueryBuilder` that, when executed, will insert supplied `records`.
+   *   A Knex `QueryBuilder` that, when executed, will insert supplied
+   *   `records`.
    */
   toInsertQueryBuilder(...records) {
 
@@ -238,8 +239,8 @@ const methods = {
 
       // TODO: Test this
       //
-      // Space out the response object to match the format of the insert records.
-      // This allows this contract:
+      // Space out the response object to match the format of the insert
+      // records. This allows this contract:
       //
       //     ([
       //       { id: 1, a: 'a' },
