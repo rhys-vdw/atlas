@@ -112,7 +112,7 @@ const methods = {
    *   ID or IDs of given records.
    */
   identify(...records) {
-    let idAttribute = this.getOption('idAttribute');
+    const idAttribute = this.getOption('idAttribute');
     return this.identifyBy(idAttribute, ...records);
   },
 
@@ -123,7 +123,7 @@ const methods = {
     }
 
     const isComposite = isArray(attribute);
-    const record = head(records); 
+    const record = head(records);
     const isSingle =
       records.length === 1 &&
       !isArray(record) ||
