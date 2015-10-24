@@ -16,26 +16,32 @@ const methods = {
    *   Mapper targeting a one or more rows.
    */
   target(...ids) {
-    const normalized = this.identify(...ids);
+    const idAttribute = this.getOption('idAttribute');
+    return this.targetBy(idAttribute, ...ids);
+  },
 
-    if (ids == null || isArray(ids) && isEmpty(ids)) {
-      return this;
+  targetBy(attribute, ...ids) {
+    const normalized = this.identifyBy(attribute, ...ids);
+
+    if (normalized == null || isArray(normalized) && isEmpty(normalized)) {
+      throw new TypeError(
+        `'ids' failed to identify any rows. Got: ${ ids }`
+      );
     }
 
-    const idAttribute = this.getOption('idAttribute');
-    const isComposite = isArray(idAttribute);
+    const isComposite = isArray(attribute);
     const isSingle = !isArray(normalized) ||
       isComposite && !isArray(head(normalized));
 
     return this.withMutations(mapper => {
       if (isSingle) {
         if (isComposite) {
-          mapper.one().where(zipObject(idAttribute, normalized))
+          mapper.one().where(zipObject(attribute, normalized))
         } else {
-          mapper.one().where(idAttribute, normalized)
+          mapper.one().where(attribute, normalized)
         }
       } else {
-        mapper.all().whereIn(idAttribute, normalized)
+        mapper.all().whereIn(attribute, normalized)
       }
     });
   }
