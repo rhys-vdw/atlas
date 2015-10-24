@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { isEmpty, isArray, isObject, isString } from 'lodash/lang';
 import { merge, extend } from 'lodash/object';
 import { map, each } from 'lodash/collection';
+import { flow } from 'lodash/function';
 
 import { RELATION_TREE_SENTINEL } from './constants';
 import { assertType } from './assertions';
@@ -106,7 +107,7 @@ export function renestRecursives(relationTree) {
  */
 export function compile(...relations) {
 
-  return _(relations).map((relation) => {
+  return _(relations).map(relation => {
 
     if (isRelationTree(relation)) {
       return relation;
@@ -128,9 +129,7 @@ export function compile(...relations) {
   }).flatten().reduce(mergeTrees) || new RelationTree();
 }
 
-export function normalize(...relations) {
-  return renestRecursives(compile(...relations));
-}
+export const normalize = flow(compile, renestRecursives);
 
 /**
  * @class RelationTree
@@ -139,7 +138,7 @@ export default class RelationTree {
   constructor(properties) {
     extend(this, properties);
   }
-  
+
   get [RELATION_TREE_SENTINEL]() { return true; }
 }
 
