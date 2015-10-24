@@ -82,21 +82,27 @@ export default class Options {
    *   Options instance with option set to value.
    */
   setOption(option, value) {
+    return this.setOptions({ [option]: value });
+  }
 
-    // Setting an option to its current value is a no-op.
-    if (this._options[option] === value) {
+  setOptions(options) {
+
+    const isNoop = every(options, (value, option) =>
+      this._options[option] === value
+    );
+
+    if (isNoop) {
       return this;
     }
 
     // If mutable, set the option and return.
     if (this.isMutable()) {
-      this._options[option] = value;
+      assign(this._options, options);
       return this;
     }
 
     // Otherwise duplicate the options object and pass it on in a new instance.
-    const options = { ...this._options, [option]: value };
-    return new this.constructor(options);
+    return new this.constructor({ ...this._options, ...options });
   }
 
   /**
@@ -251,9 +257,10 @@ export default class Options {
    * });
    *
    * @param {?(Object|function)} initializer
-   *  An initializer callback, taking the Options instance as its first argument.
-   *  Alternatively an object of {[method]: argument} pairs to be invoked.
-   * 
+   *  An initializer callback, taking the Options instance as its first
+   *  argument. Alternatively an object of {[method]: argument} pairs to be
+   *  invoked.
+   *
    * @returns {Options}
    *   Mutated copy of this instance.
    */
