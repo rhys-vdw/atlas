@@ -1,3 +1,4 @@
+import { isEmpty } from 'lodash/lang';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 
 const methods = {
@@ -48,7 +49,7 @@ const methods = {
    *   Promise resolving to the number of rows deleted.
    */
   destroy(...ids) {
-    const mapper = this.target(...ids);
+    const mapper = isEmpty(ids) ? this : this.target(...ids);
     const queryBuilder = mapper.toDestroyQuery();
     return queryBuilder.then(response =>
       this._handleDestroyResponse({ response, queryBuilder })
