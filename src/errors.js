@@ -22,7 +22,8 @@ export class UnidentifiableRecordError extends AtlasError {
   constructor(Mapper, record, idAttribute) {
     super(
       'UnidentifiableRecordError',
-      `Expected record '${JSON.stringify(record)}' to have ID key(s) '${idAttribute}', mapper:'
+      `Expected record '${JSON.stringify(record)}' to have ID attribute(s) ` +
+      `'${idAttribute}', mapper:
       ${Mapper}`
     );
 
