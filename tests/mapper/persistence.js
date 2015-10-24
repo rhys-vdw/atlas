@@ -25,7 +25,7 @@ test('Mapper - persistence', t => {
       'resolves empty array to empty array'
     );
 
-   t.resolvesTo(
+    t.resolvesTo(
       mapper.insert([null, null]), [null, null],
       'resolves array of `null` values to an array of `null` values'
     );
@@ -66,8 +66,8 @@ test('Mapper - persistence', t => {
   });
 
   t.test(
-    'Mapper#insert() - single record, with composite key, returning nothing',
-    t => {
+    'Mapper#insert() - single record, with composite key, result empty',
+  t => {
 
     const ID_ATTRIBUTES = ['ID_ATTRIBUTE_A', 'ID_ATTRIBUTE_B'];
     const TABLE = 'TABLE';
@@ -97,7 +97,8 @@ test('Mapper - persistence', t => {
 
   t.test(
     'Mapper#insert() - multiple records with single key, returning first ' +
-    'primary key only', t => {
+    'primary key only',
+  t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
     const ID_VALUES = ['ID_VALUE_1'];
@@ -197,7 +198,7 @@ test('Mapper - persistence', t => {
 
   t.test(
     'Mapper#update() - single record, returning one record updated',
-    t => {
+  t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
     const ID_VALUE = 'ID_VALUE';
@@ -234,7 +235,7 @@ test('Mapper - persistence', t => {
 
   t.test(
     'Mapper#update() - single record, returning no records updated',
-    t => {
+  t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
     const ID_VALUE = 'ID_VALUE';
@@ -261,7 +262,7 @@ test('Mapper - persistence', t => {
 
   t.test(
     'Mapper#update() - single record with no `idAttribute` present',
-    t => {
+  t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
     const RECORD = {};

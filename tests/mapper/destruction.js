@@ -10,18 +10,17 @@ test('Mapper', t => {
 
   t.test('Mapper#destroy() - no arguments', t => {
     const TABLE = 'TABLE';
-    const COUNT = 5;
 
     const mocked = MockedKnex(query => {
       t.queriesEqual(query, `delete from "${TABLE}"`);
-      return COUNT;
+      return 5;
     });
 
     t.plan(2);
 
     t.resolvesTo(
       mapper.knex(mocked).table(TABLE).destroy(),
-      COUNT,
+      5,
       'resolves to deleted count'
     );
   });

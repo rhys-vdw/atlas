@@ -10,9 +10,6 @@ test('Mapper - plurality', t => {
   t.test('Mapper#one()', t => {
 
     const TABLE = 'TABLE';
-    const ROWS = [
-      { id: 1, name: 'name1' }
-    ];
 
     t.plan(3);
 
@@ -21,7 +18,7 @@ test('Mapper - plurality', t => {
         knex(TABLE).select(`${TABLE}.*`).limit(1)
       );
 
-      return ROWS;
+      return [{ id: 1, name: 'name1' }];
     });
 
     const oneMapper = mapper.knex(mocked).table(TABLE).one();
@@ -30,7 +27,7 @@ test('Mapper - plurality', t => {
 
     t.resolvesTo(
       oneMapper.fetch(),
-      ROWS[0],
+      { id: 1, name: 'name1' },
       'returns a single record'
     );
   });
