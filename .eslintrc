@@ -4,7 +4,12 @@
   "rules": {
     "comma-dangle": 0,
     "no-unused-vars": [2, {"vars": "all", "args": "none"}],
-    "no-console": 1
+    "no-console": 1,
+    "no-var": 2,
+    "no-debugger": 1,
+    "indent": [2, 2, {"SwitchCase": 1}],
+    "max-len": [1, 80, 2],
+    "prefer-const": 2
   },
   "env": {
     "node": true
