@@ -4,15 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "./node_modules/eslint/bin/eslint.js src/**",
-    "lint-q": "./node_modules/eslint/bin/eslint.js --quiet src/** || true",
-    "lint-tests": "./node_modules/eslint/bin/eslint.js tests/**",
-    "lint-tests-q": "./node_modules/eslint/bin/eslint.js --quiet tests/** || true",
-    "test": "npm run babel-tests && npm run babel && node compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
+    "lint": "$(npm bin)/eslint src/**",
+    "lint-q": "$(npm bin)/eslint --quiet src/** || true",
+    "lint-tests": "$(npm bin)/eslint tests/**",
+    "lint-tests-q": "$(npm bin)/eslint --quiet tests/** || true",
+    "test": "npm run babel-tests && npm run babel && node compiled-tests | tap-spec",
     "test-plain": "npm run babel && npm run babel-tests && node compiled-tests",
-    "cover": "npm run babel && npm run babel-tests && ./node_modules/istanbul/lib/cli.js cover compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
-    "babel-tests": "rm -rf compiled-tests && npm run lint-tests && ./node_modules/babel/bin/babel.js tests -d compiled-tests",
-    "babel": "rm -rf lib && npm run lint && ./node_modules/babel/bin/babel.js src -d lib"
+    "cover": "npm run babel && npm run babel-tests && $(npm bin)/istanbul cover compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
+    "babel-tests": "rm -rf compiled-tests && npm run lint-tests && $(npm bin)/babel tests -d compiled-tests",
+    "babel": "rm -rf lib && npm run lint && $(npm bin)/babel src -d lib"
   },
   "author": "Rhys van der Waerden",
   "license": "to be announced",
@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "bluebird": "^2.10.0",
+    "inflection": "^1.7.1",
     "lodash": "^3.10.1",
     "object-to-string": "^1.0.0"
   }
