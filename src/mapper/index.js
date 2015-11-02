@@ -9,6 +9,7 @@ import Insert from './insert';
 import KeyConversion from './key-conversion';
 import Query from './query';
 import RecordAdapter from './record-adapter';
+import Relations from './relations';
 import Retrieval from './retrieval';
 import Save from './save';
 import Target from './target';
@@ -29,6 +30,7 @@ const mixins = [
   KeyConversion,
   Query,
   RecordAdapter,
+  Relations,
   Retrieval,
   Save,
   Target,

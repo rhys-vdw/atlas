@@ -100,7 +100,12 @@ const methods = {
       .map(this.columnsToAttributes, this)
       .map(this.createRecord, this);
 
-    return this.forge(isSingle ? attributes.head() : attributes.value());
+    const record = this.forge(
+      isSingle ? attributes.head() : attributes.value()
+    );
+
+    const relationTree = this.getOption('withRelated');
+    return this.loadInto(relationTree, record);
   }
 };
 
