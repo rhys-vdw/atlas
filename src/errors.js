@@ -1,22 +1,14 @@
-class AtlasError extends Error {
-  constructor(name, message) {
-    super(message);
-    this.name = name;
-    this.message = message;
-
-    const temp = new Error();
-    temp.name = name;
-    this._stack = temp.stack;
-  }
-
-  get stack() {
-    return this._stack;
-  }
-
-  toString() {
-    return `${this.name}: ${this.message}`;
-  }
+function AtlasError(name, message) {
+  this.name = name;
+  this.message = message;
+  Error.captureStackTrace(this, AtlasError);
 }
+
+AtlasError.prototype = Object.create(Error.prototype);
+AtlasError.prototype.constructor = AtlasError;
+AtlasError.prototype.toString = function() {
+  return `${this.name}: ${this.message}`;
+};
 
 export class UnidentifiableRecordError extends AtlasError {
   constructor(Mapper, record, idAttribute) {
@@ -49,6 +41,7 @@ export class InvalidOptionError extends AtlasError {
 export class NotFoundError extends AtlasError {
   constructor(Mapper, queryBuilder, method) {
     super(
+      'NotFoundError',
       `No row found when calling '${method}' on mapper:
       ${Mapper}`
     );
@@ -61,6 +54,7 @@ export class NotFoundError extends AtlasError {
 export class NoRowsFoundError extends AtlasError {
   constructor(Mapper, queryBuilder, method) {
     super(
+      'NoRowsFoundError',
       `Failed to find any records when calling '${method}' on mapper:
       ${Mapper}`
     );
