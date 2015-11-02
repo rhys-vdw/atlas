@@ -98,7 +98,7 @@ test('Mapper', t => {
     const RECORDS = [
       { [ID_ATTRIBUTE]: 1 },
       { [ID_ATTRIBUTE]: 2 },
-    ]
+    ];
     const ROWS = [
       { [ID_ATTRIBUTE]: 1, name: 'name1' },
       { [ID_ATTRIBUTE]: 2, name: 'name2' }

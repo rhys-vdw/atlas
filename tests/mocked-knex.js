@@ -36,5 +36,5 @@ export default function (client, callback) {
     return new MockedQueryBuilder(knex.client)
       .from(tableName)
       .mockCallback(callback);
-  }
+  };
 }

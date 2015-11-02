@@ -1,5 +1,5 @@
 import test from 'tape';
-import MockedKnex from '../mocked-knex'
+import MockedKnex from '../mocked-knex';
 
 import mapper from '../../lib/mapper';
 import { NoRecordsFoundError } from '../../lib/errors';
@@ -25,7 +25,7 @@ test('Mapper - retrieval', t => {
 
     const TABLE = 'TABLE';
     const ROWS = [{ id: 1 }];
-    
+
     t.plan(2);
 
     const mocked = MockedKnex(query => {
@@ -34,7 +34,7 @@ test('Mapper - retrieval', t => {
       );
 
       return ROWS;
-    })
+    });
 
     mapper.table(TABLE).knex(mocked).fetchOne().then(record =>
       t.deepEqual(record, ROWS[0], 'returns single record')

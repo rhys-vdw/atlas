@@ -3,7 +3,7 @@ import { isArray, isObject } from 'lodash/lang';
 
 const options = {
   defaultAttributes: null
-}
+};
 
 const methods = {
 
@@ -33,6 +33,6 @@ const methods = {
     }
     return this.createRecord(attributes);
   }
-}
+};
 
 export default { options, methods };

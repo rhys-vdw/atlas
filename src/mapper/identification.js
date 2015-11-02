@@ -4,7 +4,7 @@ import { head, flatten } from 'lodash/array';
 
 const options = {
   idAttribute: 'id'
-}
+};
 
 const methods = {
 
@@ -193,6 +193,6 @@ const methods = {
     const idAttribute = this.getOption('idAttribute');
     return this.pickAttributes(record, idAttribute);
   }
-}
+};
 
 export default { options, methods };

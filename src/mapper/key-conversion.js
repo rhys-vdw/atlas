@@ -9,6 +9,6 @@ const methods = {
   columnsToAttributes: identity,
 
   attributesToColumns: identity,
-}
+};
 
 export default { methods };

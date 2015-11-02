@@ -18,7 +18,7 @@ function cloneCustomizer(option) {
 }
 
 function cloneOptions(options) {
-  return clone(options, cloneCustomizer)
+  return clone(options, cloneCustomizer);
 }
 
 export default class Options {
@@ -27,7 +27,7 @@ export default class Options {
   constructor(options = {}) {
 
     if (!('isMutable' in options)) {
-      options = { isMutable: false, ...options }
+      options = { isMutable: false, ...options };
     }
 
     this._options = options.isMutable
@@ -279,10 +279,10 @@ export default class Options {
   _applyInitializer(initializer) {
 
     if (_.isFunction(initializer)) {
-      return this._applyInitializerCallback(initializer)
+      return this._applyInitializerCallback(initializer);
     }
 
-    return this._applyInitializerObject(initializer)
+    return this._applyInitializerObject(initializer);
   }
 
   _applyInitializerCallback(callback) {

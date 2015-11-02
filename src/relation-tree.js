@@ -64,11 +64,11 @@ export function renestRecursives(relationTree) {
   each(relationTree, (node, relationName) => {
     const { recursions } = node;
     if (recursions > 0) {
-      const nestedRecursions = Math.max(recursions - 1, 0);
+      const nestedRecursions = recursions - 1;
 
       // See if recursion has already been renested. If it has, we don't need
       // to do it again.
-      const existing = node.nested && node.nested[relationName]
+      const existing = node.nested && node.nested[relationName];
       if (existing) {
 
         // Assert that the tree is valid. This should never be fired.

@@ -23,7 +23,10 @@ test('Mapper - plurality', t => {
 
     const oneMapper = mapper.knex(mocked).table(TABLE).one();
 
-    t.equals(oneMapper.getOption('isSingle'), true, '`isSingle` is set to `true`');
+    t.equals(
+      oneMapper.getOption('isSingle'), true,
+      '`isSingle` is set to `true`'
+    );
 
     t.resolvesTo(
       oneMapper.fetch(),
@@ -52,7 +55,10 @@ test('Mapper - plurality', t => {
 
     const allMapper = mapper.knex(mocked).table(TABLE).all();
 
-    t.equals(allMapper.getOption('isSingle'), false, '`isSingle` is set to `false`');
+    t.equals(
+      allMapper.getOption('isSingle'), false,
+      '`isSingle` is set to `false`'
+    );
 
     t.resolvesTo(
       allMapper.fetch(),

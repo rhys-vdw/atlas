@@ -1,11 +1,11 @@
 class AtlasError extends Error {
   constructor(name, message) {
     super(message);
-    this.name = name
+    this.name = name;
     this.message = message;
 
-    const temp = new Error()
-    temp.name = name
+    const temp = new Error();
+    temp.name = name;
     this._stack = temp.stack;
   }
 
@@ -14,7 +14,7 @@ class AtlasError extends Error {
   }
 
   toString() {
-    return `${this.name}: ${this.message}`
+    return `${this.name}: ${this.message}`;
   }
 }
 

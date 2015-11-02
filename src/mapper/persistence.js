@@ -254,9 +254,9 @@ const methods = {
         const record = records[i];
         const row = response[j];
         if (record == null) {
-          mappedRows.push(null)
+          mappedRows.push(null);
         } else {
-          mappedRows.push(row)
+          mappedRows.push(row);
           j++;
         }
       }
@@ -344,7 +344,7 @@ const methods = {
       );
 
       return record;
-    })
+    });
   }),
 
   /**

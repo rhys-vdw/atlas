@@ -71,7 +71,7 @@ test('RelationTree', (t) => {
         input: ['test^2.other'],
         output: { test: { recursions: 2, nested: { other: {} } } }
       }
-    }
+    };
 
     _.each(tests, (item, message) => {
       t.deepEqualDefined(
@@ -79,7 +79,7 @@ test('RelationTree', (t) => {
         item.output,
         message
       );
-    })
+    });
 
     t.throws(() => fromString(), TypeError,
       'throws `TypeError` without argument'
@@ -193,7 +193,7 @@ test('RelationTree', (t) => {
         item.output,
         message
       );
-    })
+    });
 
     t.end();
   });
@@ -258,11 +258,11 @@ test('RelationTree', (t) => {
         item.output,
         message
       );
-    })
+    });
 
     const invalidRecursiveTree = new RelationTree({
       a: { recursions: 1, nested: { a: { recursions: 1 } } }
-    })
+    });
 
     t.throws(() => renestRecursives(invalidRecursiveTree),
       'throws when given an invalid recursive tree'
@@ -300,7 +300,7 @@ test('RelationTree', (t) => {
           }
         }
       }
-    }
+    };
 
     _.each(tests, (item, message) => {
       t.deepEqualDefined(
@@ -308,7 +308,7 @@ test('RelationTree', (t) => {
         item.output,
         message
       );
-    })
+    });
 
     const normalized = normalize('a.b.c', 'a.c.d');
 

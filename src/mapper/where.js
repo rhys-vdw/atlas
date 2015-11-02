@@ -30,6 +30,6 @@ const methods = {
 
     return this.query('whereIn', columns, values);
   }
-}
+};
 
 export default { methods };

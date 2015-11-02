@@ -4,7 +4,7 @@ import { NotFoundError, NoRowsFoundError } from '../errors';
 
 const options = {
   isRequired: false
-}
+};
 
 const methods = {
 

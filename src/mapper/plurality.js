@@ -1,7 +1,7 @@
 
 const options = {
   isSingle: false
-}
+};
 
 const methods = {
 

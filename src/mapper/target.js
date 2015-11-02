@@ -36,12 +36,12 @@ const methods = {
     return this.withMutations(mapper => {
       if (isSingle) {
         if (isComposite) {
-          mapper.one().where(zipObject(attribute, normalized))
+          mapper.one().where(zipObject(attribute, normalized));
         } else {
-          mapper.one().where(attribute, normalized)
+          mapper.one().where(attribute, normalized);
         }
       } else {
-        mapper.all().whereIn(attribute, normalized)
+        mapper.all().whereIn(attribute, normalized);
       }
     });
   }

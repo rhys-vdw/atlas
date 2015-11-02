@@ -1,5 +1,5 @@
 import test from 'tape';
-import MockedKnex from '../mocked-knex'
+import MockedKnex from '../mocked-knex';
 
 import mapper from '../../lib/mapper';
 import { NotFoundError, UnidentifiableRecordError } from '../../lib/errors';
@@ -120,7 +120,7 @@ test('Mapper - persistence', t => {
       .table(TABLE)
       .idAttribute(ID_ATTRIBUTE);
 
-    const insertPromise = insertMapper.insert(RECORDS)
+    const insertPromise = insertMapper.insert(RECORDS);
 
     t.resolvesTo(
       insertPromise,
@@ -154,7 +154,7 @@ test('Mapper - persistence', t => {
       .knex(mocked)
       .table(TABLE);
 
-    const insertPromise = insertMapper.insert(RECORDS)
+    const insertPromise = insertMapper.insert(RECORDS);
 
     t.resolvesTo(
       insertPromise,
@@ -277,4 +277,4 @@ test('Mapper - persistence', t => {
   });
 
   t.end();
-})
+});

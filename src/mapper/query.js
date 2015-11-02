@@ -2,7 +2,7 @@ import { isFunction, isEmpty, isString } from 'lodash/lang';
 
 const options = {
   queryBuilder: null
-}
+};
 
 const methods = {
 
@@ -121,6 +121,6 @@ const methods = {
     }
     return queryBuilder;
   }
-}
+};
 
-export default { methods, options }
+export default { methods, options };

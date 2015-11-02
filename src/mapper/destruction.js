@@ -85,7 +85,7 @@ const methods = {
     }
     return response;
   }
-}
+};
 
 /**
  * Methods pertaining to removing records from the database.

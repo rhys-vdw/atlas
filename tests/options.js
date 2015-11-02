@@ -50,7 +50,7 @@ test('Options', t => {
       a: function() {},
       b: function() {},
       c: function() {},
-    }
+    };
 
     const parent = new Options()
       .setOption(OPTION, VALUE);
@@ -105,13 +105,13 @@ test('Options', t => {
     t.notEqual(
       options._options, mutable._options,
       'mutable copy has a different `_options` instance'
-    )
+    );
 
     t.deepEqual(
       omit(options._options, 'isMutable'),
       omit(mutable._options, 'isMutable'),
       'mutable copy has the same options set (other than `isMutable`)'
-    )
+    );
 
     t.equal(
       mutable, mutable.asMutable(),
