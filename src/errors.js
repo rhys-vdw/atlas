@@ -63,3 +63,28 @@ export class NoRowsFoundError extends AtlasError {
     this.queryBuilder = queryBuilder;
   }
 }
+
+export class UnregisteredKeyError extends AtlasError {
+  constructor(registry, key) {
+    super(
+      'UnregisteredKeyError',
+      `Unknown registry key '${key}'`
+    );
+
+    this.registry = registry;
+    this.key = key;
+  }
+}
+
+export class RegisteredKeyError extends AtlasError {
+  constructor(registry, key) {
+    super(
+      'RegisteredKeyError',
+      `Key '${key}' is already registered. Use 'Registry#override' to ` +
+      `override this item.`
+    );
+
+    this.registry = registry;
+    this.key = key;
+  }
+}
