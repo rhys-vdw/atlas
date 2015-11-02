@@ -1,8 +1,8 @@
 import { RegisteredKeyError, UnregisteredKeyError } from './errors';
 
 export default class Registry {
-  constructor() {
-    this._registry = {};
+  constructor(registry = {}) {
+    this._registry = { ...registry };
   }
 
   register(key, instance) {
