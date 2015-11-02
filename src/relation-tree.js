@@ -4,6 +4,7 @@ import { merge, extend } from 'lodash/object';
 import { map, each } from 'lodash/collection';
 import { flow } from 'lodash/function';
 
+import { sentinel, instanceWithSentinel } from './sentinel';
 import { RELATION_TREE_SENTINEL } from './constants';
 import { assertType } from './assertions';
 
@@ -17,9 +18,7 @@ import { assertType } from './assertions';
  * @returns {bool}
  *   `true` if instance of {@link RelationTree}, otherwise `false`.
  */
-export function isRelationTree(maybeRelationTree) {
-  return !!(maybeRelationTree && maybeRelationTree[RELATION_TREE_SENTINEL]);
-}
+export const isRelationTree = instanceWithSentinel(RELATION_TREE_SENTINEL);
 
 
 /**
@@ -134,12 +133,11 @@ export const normalize = flow(compile, renestRecursives);
 /**
  * @class RelationTree
  */
+@sentinel(RELATION_TREE_SENTINEL);
 export default class RelationTree {
   constructor(properties) {
     extend(this, properties);
   }
-
-  get [RELATION_TREE_SENTINEL]() { return true; }
 }
 
 RelationTree.isRelationTree = isRelationTree;

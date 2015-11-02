@@ -1,6 +1,7 @@
 import _, { assign } from 'lodash';
 
 import Options from '../options';
+import { sentinel, instanceWithSentinel } from '../sentinel';
 
 import Destruction from './destruction';
 import Forge from './forge';
@@ -17,6 +18,7 @@ import Where from './where';
 
 import { MAPPER_SENTINEL } from '../constants';
 
+@sentinel(MAPPER_SENTINEL)
 class Mapper extends Options {
 }
 
@@ -43,11 +45,8 @@ const options = combine(mixins, 'options');
 
 assign(Mapper.prototype, methods);
 
-Mapper.prototype[MAPPER_SENTINEL] = true;
+export const isMapper = instanceWithSentinel(MAPPER_SENTINEL);
 
-export function isMapper(maybeMapper) {
-  return !!(maybeMapper && maybeMapper[MAPPER_SENTINEL]);
-}
 export default new Mapper(options);
 
 export { Mapper as constructor, options };
