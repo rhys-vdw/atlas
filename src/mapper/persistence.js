@@ -279,7 +279,7 @@ const methods = {
    *   A promise resolving to the updated record or records.
    */
   update(...records) {
-    
+
     if (isEmpty(records)) {
       return Promise.resolve(undefined);
     }
