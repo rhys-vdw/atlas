@@ -15,6 +15,8 @@ import Retrieval from './retrieval';
 import Target from './target';
 import Where from './where';
 
+import { MAPPER_SENTINEL } from '../constants';
+
 class Mapper extends Options {
 }
 
@@ -41,6 +43,11 @@ const options = combine(mixins, 'options');
 
 assign(Mapper.prototype, methods);
 
+Mapper.prototype[MAPPER_SENTINEL] = true;
+
+export function isMapper(maybeMapper) {
+  return !!(maybeMapper && maybeMapper[MAPPER_SENTINEL]);
+}
 export default new Mapper(options);
 
 export { Mapper as constructor, options };
