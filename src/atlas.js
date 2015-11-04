@@ -1,6 +1,5 @@
 import Registry from './registry';
 import Mapper from './mapper';
-import { flow } from 'lodash/function';
 import { isPlainObject, isString } from 'lodash/lang';
 
 const createRegistry = () => new Registry({ Mapper });
@@ -30,7 +29,9 @@ function Atlas(knex, registry = createRegistry()) {
   };
 
   atlas.transaction = (callback) =>
-    knex.transaction(flow(Atlas, callback));
+    knex.transaction(trx =>
+      callback(new Atlas(trx, registry))
+    );
 
   return atlas;
 }
