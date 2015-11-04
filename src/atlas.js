@@ -3,9 +3,9 @@ import Mapper from './mapper';
 import { flow } from 'lodash/function';
 import { isPlainObject, isString } from 'lodash/lang';
 
-const DEFAULT_REGISTRY = new Registry({ Mapper });
+const createRegistry = () => new Registry({ Mapper });
 
-function Atlas(knex, registry = DEFAULT_REGISTRY) {
+function Atlas(knex, registry = createRegistry()) {
 
   function atlas(mapperOrName) {
     const mapper = isString(mapperOrName)
