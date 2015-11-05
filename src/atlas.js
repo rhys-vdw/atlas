@@ -4,15 +4,19 @@ import { isPlainObject, isString } from 'lodash/lang';
 
 const createRegistry = () => new Registry({ Mapper });
 
-function Atlas(knex, registry = createRegistry()) {
-
-  function atlas(mapperOrName) {
+function ReadOnlyAtlas(knex) {
+  return function atlas(mapperOrName) {
     const mapper = isString(mapperOrName)
       ? atlas.registry.retrieve(mapperOrName)
       : mapperOrName;
 
     return mapper.knex(knex);
-  }
+  };
+}
+
+export default function Atlas(knex, registry = createRegistry()) {
+
+  const atlas = ReadOnlyAtlas(knex, registry);
 
   atlas.registry = isPlainObject(registry)
     ? new Registry(registry)
@@ -30,10 +34,8 @@ function Atlas(knex, registry = createRegistry()) {
 
   atlas.transaction = (callback) =>
     knex.transaction(trx =>
-      callback(new Atlas(trx, registry))
+      callback(ReadOnlyAtlas(trx, registry))
     );
 
   return atlas;
 }
-
-export default Atlas;
