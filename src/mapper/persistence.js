@@ -7,6 +7,10 @@ import Promise from 'bluebird';
 
 import { NotFoundError, UnidentifiableRecordError } from '../errors';
 
+const isSingleRecord = (...records) =>
+  records.length <= 1 && !isArray(head(records));
+
+
 const methods = {
 
   /**
@@ -24,12 +28,12 @@ const methods = {
   save(...records) {
 
     if (isEmpty(records)) {
-      return undefined;
+      return Promise.resolve([]);
     }
 
     // Check if we're saving just one record...
     //
-    const isSingle = records.length === 1 && !isArray(head(records));
+    const isSingle = isSingleRecord(...records);
 
     // If so, we can just distribute it directly to the correct method.
     //
@@ -95,28 +99,26 @@ const methods = {
     // Check if this is an insert for a single record. This determines how the
     // query response is used.
     //
-    const isSingle = records.length <= 1 && !isArray(head(records));
+    const isSingle = isSingleRecord(...records);
 
-    // Normalize records into a flat array, normalizing falsey values to `null`.
+    // Normalize records into a flat array, defaulting falsey values to `null`.
     //
-    const recordChain = _(records).map(r => r || null).flatten();
+    const chain = _(records).flatten().compact();
 
     // Short circuit if no truthy values are supplied.
     //
-    if (!recordChain.some()) {
-      return Promise.resolve(isSingle ? null : recordChain.value());
+    if (chain.isEmpty()) {
+      return Promise.resolve(isSingle ? null : []);
     }
 
-    const insertRecords = isSingle
-      ? recordChain.head()
-      : recordChain.value();
+    const toInsert = isSingle ? chain.head() : chain.value();
 
     // Pass non-null records to `QueryBuilder`.
     //
-    return this.toInsertQueryBuilder(insertRecords)
+    return this.prepareInsert(toInsert).toQueryBuilder()
     .then(response => isSingle
-      ? this._handleInsertOneResponse(response, insertRecords)
-      : this._handleInsertManyResponse(response, insertRecords)
+      ? this._handleInsertOneResponse(response, toInsert)
+      : this._handleInsertManyResponse(response, toInsert)
     );
   },
 
@@ -138,7 +140,7 @@ const methods = {
    *   A Knex `QueryBuilder` that, when executed, will insert supplied
    *   `records`.
    */
-  toInsertQueryBuilder(...records) {
+  prepareInsert(...records) {
 
     // `QueryBuilder#insert` accepts a single row or an array of rows.
     //
@@ -149,6 +151,7 @@ const methods = {
     //
     const rows = _(records)
       .flatten()
+      .compact()
       .map(this.getAttributes, this)
       .map(this.attributesToColumns, this)
       .value();
@@ -157,7 +160,7 @@ const methods = {
     // PostgreSQL will not receive the `RETURNING` command and return
     // the ID of the first inserted model.
     //
-    return this.toQueryBuilder().insert(rows, '*');
+    return this.query('insert', rows, '*');
   },
 
   /**
@@ -177,6 +180,7 @@ const methods = {
    */
   _handleInsertOneResponse(response, record) {
 
+    console.log('processing record', response, record);
     // We handle inserting `null` records here.
     if (record == null) {
       return null;
@@ -233,37 +237,7 @@ const methods = {
    *   Records updated with response data.
    */
   _handleInsertManyResponse(response, records) {
-
-    let mappedRows;
-    if (response.length !== records.length) {
-
-      // TODO: Test this
-      //
-      // Space out the response object to match the format of the insert
-      // records. This allows this contract:
-      //
-      //     ([
-      //       { id: 1, a: 'a' },
-      //       { id: 2, b: 'b' }
-      //     ], [
-      //       { a: 'a' }, null, { b: 'b' }
-      //     ]) -> [{ id: 1, a: 'a' }, null, { id: 2, b: 'b' }]
-      //
-      mappedRows = [];
-      for (let i = 0, j = 0; i < records.length && j < response.length; i++) {
-        const record = records[i];
-        const row = response[j];
-        if (record == null) {
-          mappedRows.push(null);
-        } else {
-          mappedRows.push(row);
-          j++;
-        }
-      }
-    } else {
-      mappedRows = response;
-    }
-    return zipWith(mappedRows, records, this._handleInsertOneResponse, this);
+    return zipWith(response, records, this._handleInsertOneResponse, this);
   },
 
   /**
@@ -284,7 +258,7 @@ const methods = {
       return Promise.resolve(undefined);
     }
 
-    const isSingle = records.length === 1 && !isArray(head(records));
+    const isSingle = isSingleRecord(...records);
     const flattened = flatten(records);
 
     return isSingle
