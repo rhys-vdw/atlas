@@ -16,7 +16,7 @@ function ReadOnlyAtlas(knex) {
 
 export default function Atlas(knex, registry = createRegistry()) {
 
-  const atlas = ReadOnlyAtlas(knex, registry);
+  const atlas = ReadOnlyAtlas(knex);
 
   atlas.registry = isPlainObject(registry)
     ? new Registry(registry)
@@ -32,10 +32,9 @@ export default function Atlas(knex, registry = createRegistry()) {
     return atlas;
   };
 
-  atlas.transaction = (callback) =>
-    knex.transaction(trx =>
-      callback(ReadOnlyAtlas(trx, registry))
-    );
+  atlas.transaction = (callback) => knex.transaction(trx =>
+    callback(ReadOnlyAtlas(trx, registry))
+  );
 
   return atlas;
 }
