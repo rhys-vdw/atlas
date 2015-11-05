@@ -1,71 +1,56 @@
 import test from 'tape';
-import MockedKnex from '../mocked-knex';
-import Knex from 'knex';
 import mapper from '../../lib/mapper';
 import { NotFoundError } from '../../lib/errors';
-
-const knex = Knex({});
 
 test('Mapper', t => {
 
   t.test('Mapper#destroy() - no arguments', t => {
     const TABLE = 'TABLE';
 
-    const mocked = MockedKnex(query => {
-      t.queriesEqual(query, `delete from "${TABLE}"`);
-      return 5;
+    const destroyMapper = mapper.table(TABLE).prepareDestroy();
+    const queryBuilder = destroyMapper.toQueryBuilder();
+    const result = destroyMapper._handleDestroyResponse({
+      queryBuilder, response: 5
     });
 
-    t.plan(2);
+    t.queriesEqual(queryBuilder, `delete from "${TABLE}"`);
+    t.equal(result, 5, 'resolves to deleted count');
 
-    t.resolvesTo(
-      mapper.knex(mocked).table(TABLE).destroy(),
-      5,
-      'resolves to deleted count'
-    );
+    t.end();
   });
 
   t.test('Mapper#destroy() - single ID value', t => {
     const TABLE = 'TABLE';
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
     const ID_VALUE = 'ID_VALUE';
-    const COUNT = 1;
 
-    const mocked = MockedKnex(query => {
-      t.queriesEqual(query,
-        `delete from "${TABLE}" where "${ID_ATTRIBUTE}" = '${ID_VALUE}'`
-      );
-      return COUNT;
+    const destroyMapper = mapper
+      .table(TABLE)
+      .idAttribute(ID_ATTRIBUTE)
+      .require()
+      .prepareDestroy(ID_VALUE);
+
+    const queryBuilder = destroyMapper.toQueryBuilder();
+    const result = destroyMapper._handleDestroyResponse({
+      queryBuilder, response: 1
     });
 
-    t.plan(2);
-
-    t.resolvesTo(
-      mapper.knex(mocked).table(TABLE).idAttribute(ID_ATTRIBUTE).require().destroy(ID_VALUE),
-      COUNT,
-      'resolves to deleted count'
+    t.queriesEqual(
+      queryBuilder,
+      `delete from "${TABLE}" where "${ID_ATTRIBUTE}" = '${ID_VALUE}'`
     );
-  });
+    t.equal(result, 1, 'resolves to deleted count');
 
-  t.test('Mapper#require().destroy() - single ID value not found', t => {
-    const TABLE = 'TABLE';
-    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
-    const ID_VALUE = 'ID_VALUE';
-    const COUNT = 0;
-
-    const mocked = MockedKnex(query => {
-      t.queriesEqual(query, knex(TABLE).where(ID_ATTRIBUTE, ID_VALUE).delete());
-      return COUNT;
-    });
-
-    t.plan(2);
-
-    t.rejects(
-      mapper.knex(mocked).table(TABLE).idAttribute(ID_ATTRIBUTE).require().destroy(ID_VALUE),
-      NotFoundError
+    t.throws(
+      () => destroyMapper
+        .require()
+        ._handleDestroyResponse({
+          queryBuilder, response: 0
+        })
+      , NotFoundError,
+      'throws `NotFoundError` when required and no rows changed'
     );
+    t.end();
   });
-
-
 
 });

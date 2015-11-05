@@ -1,12 +1,15 @@
 import test from 'tape';
 import Atlas from '../lib/atlas';
 import Mapper from '../lib/mapper';
+import Knex from 'knex';
+
+import { omit } from 'lodash';
 
 test('Atlas', t => {
 
   t.test('Atlas()', t => {
-    const KNEX_PLACEHOLDER = 'KNEX_PLACEHOLDER';
-    const atlas = Atlas(KNEX_PLACEHOLDER);
+    const knex = Knex({});
+    const atlas = Atlas(knex);
 
     t.deepEqual(
       atlas.registry._registry, { Mapper },
@@ -14,16 +17,27 @@ test('Atlas', t => {
     );
 
     t.equal(
-      atlas('Mapper').getOption('knex'), KNEX_PLACEHOLDER,
-      'Assigns `knex` to retrieved mapper'
+      atlas('Mapper').getOption('queryBuilder').client,
+      knex.client,
+      'Assigns `knex.client` to retrieved mapper'
     );
 
-    const TestMapper = Mapper.table('test');
+    const TestMapper = Mapper.table('test').where('thing', 5);
+    const stored = TestMapper.toQueryBuilder();
+
     atlas.register('TestMapper', TestMapper);
+    const retrieved = atlas('TestMapper').toQueryBuilder();
+
+    t.queriesEqual(
+      retrieved,
+      stored,
+      'Retrieved instance has correct query'
+    );
 
     t.deepEqual(
-      atlas('TestMapper'), TestMapper.knex(KNEX_PLACEHOLDER),
-      'Allows registered instance to be retrieved'
+      omit(atlas('TestMapper')._options, 'queryBuilder'),
+      omit(TestMapper._options, 'queryBuilder'),
+      'Retrieved instance has correct options'
     );
 
     t.end();

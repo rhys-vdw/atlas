@@ -1,7 +1,11 @@
+import { assign } from 'lodash/object';
 import { isFunction, isEmpty, isString } from 'lodash/lang';
+import Knex from 'knex';
+
+const knex = Knex({});
 
 const options = {
-  queryBuilder: null
+  queryBuilder: knex.queryBuilder()
 };
 
 const methods = {
@@ -21,14 +25,15 @@ const methods = {
    *   Mapper instance with reference to given `Knex` instance.
    */
   knex(knex) {
-    const mapper = this.setOption('knex', knex);
-    const queryBuilder = mapper.getOption('queryBuilder');
+    return this.client(knex.client);
+  },
 
-    if (queryBuilder != null) {
-      queryBuilder.client = knex.client;
-    }
-
-    return mapper;
+  client(client) {
+    return this.updateOption('queryBuilder', queryBuilder =>
+      queryBuilder.client === client
+        ? queryBuilder
+        : assign(queryBuilder.clone(), {client})
+    );
   },
 
   /**
@@ -44,13 +49,10 @@ const methods = {
    *   Mapper instance targeting given table.
    */
   table(table) {
-    const mapper = this.setOption('table', table);
-    const queryBuilder = mapper.getOption('queryBuilder');
-
-    if (queryBuilder != null) {
-      queryBuilder.from(table);
-    }
-    return mapper;
+    return this.withMutations(mapper => {
+      mapper.setOption('table', table);
+      mapper.query('from', table);
+    });
   },
 
   /**
@@ -64,7 +66,7 @@ const methods = {
    * @returns {QueryBuilder} QueryBuilder instance.
    */
   toQueryBuilder() {
-    return this._queryBuilder().clone();
+    return this.getOption('queryBuilder').clone();
   },
 
   /**
@@ -89,7 +91,7 @@ const methods = {
     if (!isFunction(method) && isEmpty(method)) return this;
 
     const queryBuilder = this.isMutable()
-      ? this._queryBuilder()
+      ? this.getOption('queryBuilder')
       : this.toQueryBuilder();
 
     if (isFunction(method)) {
@@ -100,27 +102,6 @@ const methods = {
 
     return this.setOption('queryBuilder', queryBuilder);
   },
-
-  /**
-   * @method _queryBuilder
-   * @belongsTo Mapper
-   * @private
-   * @summary
-   *
-   * Return or lazily create `QueryBuilder` instance for this mapper.
-   *
-   * @returns {QueryBuilder} QueryBuilder instance.
-   */
-  _queryBuilder() {
-    let queryBuilder = this.getOption('queryBuilder');
-    if (queryBuilder == null) {
-      const knex = this.getOption('knex');
-      const table = this.getOption('table');
-      queryBuilder = knex(table);
-      this.setOption('queryBuilder', queryBuilder);
-    }
-    return queryBuilder;
-  }
 };
 
 export default { methods, options };

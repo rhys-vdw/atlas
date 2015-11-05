@@ -20,7 +20,7 @@ const methods = {
    *
    * const Users = atlas('Mapper').table('users');
    *
-   * Users.destroy(5).then(count => 
+   * Users.destroy(5).then(count =>
    *   // delete from users where id = 5
    *   // count === 1
    * );
@@ -49,30 +49,35 @@ const methods = {
    *   Promise resolving to the number of rows deleted.
    */
   destroy(...ids) {
-    const mapper = isEmpty(ids) ? this : this.target(...ids);
-    const queryBuilder = mapper.toDestroyQuery();
-    return queryBuilder.then(response =>
+    const mapper = mapper.prepareDestroy(...ids);
+    const queryBuilder = mapper.toQueryBuilder();
+    queryBuilder.then(response =>
       this._handleDestroyResponse({ response, queryBuilder })
     );
   },
 
   /**
-   * @method Mapper.toDestroyQuery
+   * @method Mapper#prepareDestroy
    * @belongsTo module:mapper/destruction
    * @summary
    *
-   * Generate a delete query.
+   * Prepare a delete query.
    *
    * @description
    *
-   * Generates a Knex `QueryBuilder` object that deletes rows from the table
+   * Prepares internal `QueryBuilder` object to deletes rows from the table
    * assigned to this `Mapper`.
    *
-   * @returns {QueryBuilder}
-   *   A Knex `QueryBuilder` that, when executed, will delete specified rows.
+   * @returns {Mapper}
+   *   Mapper with `DELETE` query.
    */
-  toDestroyQuery() {
-    return this.toQueryBuilder().delete();
+  prepareDestroy(...ids) {
+    return this.withMutations(mapper => {
+      if (!isEmpty(ids)) {
+        mapper.target(...ids);
+      }
+      mapper.query('delete');
+    });
   },
 
   /** @private **/
