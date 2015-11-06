@@ -61,11 +61,6 @@ test('Mapper - query', t => {
 
     const mapperA = Mapper.knex(knexA).table(TABLE);
 
-    t.equal(
-      mapperA.getOption('knex'), knexA,
-      'assigns `knex`'
-    );
-
     const mapperAWithQuery = mapperA.query('where', 'x', 5);
 
     t.equal(

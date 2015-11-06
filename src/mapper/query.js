@@ -90,9 +90,7 @@ const methods = {
 
     if (!isFunction(method) && isEmpty(method)) return this;
 
-    const queryBuilder = this.isMutable()
-      ? this.getOption('queryBuilder')
-      : this.toQueryBuilder();
+    const queryBuilder = this.toQueryBuilder();
 
     if (isFunction(method)) {
       method.call(queryBuilder, queryBuilder);

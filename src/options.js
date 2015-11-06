@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { clone, isEmpty, isFunction, isObject } from 'lodash/lang';
+import { isEmpty, isFunction, isObject } from 'lodash/lang';
 import { each, every } from 'lodash/collection';
 import { assign } from 'lodash/object';
 import objectToString from 'object-to-string';
@@ -7,32 +7,14 @@ import objectToString from 'object-to-string';
 import { assertType } from './assertions';
 import { InvalidOptionError } from './errors';
 
-/**
- * Invokes `clone` on any values that have it. This means that QueryBuilders
- * (or any other custom mutable object) can be cloned.
- */
-function cloneCustomizer(option) {
-  if (isFunction(option.clone)) {
-    return option.clone();
-  }
-}
-
-function cloneOptions(options) {
-  return clone(options, cloneCustomizer);
-}
-
 export default class Options {
 
   /** @private */
   constructor(options = {}) {
 
-    if (!('isMutable' in options)) {
-      options = { isMutable: false, ...options };
-    }
-
-    this._options = options.isMutable
-      ? cloneOptions(options)
-      : options;
+    this._options = 'isMutable' in options
+      ? options
+      : { isMutable: false, ...options };
   }
 
   toString() {
@@ -147,7 +129,7 @@ export default class Options {
    * instance of this class.
    *
    * @param {Object} methods
-   *   
+   *
    */
   extend(methods) {
 
