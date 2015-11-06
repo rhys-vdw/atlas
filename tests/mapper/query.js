@@ -25,7 +25,8 @@ test('Mapper - query', t => {
     );
 
     const immutable = mutable.asImmutable();
-    const immutableWithQuery = immutable.query('where', COLUMN_B, COLUMN_VALUE_B);
+    const immutableWithQuery = immutable
+      .query('where', COLUMN_B, COLUMN_VALUE_B);
 
     t.notEqual(
       immutable, immutableWithQuery,

@@ -82,7 +82,11 @@ test('Mapper', t => {
       .idAttribute(ID_ATTRIBUTES)
       .target(RECORD);
 
-    t.equals(findMapper.getOption('isSingle'), true, '`isSingle` is set to `true`');
+    t.equals(
+      findMapper.getOption('isSingle'),
+      true,
+      '`isSingle` is set to `true`'
+    );
 
     t.resolvesTo(
       findMapper.fetch(),
@@ -91,7 +95,9 @@ test('Mapper', t => {
     );
   });
 
-  t.test('Mapper#target() - with multiple records with single primary key', t => {
+  t.test(
+    'Mapper#target() - with multiple records with single primary key',
+  t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
     const TABLE = 'TABLE';

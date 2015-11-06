@@ -45,7 +45,9 @@ test('RelationTree', (t) => {
       },
       'with nested relations': {
         input: ['a.b.c.d'],
-        output: { a: { nested: { b: { nested: { c: { nested: { d: {} } } } } } } }
+        output: {
+          a: { nested: { b: { nested: { c: { nested: { d: {} } } } } } }
+        }
       },
       'with an initializer': {
         input: ['test', initializerFn],
