@@ -4,15 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "$(npm bin)/eslint src/**",
-    "lint-q": "$(npm bin)/eslint --quiet src/** || true",
-    "lint-tests": "$(npm bin)/eslint tests/**",
-    "lint-tests-q": "$(npm bin)/eslint --quiet tests/** || true",
-    "test": "npm run babel-tests && npm run babel && node compiled-tests | tap-spec",
+    "lint": "eslint src/**",
+    "lint-q": "eslint --quiet src/** || true",
+    "lint-tests": "eslint tests/**",
+    "lint-tests-q": "eslint --quiet tests/** || true",
+    "test": "npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && node compiled-tests | tap-spec",
     "test-plain": "npm run babel && npm run babel-tests && node compiled-tests",
-    "cover": "npm run babel && npm run babel-tests && $(npm bin)/istanbul cover compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
-    "babel-tests": "rm -rf compiled-tests && npm run lint-tests && babel tests -d compiled-tests",
-    "babel": "rm -rf lib && npm run lint && babel src -d lib"
+    "cover": "npm run babel && npm run babel-tests && istanbul cover compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
+    "babel-tests": "rm -rf compiled-tests && babel tests -d compiled-tests",
+    "babel": "rm -rf lib && babel src -d lib"
   },
   "author": "Rhys van der Waerden",
   "license": "to be announced",
