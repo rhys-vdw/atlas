@@ -1,7 +1,8 @@
 import './destruction';
 import './identification';
 import './query';
-import './persistence';
+import './update';
+import './insert';
 /*
 import './patch';
 import './plurality';

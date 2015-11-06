@@ -5,14 +5,16 @@ import Options from '../options';
 import Destruction from './destruction';
 import Forge from './forge';
 import Identification from './identification';
+import Insert from './insert';
 import KeyConversion from './key-conversion';
 import Patch from './patch';
-import Persistence from './persistence';
 import Plurality from './plurality';
 import Query from './query';
 import RecordAdapter from './record-adapter';
 import Retrieval from './retrieval';
+import Save from './save';
 import Target from './target';
+import Update from './update';
 import Where from './where';
 
 import { MAPPER_SENTINEL } from '../constants';
@@ -24,14 +26,16 @@ const mixins = [
   Destruction,
   Forge,
   Identification,
+  Insert,
   KeyConversion,
   Patch,
-  Persistence,
   Plurality,
   Query,
   RecordAdapter,
   Retrieval,
+  Save,
   Target,
+  Update,
   Where,
 ];
 

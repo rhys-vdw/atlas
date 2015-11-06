@@ -1,3 +1,6 @@
+/* eslint no-console: 0 */
+/* allow console here because there are some issues below. */
+
 import { Test } from 'tape';
 import _, { isObject, isString } from 'lodash';
 import deepEqual from 'deep-equal';
