@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import test from 'tape';
 import Knex from 'knex';
 const MockedKnex = null;
@@ -14,8 +15,8 @@ test('Mapper - persistence', t => {
     t.plan(5);
 
     t.resolvesTo(
-      Mapper.insert(), null,
-      'resolves no arguments to `null`'
+      Mapper.insert(), [],
+      'resolves no arguments to empty array'
     );
 
     t.resolvesTo(
@@ -89,14 +90,14 @@ test('Mapper - persistence', t => {
 
     const records = [{ color: 'red' }, { color: 'green' }];
 
-    const Apples = Pg
+    const Apples = Mapper
       .table('apples')
       .idAttribute('code')
       .prepareInsert(records);
 
     t.queriesEqual(
       Apples.toQueryBuilder(),
-      `insert into "apples" ("color") values ('red'), ('green') returning *`
+      `insert into "apples" ("color") values ('red'), ('green')`
     );
 
     t.deepEqual(
@@ -108,38 +109,43 @@ test('Mapper - persistence', t => {
     t.end();
   });
 
-  t.skip('Mapper#insert() - multiple records, returning "*"', t => {
+  t.test('Mapper#insert() - multiple records, returning "*"', t => {
 
-    const TABLE = 'TABLE';
-    const RECORDS = [{ text: 'a' }, { text: 'b'}];
+    const records = [{ name: 'valencia' }, { name: 'navel'}];
 
-    t.plan(2);
+    const Oranges = Pg
+      .table('oranges')
+      .prepareInsert(records);
 
-    const mocked = MockedKnex('pg', query => {
-      t.queriesEqual(query,
-        `insert into "${TABLE}" ("text") values ('a'), ('b') returning *`
-      );
-
-      return [
-        { text: 'a', otherText: 'b' },
-        { text: 'changed', otherText: 'c' }
-      ];
-    });
-
-    const insertMapper = Mapper
-      .knex(mocked)
-      .table(TABLE);
-
-    const insertPromise = insertMapper.insert(RECORDS);
-
-    t.resolvesTo(
-      insertPromise,
-      [
-        { text: 'a', otherText: 'b' },
-        { text: 'changed', otherText: 'c' }
-      ],
-      'assigns all attributes to records'
+    t.queriesEqual(
+      Oranges.toQueryBuilder(), `
+        insert into "oranges" ("name")
+        values ('valencia'), ('navel')
+        returning *
+      `
     );
+
+    const response = [
+      { id: 1, name: 'valencia', created_at: 'some_date' },
+      { id: 2, name: 'navel', created_at: 'some_time' }
+    ];
+
+    const result = Oranges._handleInsertManyResponse(response, records);
+
+    _(records).zip(result).each(([inserted, returned]) => {
+      t.equal(inserted, returned, 'record is mutated');
+    }).value();
+
+    t.deepEqual(
+      response,
+      [
+        { id: 1, name: 'valencia', created_at: 'some_date' },
+        { id: 2, name: 'navel', created_at: 'some_time' }
+      ],
+      'assigns ID attribute to first record only'
+    );
+
+    t.end();
   });
 
   t.skip('Mapper#update()', t => {

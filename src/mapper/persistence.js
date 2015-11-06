@@ -8,7 +8,7 @@ import Promise from 'bluebird';
 import { NotFoundError, UnidentifiableRecordError } from '../errors';
 
 const isSingleRecord = (...records) =>
-  records.length <= 1 && !isArray(head(records));
+  records.length === 1 && !isArray(head(records));
 
 
 const methods = {
@@ -180,7 +180,6 @@ const methods = {
    */
   _handleInsertOneResponse(response, record) {
 
-    console.log('processing record', response, record);
     // We handle inserting `null` records here.
     if (record == null) {
       return null;
@@ -255,7 +254,7 @@ const methods = {
   update(...records) {
 
     if (isEmpty(records)) {
-      return Promise.resolve(undefined);
+      return Promise.resolve([]);
     }
 
     const isSingle = isSingleRecord(...records);
