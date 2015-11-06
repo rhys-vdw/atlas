@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import test from 'tape';
 import Knex from 'knex';
-const MockedKnex = null;
 
 import Mapper from '../../lib/mapper';
 import { NotFoundError, UnidentifiableRecordError } from '../../lib/errors';
@@ -14,9 +13,10 @@ test('Mapper - persistence', t => {
 
     t.plan(5);
 
-    t.resolvesTo(
-      Mapper.insert(), [],
-      'resolves no arguments to empty array'
+    t.throws(
+      () => Mapper.insert(),
+      TypeError,
+      'throws `TypeError` synchronously with no arguments'
     );
 
     t.resolvesTo(
@@ -24,84 +24,89 @@ test('Mapper - persistence', t => {
       'resolves `null` to `null`'
     );
 
-    t.resolvesTo(
+    t.resolvesToDeep(
       Mapper.insert([]), [],
       'resolves empty array to empty array'
     );
 
-    t.resolvesTo(
+    t.resolvesToDeep(
       Mapper.insert([null, null]), [],
       'resolves array of `null` values to an empty array'
     );
 
-    t.resolvesTo(
+    t.resolvesToDeep(
       Mapper.insert(null, null), [],
       'resolves multiple `null` value arguments to an empty array'
     );
   });
 
-  t.test('Mapper#insert() - single record, returning primary key', t => {
+  t.test('Mapper#prepareInsert()', t => {
 
-    const Records = Mapper
-      .table('records')
-      .idAttribute('record_id')
-      .prepareInsert({ text: 'a' });
+    const Records = Mapper.table('records').prepareInsert(
+      { text: 'a' }
+    );
 
     t.queriesEqual(
       Records.toQueryBuilder(),
-      `insert into "records" ("text") values ('a')`
+      `insert into "records" ("text") values ('a')`,
+      `single record - SQL`
     );
 
-    t.deepEqual(
-      Records._handleInsertOneResponse([5], { text: 'a' }),
-      { record_id: 5, text: 'a' },
-      'assigns ID attribute'
+    const Things = Pg.table('things').prepareInsert(
+      { item: 'a' }
     );
-
-    t.end();
-  });
-
-  t.test('Mapper#insert() - single record, with composite key, result empty',
-  t => {
-
-    const Things = Mapper
-      .table('things')
-      .idAttribute(['id_a', 'id_b'])
-      .prepareInsert({ item: 'a' });
 
     t.queriesEqual(
       Things.toQueryBuilder(),
-      `insert into "things" ("item") values ('a')`
+      `insert into "things" ("item") values ('a') returning *`,
+      `single record - PostgreSQL`
     );
 
-    t.deepEqual(
-      Things._handleInsertOneResponse([], { item: 'a' }),
-      { item: 'a' },
-      'returns unmodified record'
+    const Apples = Mapper.table('apples').prepareInsert([
+      { color: 'red' },
+      { color: 'green' }
+    ]);
+
+    t.queriesEqual(
+      Apples.toQueryBuilder(),
+      `insert into "apples" ("color") values ('red'), ('green')`,
+      `multiple records`
     );
 
     t.end();
   });
 
-  t.test(
-    'Mapper#insert() - multiple records with single key, returning first ' +
-    'primary key only',
-  t => {
+  t.test('Mapper#handleInsertOneResponse()', t => {
 
-    const records = [{ color: 'red' }, { color: 'green' }];
+    const Records = Mapper.idAttribute('record_id');
 
-    const Apples = Mapper
-      .table('apples')
-      .idAttribute('code')
-      .prepareInsert(records);
-
-    t.queriesEqual(
-      Apples.toQueryBuilder(),
-      `insert into "apples" ("color") values ('red'), ('green')`
+    t.deepEqual(
+      Records.handleInsertOneResponse([5], { text: 'a' }),
+      { record_id: 5, text: 'a' },
+      'ID array response'
     );
 
     t.deepEqual(
-      Apples._handleInsertManyResponse([1234], records),
+      Records.handleInsertOneResponse([], { item: 'a' }),
+      { item: 'a' },
+      'Empty response'
+    );
+
+    t.end();
+  });
+
+
+  t.test('Mapper#handleInsertManyResponse() - single ID response', t => {
+
+    const records = [
+      { code: 1234, color: 'red' },
+      { color: 'green' }
+    ];
+
+    const Records = Mapper.idAttribute('code');
+
+    t.deepEqual(
+      Records.handleInsertManyResponse([1234], records),
       [{ code: 1234, color: 'red' }, { color: 'green' }],
       'assigns ID attribute to first record only'
     );
@@ -109,31 +114,19 @@ test('Mapper - persistence', t => {
     t.end();
   });
 
-  t.test('Mapper#insert() - multiple records, returning "*"', t => {
-
-    const records = [{ name: 'valencia' }, { name: 'navel'}];
-
-    const Oranges = Pg
-      .table('oranges')
-      .prepareInsert(records);
-
-    t.queriesEqual(
-      Oranges.toQueryBuilder(), `
-        insert into "oranges" ("name")
-        values ('valencia'), ('navel')
-        returning *
-      `
-    );
+  t.test('Mapper#handleInsertManyResponse() - PostgreSQL response', t => {
+    const Oranges = Pg.table('oranges');
+    const oranges = [{ name: 'valencia' }, { name: 'navel'}];
 
     const response = [
       { id: 1, name: 'valencia', created_at: 'some_date' },
       { id: 2, name: 'navel', created_at: 'some_time' }
     ];
 
-    const result = Oranges._handleInsertManyResponse(response, records);
+    const result = Oranges.handleInsertManyResponse(response, oranges);
 
-    _(records).zip(result).each(([inserted, returned]) => {
-      t.equal(inserted, returned, 'record is mutated');
+    _(oranges).zip(result).each(([inserted, returned], index) => {
+      t.equal(inserted, returned, `record ${index} is mutated`);
     }).value();
 
     t.deepEqual(
@@ -148,13 +141,14 @@ test('Mapper - persistence', t => {
     t.end();
   });
 
-  t.skip('Mapper#update()', t => {
+  t.test('Mapper#update()', t => {
 
     t.plan(5);
 
-    t.resolvesTo(
-      Mapper.update(), null,
-      'resolves no arguments to `null`'
+    t.throws(
+      () => Mapper.update(),
+      TypeError,
+      'throws `TypeError` synchronously with no arguments'
     );
 
     t.resolvesTo(
@@ -162,100 +156,101 @@ test('Mapper - persistence', t => {
       'resolves `null` to `null`'
     );
 
-    t.resolvesTo(
+    t.resolvesToDeep(
       Mapper.update([]), [],
       'resolves empty array to empty array'
     );
 
-    t.resolvesTo(
-      Mapper.update([null, null]), [null, null],
-      'resolves array of `null` values to an array of `null` values'
+    t.resolvesToDeep(
+      Mapper.update([null, null]), [],
+      'resolves array of `null` values to an empty array'
     );
 
-    t.resolvesTo(
-      Mapper.update(null, null), [null, null],
-      'resolves multiple `null` value arguments to an array of `null` values'
-    );
-  });
-
-  t.skip(
-    'Mapper#update() - single record, returning one record updated',
-  t => {
-
-    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
-    const ID_VALUE = 'ID_VALUE';
-    const TABLE = 'TABLE';
-    const RECORD = { [ID_ATTRIBUTE]: ID_VALUE, text: 'a' };
-
-    t.plan(2);
-
-    const mocked = MockedKnex(query => {
-      t.queriesEqual(query, `
-        update "${TABLE}"
-        set
-          "${ID_ATTRIBUTE}" = '${ID_VALUE}',
-          "text" = 'a'
-        where "ID_ATTRIBUTE" = 'ID_VALUE'
-      `);
-
-      return 1;
-    });
-
-    const updateMapper = Mapper
-      .knex(mocked)
-      .table(TABLE)
-      .idAttribute(ID_ATTRIBUTE);
-
-    const updatePromise = updateMapper.update(RECORD);
-
-    t.resolvesTo(
-      updatePromise,
-      { ...RECORD },
-      'resolves successfully'
+    t.resolvesToDeep(
+      Mapper.update(null, null), [],
+      'resolves multiple `null` value arguments to an empty array'
     );
   });
 
-  t.skip(
-    'Mapper#update() - single record, returning no records updated',
-  t => {
+  t.test('Mapper#prepareUpdate()', t => {
 
-    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
-    const ID_VALUE = 'ID_VALUE';
-    const TABLE = 'TABLE';
-    const RECORD = { [ID_ATTRIBUTE]: ID_VALUE, text: 'a' };
+    const Records = Mapper
+      .table('records')
+      .idAttribute('record_id')
+      .prepareUpdate({ record_id: 5, text: 'a' });
 
-    const mocked = MockedKnex(query => 0);
-
-    const updateMapper = Mapper
-      .knex(mocked)
-      .table(TABLE)
-      .idAttribute(ID_ATTRIBUTE);
-
-    const updatePromise = updateMapper.update(RECORD);
-
-    t.plan(1);
-
-    t.rejects(
-      updatePromise,
-      NotFoundError,
-      'rejects with `NotFoundError`'
+    t.queriesEqual(
+      Records.toQueryBuilder(), `
+        update "records"
+        set "text" = 'a'
+        where "record_id" = 5
+      `, 'single record'
     );
-  });
 
-  t.skip(
-    'Mapper#update() - single record with no `idAttribute` present',
-  t => {
-
-    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
-    const RECORD = {};
-
-    t.plan(1);
-
-    t.rejects(
-      Mapper.idAttribute(ID_ATTRIBUTE).update(RECORD),
+    t.throws(
+      () => Mapper.prepareUpdate({}),
       UnidentifiableRecordError,
       'rejects with `UnidentifiableRecordError`'
     );
+
+    t.end();
+  });
+
+  t.test('Mapper.handleUpdateRowResponse() - data response', t => {
+
+    const record = { id: 5, name: 'Bob' };
+    const result = Mapper.handleUpdateRowResponse({
+      response: [{ id: 5, updated_at: 'time' }], record
+    });
+
+    t.deepEqual(
+      result,
+      { id: 5, updated_at: 'time', name: 'Bob' },
+      'result is correct when response is row data array'
+    );
+
+    t.equal(result, record,
+      'record is mutated in place when response is row data array'
+    );
+
+    t.end();
+  });
+
+  t.test('Mapper.handleUpdateRowResponse() - changed count response', t => {
+
+    const record = { id: 5, name: 'Bob' };
+    const result = Mapper.handleUpdateRowResponse({
+      response: 1, record
+    });
+
+    t.deepEqual(
+      result,
+      { id: 5, name: 'Bob' },
+      'result is correct when response is count'
+    );
+
+    t.equal(result, record,
+      'record returned when response is count'
+    );
+
+    t.end();
+  });
+
+  t.test('Mapper.require().handleUpdateRowResponse()', t => {
+
+    t.throws(
+      () => Mapper.require().handleUpdateRowResponse({ response: 0 }),
+      NotFoundError,
+      'Throws `NotFoundError` when response is `0`'
+    );
+
+    t.throws(
+      () => Mapper.require().handleUpdateRowResponse({ response: [] }),
+      NotFoundError,
+      'Throws `NotFoundError` when response is `[]`'
+    );
+
+    t.end()
   });
 
   t.end();

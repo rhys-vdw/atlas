@@ -1,15 +1,12 @@
 import _ from 'lodash';
 import { isArray, isEmpty, isObject } from 'lodash/lang';
-import { map, size } from 'lodash/collection';
-import { flatten, head, zipWith } from 'lodash/array';
+import { groupBy, map, size } from 'lodash/collection';
+import { flatten, first, zipWith } from 'lodash/array';
 import { mapValues } from 'lodash/object';
 import Promise from 'bluebird';
 
 import { NotFoundError, UnidentifiableRecordError } from '../errors';
-
-const isSingleRecord = (...records) =>
-  records.length === 1 && !isArray(head(records));
-
+import { normalizeRecords } from '../arguments';
 
 const methods = {
 
@@ -27,38 +24,33 @@ const methods = {
    */
   save(...records) {
 
-    if (isEmpty(records)) {
-      return Promise.resolve([]);
+    const toSave = normalizeRecords(...records);
+
+    if (isEmpty(toSave)) {
+      return Promise.resolve(toSave);
     }
 
-    // Check if we're saving just one record...
-    //
-    const isSingle = isSingleRecord(...records);
-
-    // If so, we can just distribute it directly to the correct method.
-    //
-    if (isSingle) {
-      const record = head(records);
-      return this.isNew(record)
-        ? this.insert(record)
-        : this.update(record);
+    if (!isArray(toSave)) {
+      return this.isNew(toSave)
+        ? this.insert(toSave)
+        : this.update(toSave);
     }
 
     // Otherwise group records according to whether they already exist in the
     // database or not.
     //
-    const grouped = _(records).flatten().compact().groupBy(record =>
+    const recordsByMethod = groupBy(toSave, record =>
       this.isNew(record) ? 'insert' : 'update'
     ).value();
 
     // Now pass records to `insert` or `update` accordingly.
     //
     return Promise.props(
-      mapValues(grouped, (records, method) => this[method](records))
-    ).bind(this).then(this._handleSaveManyResponse);
+      mapValues(recordsByMethod, (records, method) => this[method](records))
+    ).bind(this).then(this.handleSaveManyResponse);
   },
 
-  _handleSaveManyResponse({insert, update}) {
+  handleSaveManyResponse({insert, update}) {
     return flatten([insert, update]);
   },
 
@@ -96,29 +88,18 @@ const methods = {
    */
   insert(...records) {
 
-    // Check if this is an insert for a single record. This determines how the
-    // query response is used.
-    //
-    const isSingle = isSingleRecord(...records);
-
-    // Normalize records into a flat array, defaulting falsey values to `null`.
-    //
-    const chain = _(records).flatten().compact();
+    const toInsert = normalizeRecords(...records);
 
     // Short circuit if no truthy values are supplied.
-    //
-    if (chain.isEmpty()) {
-      return Promise.resolve(isSingle ? null : []);
+    if (isEmpty(toInsert)) {
+      return Promise.resolve(toInsert);
     }
 
-    const toInsert = isSingle ? chain.head() : chain.value();
-
-    // Pass non-null records to `QueryBuilder`.
-    //
+    // Pass records to `QueryBuilder`.
     return this.prepareInsert(toInsert).toQueryBuilder()
-    .then(response => isSingle
-      ? this._handleInsertOneResponse(response, toInsert)
-      : this._handleInsertManyResponse(response, toInsert)
+    .then(response => isArray(toInsert)
+      ? this.handleInsertManyResponse(response, toInsert)
+      : this.handleInsertOneResponse(response, toInsert)
     );
   },
 
@@ -144,8 +125,6 @@ const methods = {
 
     // `QueryBuilder#insert` accepts a single row or an array of rows.
     //
-    // Not necessary to remove `null` values here, Knex handles this for us.
-    //
     // Apply any necessary processing to the records. If these methods haven't
     // been overridden they just default to `_.identity`, and this is a noop.
     //
@@ -164,7 +143,7 @@ const methods = {
   },
 
   /**
-   * @method _handleInsertOneResponse
+   * @method handleInsertOneResponse
    * @belongsTo Mapper
    * @private
    * @summary
@@ -178,7 +157,7 @@ const methods = {
    * @returns {Object}
    *   Record updated according to response.
    */
-  _handleInsertOneResponse(response, record) {
+  handleInsertOneResponse(response, record) {
 
     // We handle inserting `null` records here.
     if (record == null) {
@@ -189,7 +168,7 @@ const methods = {
     // inserted). Or handle just a single element from the response array.
     //
     const returned = isArray(response)
-      ? head(response)
+      ? first(response)
       : response;
 
     // If this is empty, just return the model unmodified. This is the case,
@@ -219,7 +198,7 @@ const methods = {
   },
 
   /**
-   * @method _handleInsertManyResponse
+   * @method handleInsertManyResponse
    * @belongsTo Mapper
    * @private
    * @summary
@@ -235,8 +214,8 @@ const methods = {
    * @returns {Object[]}
    *   Records updated with response data.
    */
-  _handleInsertManyResponse(response, records) {
-    return zipWith(response, records, this._handleInsertOneResponse, this);
+  handleInsertManyResponse(response, records) {
+    return zipWith(response, records, this.handleInsertOneResponse, this);
   },
 
   /**
@@ -253,20 +232,21 @@ const methods = {
    */
   update(...records) {
 
-    if (isEmpty(records)) {
-      return Promise.resolve([]);
+    const toUpdate = normalizeRecords(...records);
+
+    if (isEmpty(toUpdate)) {
+      return Promise.resolve(toUpdate);
     }
 
-    const isSingle = isSingleRecord(...records);
-    const flattened = flatten(records);
+    if (!isArray(toUpdate)) {
+      return this.updateRow(toUpdate);
+    }
 
-    return isSingle
-      ? this.updateOne(head(flattened))
-      : this.updateAll(flattened);
+    return Promise.all(map(records, this.updateRow, this));
   },
 
   /**
-   * @method updateOne
+   * @method updateRow
    * @belongsTo Mapper
    * @summary
    *
@@ -291,57 +271,45 @@ const methods = {
    * @returns {Promise<Object>}
    *   A promise resolving to the updated record.
    */
-  updateOne: Promise.method(function(record) {
+  updateRow(record) {
 
     // Short circuit if no argument is provided.
-    //
-    if (!record) {
+    if (record == null) {
       return null;
     }
 
-    const queryBuilder = this.toUpdateOneQueryBuilder(record);
-
-    return queryBuilder.then(response => {
-
-      // Handle either rows or changed count.
-      //
-      // TODO: Actually assign row values back onto record.
-      //
-      const count = isArray(response) ? response.length : response;
-
-      // If no row was updated, the record was not present in the database. For
-      // now always throw here, forcing consumer code to catch.
-      //
-      if (count === 0) throw new NotFoundError(
-        this, queryBuilder, 'update'
-      );
-
-      return record;
-    });
-  }),
-
-  /**
-   * @method updateAll
-   * @belongsTo Mapper
-   * @summary
-   *
-   * Update many records.
-   *
-   * @description
-   *
-   * Update the rows corresponding to each record. Each update is done as its
-   * own query.
-   *
-   * @param {Object|Object[]}
-   *   Records to be updated.
-   * @returns {Promise<Object|Object[]>}
-   *   A promise resolving to the updated records.
-   */
-  updateAll(records) {
-    return Promise.all(map(records, this.updateOne, this));
+    const queryBuilder = this.prepareUpdate(record).toQueryBuilder();
+    queryBuilder.then(response =>
+      this.handleUpdateRowResponse({ queryBuilder, response, record })
+    );
   },
 
-  toUpdateOneQueryBuilder(record) {
+  handleUpdateRowResponse({ queryBuilder, response, record }) {
+
+    // Handle either rows or changed count.
+    const count = isArray(response) ? response.length : response;
+
+    // If no row was updated, the record was not present in the database. For
+    // now always throw here, forcing consumer code to catch.
+    //
+    if (count === 0) throw new NotFoundError(
+      this, queryBuilder, 'update'
+    );
+
+    // Update columns. This will just return the record if there are no columns.
+    return this.setColumns(record, first(response));
+  },
+
+  getUpdateAttributes(record) {
+    const idAttribute = this.getOption('idAttribute');
+    return this.omitAttributes(record, idAttribute);
+  },
+
+  getUpdateColumns(record) {
+    return this.attributesToColumns(this.getUpdateAttributes(record));
+  },
+
+  prepareUpdate(record) {
 
     // Get ID attributes as an array.
     //
@@ -364,14 +332,15 @@ const methods = {
     // Process attributes for insertion. This is a no-op unless these methods
     // have been overridden.
     //
-    const updateColumns = this.attributesToColumns(this.getAttributes(record));
+    const updateColumns = this.getUpdateColumns(record);
     const whereColumns = this.attributesToColumns(attributes);
 
     // Update the specific row, appending a `RETURNS` clause if PostgreSQL.
     //
-    return this.toQueryBuilder()
+    return this.query(queryBuilder => queryBuilder
       .where(whereColumns)
-      .update(updateColumns, '*');
+      .update(updateColumns, '*')
+    );
   },
 
 };

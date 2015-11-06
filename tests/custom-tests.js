@@ -38,6 +38,38 @@ Test.prototype.resolvesTo = function(promise, expected, message, extra) {
 
   Promise.resolve(promise)
   .then(result => {
+    passed = result === expected;
+    actual = result;
+  }).catch(err => {
+    // TOOD: work out how to get tape to display error.
+    console.error('error caught!', err);
+    error = err;
+  }).then(() => {
+    this._assert(passed, {
+      message,
+      operator: 'resolvesTo',
+      actual,
+      expected,
+      error,
+      extra
+    });
+  });
+
+};
+
+
+Test.prototype.resolvesToDeep = function(promise, expected, message, extra) {
+
+  if (!message) {
+    message = 'resolves promise';
+  }
+
+  let passed = false;
+  let actual;
+  let error;
+
+  Promise.resolve(promise)
+  .then(result => {
     passed = deepEqual(result, expected);
     actual = result;
   }).catch(err => {
