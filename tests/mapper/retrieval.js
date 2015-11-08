@@ -1,91 +1,99 @@
 import test from 'tape';
-import MockedKnex from '../mocked-knex';
 
-import mapper from '../../lib/mapper';
-import { NoRecordsFoundError } from '../../lib/errors';
+import Mapper from '../../lib/mapper';
+import { NoRowsFoundError, NotFoundError } from '../../lib/errors';
 
 test('Mapper - retrieval', t => {
 
   t.test('defaultOptions', t => {
 
     t.equal(
-      mapper.getOption('isSingle'), false,
+      Mapper.getOption('isSingle'), false,
       'isSingle = false'
     );
 
     t.equal(
-      mapper.getOption('isRequired'), false,
+      Mapper.getOption('isRequired'), false,
       'isRequired = false'
     );
 
     t.end();
   });
 
-  t.test('Mapper#fetchOne()', t => {
+  t.test('Mapper#prepareFetch()', t => {
 
-    const TABLE = 'TABLE';
-    const ROWS = [{ id: 1 }];
+    const Things = Mapper.table('things');
 
-    t.plan(2);
+    t.queriesEqual(
+      Things.prepareFetch().toQueryBuilder(),
+      `select "things".* from "things"`,
+      `correct query when fetching all`
+    );
 
-    const mocked = MockedKnex(query => {
-      t.queriesEqual(
-        query, `select "${TABLE}".* from "${TABLE}" limit 1`
-      );
+    const Thing = Things.one();
 
-      return ROWS;
+    t.queriesEqual(
+      Thing.prepareFetch().toQueryBuilder(),
+      `select "things".* from "things" limit 1`,
+      `correct query when fetching one`
+    );
+
+    t.end();
+  });
+
+  t.test('Mapper.handleFetchResponse()', t => {
+
+    const Things = Mapper.table('things');
+
+    const result = Things.handleFetchResponse({
+      response: [{ id: 1 }, { id: 2 }]
     });
 
-    mapper.table(TABLE).knex(mocked).fetchOne().then(record =>
-      t.deepEqual(record, ROWS[0], 'returns single record')
+    t.deepEqual(
+      result,
+      [{ id: 1 }, { id: 2 }],
+      `returns array of records`
     );
 
+    t.end();
   });
 
-  t.test('Mapper#fetchAll()', t => {
+  t.test('Mapper.one().handleFetchResponse()', t => {
 
-    const TABLE = 'TABLE';
-    const ROWS = [{ id: 1 }, { id: 2 }];
+    const Thing = Mapper.table('things').one();
 
-    t.plan(2);
-
-    const mocked = MockedKnex(query => {
-      t.queriesEqual(
-        query, `select "${TABLE}".* from "${TABLE}"`
-      );
-
-      return ROWS;
+    const result = Thing.handleFetchResponse({
+      response: [{ id: 1 }]
     });
 
-    mapper.table(TABLE).knex(mocked).fetchAll().then(record =>
-      t.deepEqual(record, ROWS, 'returns array of records')
+    t.deepEqual(
+      result,
+      { id: 1 },
+      `returns single record`
     );
 
+    t.end();
   });
 
-  t.test('Mapper#require()', t => {
+  t.test('Mapper.require().handleFetchResponse()', t => {
 
-    const TABLE = 'TABLE';
-    const EMPTY_ROWS = [];
-    const FULL_ROWS = [{ id: 1 }, { id: 2 }];
+    const Things = Mapper.table('things');
 
-    t.plan(2);
-
-    const mockedEmpty = MockedKnex(() => EMPTY_ROWS);
-
-    t.rejects(
-      mapper.knex(mockedEmpty).table(TABLE).require().fetch(),
-      NoRecordsFoundError,
-      'rejects on empty result set with `NoRecordsFoundError`'
+    t.throws(
+      () => Things.require().handleFetchResponse({ response: [] }),
+      NoRowsFoundError,
+      'fires `NoRowsFoundError` when nothing is returned.'
     );
 
-    const mockedFull = MockedKnex(() => FULL_ROWS);
+    const Thing = Things.one();
 
-    t.resolvesTo(
-      mapper.knex(mockedFull).table(TABLE).fetch(),
-      FULL_ROWS,
-      'resolves correctly when not set'
+    t.throws(
+      () => Thing.require().handleFetchResponse({ response: [] }),
+      NotFoundError,
+      'fires `NotFoundError` when single record is not returned.'
     );
 
+    t.end();
   });
+
 });

@@ -1,5 +1,5 @@
 import { isArray } from 'lodash/lang';
-import { first, map } from 'lodash/collection';
+import { map } from 'lodash/collection';
 import { NoRowsFoundError } from '../errors';
 
 const methods = {

@@ -7,7 +7,6 @@ import Forge from './forge';
 import Identification from './identification';
 import Insert from './insert';
 import KeyConversion from './key-conversion';
-import Plurality from './plurality';
 import Query from './query';
 import RecordAdapter from './record-adapter';
 import Retrieval from './retrieval';
@@ -28,7 +27,6 @@ const mixins = [
   Identification,
   Insert,
   KeyConversion,
-  Plurality,
   Query,
   RecordAdapter,
   Retrieval,

@@ -3,13 +3,52 @@ import { isEmpty } from 'lodash/lang';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 
 const options = {
-  isRequired: false
+  isRequired: false,
+  isSingle: false
 };
 
 const methods = {
 
   require() {
     return this.setOption('isRequired', true);
+  },
+
+  /**
+   * @method one
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Query a single row.
+   *
+   * @description
+   *
+   * Limit query to a single row. Causes subsequent calls to {@link
+   * Mapper#fetch fetch} to resolve to a single record (rather
+   * than an array). Opposite of {@link Mapper#all all}.
+   *
+   * @returns {Mapper}
+   *   Mapper targeting a single row.
+   */
+  one() {
+    return this.setOption('isSingle', true);
+  },
+
+  /**
+   * @method all
+   * @belongsTo Mapper
+   * @summary
+   *
+   * Query multiple rows. Default behaviour.
+   *
+   * @description
+   *
+   * Unlimits query. Opposite of {@link Mapper#one one}.
+   *
+   * @returns {Mapper}
+   *   Mapper targeting a single row.
+   */
+  all() {
+    return this.setOption('isSingle', false);
   },
 
   fetchOne() {
@@ -29,25 +68,25 @@ const methods = {
   },
 
   fetch() {
-    const queryBuilder = this.toFetchQueryBuilder();
+    const queryBuilder = this.prepareFetch().toQueryBuilder();
     return queryBuilder.then(response =>
-      this._handleFetchResponse({ queryBuilder, response })
+      this.handleFetchResponse({ queryBuilder, response })
     );
   },
 
-  toFetchQueryBuilder() {
-    const queryBuilder = this.toQueryBuilder();
+  prepareFetch() {
     const isSingle = this.getOption('isSingle');
     const table = this.getOption('table');
 
-    if (isSingle) {
-      queryBuilder.limit(1);
-    }
-
-    return queryBuilder.select(`${table}.*`);
+    return this.query(queryBuilder => {
+      if (isSingle) {
+        queryBuilder.limit(1);
+      }
+      queryBuilder.select(`${table}.*`);
+    });
   },
 
-  _handleFetchResponse({ queryBuilder, response }) {
+  handleFetchResponse({ queryBuilder, response }) {
     const isRequired = this.getOption('isRequired');
     const isSingle   = this.getOption('isSingle');
 
