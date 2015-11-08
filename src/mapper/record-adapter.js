@@ -44,6 +44,11 @@ const methods = {
   // Private interface implemented in terms of the above.
 
   /** @private */
+  columnsToRecord(columns) {
+    return this.createRecord(this.columnsToAttributes(columns));
+  },
+
+  /** @private */
   setColumns(record, columns) {
     // Short circuit early - `null` should never be passed to
     // `attributesToColumns` as it's intended to be overridden and the client

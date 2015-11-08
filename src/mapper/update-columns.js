@@ -1,7 +1,6 @@
 import { isArray } from 'lodash/lang';
-import { map } from 'lodash/collection';
-import { flow } from 'lodash/function';
-import { NotFoundError, NoRowsFoundError } from '../errors';
+import { first, map } from 'lodash/collection';
+import { NoRowsFoundError } from '../errors';
 
 const methods = {
 
@@ -11,10 +10,10 @@ const methods = {
    * @returns
    *   Number of attributes
    */
-  patch(attributes) {
-    const queryBuilder = this.toPatchQueryBuilder(attributes);
+  updateColumns(attributes) {
+    const queryBuilder = this.prepareUpdateColumns(attributes).toQueryBuilder();
     return queryBuilder.then(response =>
-      this._handlePatchResponse({ attributes, queryBuilder, response })
+      this.handleUpdateColumnsResponse({ attributes, queryBuilder, response })
     );
   },
 
@@ -22,17 +21,17 @@ const methods = {
    * @param {Object} attributes
    *   Attributes to be set on all matched rows.
    */
-  toPatchQueryBuilder(attributes) {
+  prepareUpdateColumns(attributes) {
     const columns = this.attributesToColumns(attributes);
-    return this.toQueryBuilder().update(columns, '*');
+    return this.query('update', columns, '*');
   },
 
   /**
    * @param {Object} info
    * @param {Object} info.attributes
-   *   Attributes passed to `patch()`.
+   *   Attributes passed to `updateColumns()`.
    * @param {Object} info.queryBuilder
-   *   The `QueryBuilder` instance that generated the `patch` query.
+   *   The `QueryBuilder` instance that generated the `updateColumns` query.
    * @param {Object[]|Number} info.response
    *   Either a count of updated rows, or an array of updated rows.
    * @returns {Object[]|Number}
@@ -41,10 +40,9 @@ const methods = {
    * @throws NoRowsFoundError
    * @private
    */
-  _handlePatchResponse({ attributes,  queryBuilder, response }) {
+  handleUpdateColumnsResponse({ attributes,  queryBuilder, response }) {
 
     const isRequired = this.getOption('isRequired');
-    const isSingle = this.getOption('isSingle');
 
     // Handle either rows or count response.
     let rows, count;
@@ -58,17 +56,14 @@ const methods = {
 
     // Reject if chained with `.require()` and response is empty.
     if (isRequired && count === 0) {
-      throw isSingle
-        ? new NotFoundError(this, queryBuilder, 'patch')
-        : new NoRowsFoundError(this, queryBuilder, 'patch');
+      throw new NoRowsFoundError(this, queryBuilder, 'updateColumns');
     }
 
     // If we have a full response (as is enabled by PostgreSQL), then
     if (rows) {
-      const rowToRecord = flow(this.columnsToAttributes, this.createRecord);
-      return map(response, rowToRecord, this);
+      return map(response, this.columnsToRecord, this);
     }
-    
+
     // Otherwise just return a count.
     return count;
   }
