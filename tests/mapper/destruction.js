@@ -20,15 +20,11 @@ test('Mapper', t => {
   });
 
   t.test('Mapper#destroy() - single ID value', t => {
-    const TABLE = 'TABLE';
-    const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
-    const ID_VALUE = 'ID_VALUE';
 
     const destroyMapper = mapper
-      .table(TABLE)
-      .idAttribute(ID_ATTRIBUTE)
+      .table('table')
       .require()
-      .prepareDestroy(ID_VALUE);
+      .prepareDestroy(5);
 
     const queryBuilder = destroyMapper.toQueryBuilder();
     const result = destroyMapper._handleDestroyResponse({
@@ -37,7 +33,7 @@ test('Mapper', t => {
 
     t.queriesEqual(
       queryBuilder,
-      `delete from "${TABLE}" where "${ID_ATTRIBUTE}" = '${ID_VALUE}'`
+      `delete from "table" where "table"."id" = 5`
     );
     t.equal(result, 1, 'resolves to deleted count');
 

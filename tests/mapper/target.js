@@ -16,7 +16,7 @@ test('Mapper', t => {
       Item.toQueryBuilder(), `
         select "items".*
         from "items"
-        where "item_id" = 'id_value'
+        where "items"."item_id" = 'id_value'
         limit 1
     `);
 
@@ -40,7 +40,7 @@ test('Mapper', t => {
       Items.toQueryBuilder(), `
       select "items".*
       from "items"
-      where "item_id" in (1, 2)
+      where "items"."item_id" in (1, 2)
     `);
 
     t.equals(
@@ -63,7 +63,7 @@ test('Mapper', t => {
       Items.toQueryBuilder(), `
       select "items".*
       from "items"
-      where "key_a" = 1 and "key_b" = 2
+      where "items"."key_a" = 1 and "items"."key_b" = 2
       limit 1
     `);
 
@@ -87,7 +87,7 @@ test('Mapper', t => {
       Items.toQueryBuilder(), `
         select "items".*
         from "items"
-        where ("key_a", "key_b") in ((1, 2),(1, 3))
+        where ("items"."key_a", "items"."key_b") in ((1, 2),(1, 3))
     `);
 
     t.equals(

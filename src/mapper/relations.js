@@ -1,6 +1,6 @@
 import Promise from 'bluebird';
 import { mapValues, reduce } from 'lodash/collection';
-import { head } from 'lodash/array';
+import { first } from 'lodash/array';
 import { keys } from 'lodash/object';
 import { isEmpty } from 'lodash/lang';
 import RelationTree, { compile, mergeTrees, normalize } from '../relation-tree';
@@ -36,16 +36,16 @@ const methods = {
 
     // Special case for `withRelated()`, `withRelated(true)` and
     // `withRelated(false)`.
-    const first = head(relations);
+    const allFlag = first(relations);
 
     // Include all relations defined on model.
-    if (isEmpty(relations) || first === true) {
+    if (isEmpty(relations) || allFlag === true) {
       const relationNames = keys(this.getOption('relations'));
       return this.setOption('withRelated', compile(...relationNames));
     }
 
     // Include no relations.
-    if (first === false) {
+    if (allFlag === false) {
       return this.setOption('withRelated', new RelationTree());
     }
 

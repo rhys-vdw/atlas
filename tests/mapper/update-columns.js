@@ -17,7 +17,7 @@ test('== Mapper - update columns ==', t => {
       Users.toQueryBuilder(), `
         update "users"
         set "first_name" = 'John', "last_name" = 'Smith'
-        where "id" in (0, 1, 2)
+        where "users"."id" in (0, 1, 2)
       `,
       'correct query for SQL'
     );
@@ -31,7 +31,7 @@ test('== Mapper - update columns ==', t => {
       PgUsers.toQueryBuilder(), `
         update "users"
         set "first_name" = 'John', "last_name" = 'Smith'
-        where "thing" in ('0', '1', '2')
+        where "users"."thing" in ('0', '1', '2')
         returning *
       `,
       'correct query for PostgreSQL'

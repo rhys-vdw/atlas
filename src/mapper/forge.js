@@ -1,5 +1,6 @@
 import { defaults } from 'lodash/object';
 import { isArray, isObject } from 'lodash/lang';
+import { zipObject } from 'lodash/array';
 
 const options = {
   defaultAttributes: null
@@ -7,9 +8,18 @@ const options = {
 
 const methods = {
 
-  default(defaultAttributes) {
+  defaultAttribute(attribute, value) {
+    const isSingle = !isArray(attribute);
     return this.updateOption('defaultAttributes', previous =>
-      ({ ...previous, ...defaultAttributes })
+      isSingle
+        ? { ...previous, [attribute]: value }
+        : { ...previous, ...zipObject(attribute, value) }
+    );
+  },
+
+  defaultAttributes(attributes) {
+    return this.updateOption('defaultAttributes', previous =>
+      ({ ...previous, ...attributes })
     );
   },
 
@@ -28,9 +38,7 @@ const methods = {
 
   _forgeOne(attributes) {
     const defaultAttributes = this.getOption('defaultAttributes');
-    if (defaultAttributes != null) {
-      defaults(attributes, defaultAttributes.toObject());
-    }
+    defaults(attributes, defaultAttributes);
     return this.createRecord(attributes);
   }
 };

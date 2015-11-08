@@ -1,95 +1,96 @@
 import { isArray } from 'lodash/lang';
 import { indexBy } from 'lodash/collection';
-import Options from '../options';
+import { first } from 'lodash/array';
 import * as DefaultColumn from './default-column';
-//import { isMapper } from '../mapper';
 
-const OPTIONS = {
-  selfKeyAttribute: null,
-  otherRefAttribute: null
-};
-
-export default class HasOne extends Options {
-  constructor() {
-    super(OPTIONS);
+export default class HasOne {
+  constructor(Other, attributes = {}) {
+    this.Other = Other;
+    this.attributes = attributes;
+    this.mappers = {};
   }
 
-  // -- Options --
-
-  selfKey(attribute) {
-    return this.setOption('selfKeyAttribute', attribute);
+  initialize(Self) {
+    this.Self = Self;
+    return this;
   }
 
-  otherRef(attribute) {
-    return this.setOption('otherRefAttribute', attribute);
+  getAttribute(name, getDefault) {
+    return this.attributes[name] || (this.attributes[name] = getDefault());
   }
 
-  self(selfMapper) {
-    return this.setOption('selfMapper', selfMapper);
+  getSelfKey(atlas) {
+    return this.getAttribute('selfKey', () =>
+      atlas(this.Self).getOption('idAttribute')
+    );
   }
 
-  other(otherMapper) {
-    return this.setOption('otherMapper', otherMapper);
-  }
-
-  // -- Keys --
-
-  getSelfKey(selfMapper) {
-    return this.getOption('selfKeyAttribute') ||
-      selfMapper.getOption('idAttribute');
-  }
-
-  getOtherRef(selfMapper, otherMapper) {
-    let otherRef = this.getOption('otherRefAttribute');
-    if (!otherRef) {
-      const selfKey = this.getSelfKey(selfMapper);
-      otherRef = otherMapper.columnToAttribute(
-        DefaultColumn.fromMapperAttribute(selfMapper, selfKey)
-      );
-    }
-    return otherRef;
-  }
-
-  toMapper(getMapper, targetIds) {
-    const selfMapper = getMapper(this.getOption('selfMapper'));
-    const otherMapper = getMapper(this.getOption('otherMapper'));
-
-    const selfKey = this.getSelfKey(selfMapper);
-    const otherRef = this.getOtherRef(selfMapper, otherMapper);
-    const id = selfMapper.identifyBy(selfKey, targetIds);
-    return otherMapper.targetBy(otherRef, id).default(otherRef, id);
-  }
-
-  load(getMapper, relationName, records) {
-    return Promise.try(() => {
-      const mapper = this.toMapper();
-
-      if (!isArray(records)) {
-        return mapper.fetch().then(related =>
-          mapper.setRelated(records, relationName, related)
-        );
-      }
-
-      return mapper.fetch().then(related =>
-        this.assign(getMapper, relationName, records, related)
-      );
+  getOtherRef(atlas) {
+    return this.getAttribute('otherRef', () => {
+      const selfKey = this.getSelfKey(atlas);
+      const Self = atlas(this.Self);
+      const Other = atlas(this.Other);
+      const column = DefaultColumn.fromMapperAttribute(Self, selfKey);
+      return Other.columnToAttribute(column);
     });
   }
 
-  assign(getMapper, relationName, records, related) {
-    const selfMapper = getMapper(this.getOption('selfMapper'));
-    const otherMapper = getMapper(this.getOption('otherMapper'));
+  toMapper(atlas, targetIds) {
+    const Self = atlas(this.Self);
+    const Other = atlas(this.Other);
 
-    const selfKey = this.getSelfKey(selfMapper);
-    const otherRef = this.getOtherRef(selfMapper, otherMapper);
+    const selfKey = this.getSelfKey(atlas);
+    const otherRef = this.getOtherRef(atlas);
+
+    const id = Self.identifyBy(selfKey, targetIds);
+
+    const isComposite = isArray(selfKey);
+    if (
+      !isComposite && isArray(otherRef) ||
+      isComposite && selfKey.length !== otherRef.length
+    ) throw new TypeError(
+      `Mismatched key types. selfKey=${selfKey} otherRef=${otherRef}`
+    );
+
+    const isSingle = !isArray(id) || isComposite && !isArray(first(id));
+
+    return Other.withMutations(mapper => {
+      mapper.targetBy(otherRef, id);
+      if (isSingle) {
+        mapper.defaultAttribute(otherRef, id);
+      }
+    });
+  }
+
+  load(atlas, relationName, records) {
+    const Mapper = this.toMapper(atlas, records);
+
+    if (!isArray(records)) {
+      return Mapper.fetch().then(related =>
+        Mapper.setRelated(records, relationName, related)
+      );
+    }
+
+    return Mapper.fetch().then(related =>
+      this.assign(atlas, relationName, records, related)
+    );
+  }
+
+  assignRelated(atlas, relationName, records, related) {
+    const Self = atlas(this.Self);
+    const Other = atlas(this.Other);
+
+    const selfKey = this.getSelfKey(atlas);
+    const otherRef = this.getOtherRef(atlas);
+
     const relatedById = indexBy(related, record =>
-      otherMapper.identifyBy(otherRef, record)
+      Other.identifyBy(otherRef, record)
     );
 
     return records.map(record => {
-      const id = selfMapper.identifyBy(record, selfKey);
+      const id = Self.identifyBy(record, selfKey);
       const related = relatedById[id] || null;
-      return selfMapper.setRelated(record, relationName, related);
+      return Self.setRelated(record, relationName, related);
     });
   }
 

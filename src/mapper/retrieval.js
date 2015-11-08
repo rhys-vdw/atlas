@@ -69,9 +69,12 @@ const methods = {
 
   fetch() {
     const queryBuilder = this.prepareFetch().toQueryBuilder();
-    return queryBuilder.then(response =>
+    queryBuilder.then(response =>
       this.handleFetchResponse({ queryBuilder, response })
-    );
+    ).then(records => {
+      const relationTree = this.getOption('withRelated');
+      return this.loadInto(relationTree, records);
+    });
   },
 
   prepareFetch() {
@@ -104,8 +107,7 @@ const methods = {
       isSingle ? attributes.head() : attributes.value()
     );
 
-    const relationTree = this.getOption('withRelated');
-    return this.loadInto(relationTree, record);
+    return record;
   }
 };
 
