@@ -1,6 +1,6 @@
 import { isArray, isEmpty, isObject } from 'lodash/lang';
 import { any } from 'lodash/collection';
-import { head, flatten } from 'lodash/array';
+import { first, flatten } from 'lodash/array';
 
 const options = {
   idAttribute: 'id'
@@ -123,11 +123,11 @@ const methods = {
     }
 
     const isComposite = isArray(attribute);
-    const record = head(records);
+    const record = first(records);
     const isSingle =
       records.length === 1 &&
       !isArray(record) ||
-      isComposite && !isObject(head(record));
+      isComposite && !isObject(record);
 
     return isSingle
       ? this.identifyOneBy(attribute, record)

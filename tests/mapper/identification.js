@@ -145,7 +145,12 @@ test('Mapper - identification', t => {
 
     t.deepEqual(
       withIdAttribute.identify(RECORDS), [2, 6, 10],
-      'identifies multiple records'
+      'identifies multiple records in array'
+    );
+
+    t.deepEqual(
+      withIdAttribute.identify(...RECORDS), [2, 6, 10],
+      'identifies multiple records as varargs'
     );
 
     t.deepEqual(
@@ -188,7 +193,13 @@ test('Mapper - identification', t => {
     t.deepEqual(
       withIdAttribute.identify(RECORDS),
       [[2, 4], [6, 8], [10, 11]],
-      'identifies multiple records'
+      'identifies multiple records as array'
+    );
+
+    t.deepEqual(
+      withIdAttribute.identify(...RECORDS),
+      [[2, 4], [6, 8], [10, 11]],
+      'identifies multiple records as varargs'
     );
 
     t.deepEqual(
