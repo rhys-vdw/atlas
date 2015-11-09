@@ -43,3 +43,20 @@ export function normalizeRecords(...records) {
     ? first(records) || null
     : flatCompact(records);
 }
+
+export const isComposite = isArray;
+
+/**
+ * Get number of columns in a given key.
+ */
+export function keyCardinality(key) {
+  return isComposite(key) ? key.length : 1;
+}
+
+/**
+ * Check that keys both have the same cardinality (and can therefore be used in
+ * a join).
+ */
+export function keysCompatible(keyA, keyB) {
+  return keyCardinality(keyA) == keyCardinality(keyB);
+}

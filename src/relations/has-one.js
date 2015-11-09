@@ -2,6 +2,7 @@ import { isArray } from 'lodash/lang';
 import { indexBy } from 'lodash/collection';
 import { first } from 'lodash/array';
 import * as DefaultColumn from './default-column';
+import { isComposite, keysCompatible } from '../arguments';
 
 export default class HasOne {
   constructor(Other, attributes = {}) {
@@ -44,15 +45,12 @@ export default class HasOne {
 
     const id = Self.identifyBy(selfKey, targetIds);
 
-    const isComposite = isArray(selfKey);
-    if (
-      !isComposite && isArray(otherRef) ||
-      isComposite && selfKey.length !== otherRef.length
-    ) throw new TypeError(
+    if (!keysCompatible(selfKey, otherRef)) throw new TypeError(
       `Mismatched key types. selfKey=${selfKey} otherRef=${otherRef}`
     );
 
-    const isSingle = !isArray(id) || isComposite && !isArray(first(id));
+    const isSingle = !isArray(id) ||
+      isComposite(selfKey) && !isComposite(first(id));
 
     return Other.withMutations(mapper => {
       mapper.targetBy(otherRef, id);
@@ -88,7 +86,7 @@ export default class HasOne {
     );
 
     return records.map(record => {
-      const id = Self.identifyBy(record, selfKey);
+      const id = Self.identifyBy(selfKey, record);
       const related = relatedById[id] || null;
       return Self.setRelated(record, relationName, related);
     });
