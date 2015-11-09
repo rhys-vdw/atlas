@@ -1,7 +1,7 @@
 import test from 'tape';
 import { omit } from 'lodash/object';
 
-import Options from '../lib/options';
+import Options from '../../lib/options';
 
 test('Options', t => {
 

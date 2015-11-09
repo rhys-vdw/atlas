@@ -1,7 +1,7 @@
 import test from 'tape';
 //import MockedKnex from '../mocked-knex';
-import Mapper from '../../lib/mapper';
-import HasOne from '../../lib/relations/has-one';
+import Mapper from '../../../lib/mapper';
+import HasOne from '../../../lib/relations/has-one';
 
 test('Mapper - relations', t => {
   t.test('Mapper#relations', t => {

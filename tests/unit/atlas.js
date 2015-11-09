@@ -1,6 +1,6 @@
 import test from 'tape';
-import Atlas from '../lib/atlas';
-import Mapper from '../lib/mapper';
+import Atlas from '../../lib/atlas';
+import Mapper from '../../lib/mapper';
 import Knex from 'knex';
 
 import { omit } from 'lodash';

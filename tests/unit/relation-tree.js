@@ -8,7 +8,7 @@ import RelationTree, {
   compile,
   normalize,
   renestRecursives
-} from '../lib/relation-tree';
+} from '../../lib/relation-tree';
 
 test('RelationTree', (t) => {
 

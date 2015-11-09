@@ -1,7 +1,7 @@
 import test from 'tape';
 import Knex from 'knex';
 
-import Mapper from '../../lib/mapper';
+import Mapper from '../../../lib/mapper';
 
 test('Mapper - query', t => {
 

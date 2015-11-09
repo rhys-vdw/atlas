@@ -1,6 +1,6 @@
 import test from 'tape';
-import mapper from '../../lib/mapper';
-import { NotFoundError } from '../../lib/errors';
+import mapper from '../../../lib/mapper';
+import { NotFoundError } from '../../../lib/errors';
 
 test('Mapper', t => {
 

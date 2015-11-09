@@ -1,6 +1,6 @@
 import test from 'tape';
-import Registry from '../lib/registry';
-import { RegisteredKeyError, UnregisteredKeyError } from '../lib/errors';
+import Registry from '../../lib/registry';
+import { RegisteredKeyError, UnregisteredKeyError } from '../../lib/errors';
 
 test('Registry', t => {
 

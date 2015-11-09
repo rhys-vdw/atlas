@@ -1,8 +1,8 @@
 import test from 'tape';
 import Knex from 'knex';
 
-import Mapper from '../../lib/mapper';
-import { NotFoundError, UnidentifiableRecordError } from '../../lib/errors';
+import Mapper from '../../../lib/mapper';
+import { NotFoundError, UnidentifiableRecordError } from '../../../lib/errors';
 
 const Pg = Mapper.knex(Knex({ client: 'pg' }));
 

@@ -1,7 +1,7 @@
 import test from 'tape';
 
-import Mapper from '../../lib/mapper';
-import { NoRowsFoundError, NotFoundError } from '../../lib/errors';
+import Mapper from '../../../lib/mapper';
+import { NoRowsFoundError, NotFoundError } from '../../../lib/errors';
 
 test('Mapper - retrieval', t => {
 

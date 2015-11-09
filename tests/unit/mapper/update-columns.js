@@ -1,7 +1,7 @@
 import test from 'tape';
-import Mapper from '../../lib/mapper';
+import Mapper from '../../../lib/mapper';
 import Knex from 'knex';
-import { NoRowsFoundError } from '../../lib/errors';
+import { NoRowsFoundError } from '../../../lib/errors';
 
 const pg = Knex({ client: 'pg' });
 const Pg = Mapper.knex(pg);

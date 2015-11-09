@@ -2,7 +2,7 @@ import _ from 'lodash';
 import test from 'tape';
 import Knex from 'knex';
 
-import Mapper from '../../lib/mapper';
+import Mapper from '../../../lib/mapper';
 
 const Pg = Mapper.knex(Knex({ client: 'pg' }));
 

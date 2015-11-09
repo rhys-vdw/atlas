@@ -1,8 +1,8 @@
 import test from 'tape';
-import Mapper from '../../lib/mapper';
+import Mapper from '../../../lib/mapper';
 import identity from 'lodash/utility/identity';
 
-import HasOne from '../../lib/relations/has-one';
+import HasOne from '../../../lib/relations/has-one';
 
 test('== HasOne ==', t => {
 

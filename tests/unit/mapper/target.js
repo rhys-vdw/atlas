@@ -1,5 +1,5 @@
 import test from 'tape';
-import Mapper from '../../lib/mapper';
+import Mapper from '../../../lib/mapper';
 
 test('Mapper', t => {
 
