@@ -22,7 +22,6 @@ test('Options', t => {
       'should have a different options object'
     );
 
-
     t.equal(
       after, after.setOption(OPTION, VALUE),
       'should not copy when reassigning the same value'

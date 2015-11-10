@@ -18,6 +18,8 @@ export default function Atlas(knex, registry = createRegistry()) {
 
   const atlas = ReadOnlyAtlas(knex);
 
+  atlas.knex = knex;
+
   atlas.registry = isPlainObject(registry)
     ? new Registry(registry)
     : registry;

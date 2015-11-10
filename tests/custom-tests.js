@@ -3,7 +3,9 @@
 
 import { Test } from 'tape';
 import _, { isObject, isString } from 'lodash';
+import { map, keys } from 'lodash';
 import deepEqual from 'deep-equal';
+import Promise from 'bluebird';
 
 function omitUndefined(object) {
   if (!isObject(object)) return object;
@@ -127,4 +129,25 @@ Test.prototype.rejects = function(promise, ErrorType, message, extra) {
   });
 };
 
+
+Test.prototype.databaseTest = function(name, knex, tables, testCallback) {
+
+  const createTables = map(tables, (createTable, name) =>
+    knex.schema.createTable(name, createTable)
+  );
+
+  const dropTables = map(keys(tables), table =>
+    knex.schema.dropTable(table)
+  );
+
+  this.test(name, t => {
+
+    Promise.all(createTables)
+    .then(    () => testCallback(t))
+    .finally( () => Promise.all(dropTables))
+    .then(    () => t.end())
+    .catch(error => t.end(error));
+
+  });
+};
 

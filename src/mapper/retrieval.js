@@ -69,7 +69,7 @@ const methods = {
 
   fetch() {
     const queryBuilder = this.prepareFetch().toQueryBuilder();
-    queryBuilder.then(response =>
+    return queryBuilder.then(response =>
       this.handleFetchResponse({ queryBuilder, response })
     ).then(records => {
       const relationTree = this.getOption('withRelated');
