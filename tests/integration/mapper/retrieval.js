@@ -84,7 +84,7 @@ export default function (atlas) {
         );
 
         t.resolvesToDeep(
-          People.query('orderBy', 'id').find(1, 2), [
+          People.query('orderBy', 'person_id').find(1, 2), [
             { person_id: 1, name: 'Jane' },
             { person_id: 2, name: 'Sally' },
           ],
