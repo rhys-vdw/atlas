@@ -46,11 +46,10 @@ Test.prototype.resolvesTo = function(promise, expected, message, extra) {
     passed = result === expected;
     actual = result;
   }).catch(err => {
-    // TOOD: work out how to get tape to display error.
-    console.error('error caught!', err);
     error = err;
-  }).then(() => {
-    this._assert(passed, {
+    actual = err;
+  }).finally(() => {
+    this._assert(error == null, {
       message,
       operator: 'resolvesTo',
       actual,
@@ -59,9 +58,7 @@ Test.prototype.resolvesTo = function(promise, expected, message, extra) {
       extra
     });
   });
-
 };
-
 
 Test.prototype.resolvesToDeep = function(promise, expected, message, extra) {
 
@@ -78,9 +75,8 @@ Test.prototype.resolvesToDeep = function(promise, expected, message, extra) {
     passed = deepEqual(result, expected);
     actual = result;
   }).catch(err => {
-    // TOOD: work out how to get tape to display error.
-    console.error('error caught!', err);
     error = err;
+    actual = err;
   }).then(() => {
     this._assert(passed, {
       message,
@@ -91,7 +87,6 @@ Test.prototype.resolvesToDeep = function(promise, expected, message, extra) {
       extra
     });
   });
-
 };
 
 Test.prototype.rejects = function(promise, ErrorType, message, extra) {
