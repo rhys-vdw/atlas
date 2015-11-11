@@ -18,10 +18,8 @@ const methods = {
     );
   },
 
-  relation(name, relation) {
-    return this.updateOption('relations', relations =>
-      ({ ...relations, [name]: relation })
-    );
+  getRelationNames() {
+    return keys(this.getOption('relations'));
   },
 
   getRelation(name) {
@@ -29,7 +27,7 @@ const methods = {
     if (!(name in relations)) {
       throw new TypeError(`Unknown relation '${name}'`);
     }
-    return relations[name];
+    return relations[name](this);
   },
 
   withRelated(...relations) {
@@ -40,7 +38,7 @@ const methods = {
 
     // Include all relations defined on model.
     if (isEmpty(relations) || allFlag === true) {
-      const relationNames = keys(this.getOption('relations'));
+      const relationNames = this.getRelationNames();
       return this.setOption('withRelated', compile(...relationNames));
     }
 

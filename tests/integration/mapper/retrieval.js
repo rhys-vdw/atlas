@@ -23,6 +23,8 @@ export default function (atlas) {
 
         const People = Mapper.table('people');
 
+        t.plan(3);
+
         t.resolvesToDeep(
           People.fetch(), [
             { person_id: 1, name: 'Tom' },
@@ -59,6 +61,8 @@ export default function (atlas) {
         { person_id: 3, name: 'Mandy' }
       ]).then(() => {
 
+        t.plan(5);
+
         t.resolvesToDeep(
           People.find(1),
           { person_id: 1, name: 'Jane' },
@@ -91,7 +95,9 @@ export default function (atlas) {
           '`findBy()` finds multiple records by ID'
         );
 
-      })
+      });
     });
+
+    t.end();
   });
 }

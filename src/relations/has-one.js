@@ -5,50 +5,29 @@ import * as DefaultColumn from './default-column';
 import { isComposite, keysCompatible } from '../arguments';
 
 export default class HasOne {
-  constructor(Other, attributes = {}) {
-    this.Other = Other;
-    this.attributes = attributes;
-    this.mappers = {};
-  }
+  constructor(Self, Other, { selfKey, otherRef } = {}) {
+    if (selfKey == null) {
+      selfKey = Self.getOption('idAttribute');
+    }
 
-  initialize(Self) {
-    this.Self = Self;
-    return this;
-  }
-
-  getAttribute(name, getDefault) {
-    return this.attributes[name] || (this.attributes[name] = getDefault());
-  }
-
-  getSelfKey(atlas) {
-    return this.getAttribute('selfKey', () =>
-      atlas(this.Self).getOption('idAttribute')
-    );
-  }
-
-  getOtherRef(atlas) {
-    return this.getAttribute('otherRef', () => {
-      const selfKey = this.getSelfKey(atlas);
-      const Self = atlas(this.Self);
-      const Other = atlas(this.Other);
-      const column = DefaultColumn.fromMapperAttribute(Self, selfKey);
-      return Other.columnToAttribute(column);
-    });
-  }
-
-  toMapper(atlas, targetIds) {
-    const Self = atlas(this.Self);
-    const Other = atlas(this.Other);
-
-    const selfKey = this.getSelfKey(atlas);
-    const otherRef = this.getOtherRef(atlas);
-
-    const id = Self.identifyBy(selfKey, targetIds);
+    if (otherRef == null) {
+      otherRef = DefaultColumn.fromMapperAttribute(Self, selfKey);
+    }
 
     if (!keysCompatible(selfKey, otherRef)) throw new TypeError(
       `Mismatched key types. selfKey=${selfKey} otherRef=${otherRef}`
     );
 
+    this.Self = Self;
+    this.Other = Other;
+    this.selfKey = selfKey;
+    this.otherRef = otherRef;
+  }
+
+  toMapper(targetIds) {
+    const { Self, Other, selfKey, otherRef } = this;
+
+    const id = Self.identifyBy(selfKey, targetIds);
     const isSingle = !isArray(id) ||
       isComposite(selfKey) && !isComposite(first(id));
 
@@ -61,7 +40,7 @@ export default class HasOne {
   }
 
   load(atlas, relationName, records) {
-    const Mapper = this.toMapper(atlas, records);
+    const Mapper = atlas(this.toMapper(records));
 
     if (!isArray(records)) {
       return Mapper.fetch().then(related =>
@@ -74,12 +53,8 @@ export default class HasOne {
     );
   }
 
-  assignRelated(atlas, relationName, records, related) {
-    const Self = atlas(this.Self);
-    const Other = atlas(this.Other);
-
-    const selfKey = this.getSelfKey(atlas);
-    const otherRef = this.getOtherRef(atlas);
+  assignRelated(records, relationName, related) {
+    const { Self, Other, selfKey, otherRef } = this;
 
     const relatedById = indexBy(related, record =>
       Other.identifyBy(otherRef, record)

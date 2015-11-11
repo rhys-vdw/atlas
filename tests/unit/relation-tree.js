@@ -76,7 +76,7 @@ test('RelationTree', (t) => {
     };
 
     _.each(tests, (item, message) => {
-      t.deepEqualDefined(
+      t.deepEqual(
         fromString(...item.input),
         item.output,
         message
@@ -190,7 +190,7 @@ test('RelationTree', (t) => {
     };
 
     _.each(tests, (item, message) => {
-      t.deepEqualDefined(
+      t.deepEqual(
         compile(...item.input),
         item.output,
         message
@@ -255,7 +255,7 @@ test('RelationTree', (t) => {
     };
 
     _.each(tests, (item, message) => {
-      t.deepEqualDefined(
+      t.deepEqual(
         renestRecursives(...item.input),
         item.output,
         message
@@ -305,7 +305,7 @@ test('RelationTree', (t) => {
     };
 
     _.each(tests, (item, message) => {
-      t.deepEqualDefined(
+      t.deepEqual(
         normalize(...item.input),
         item.output,
         message

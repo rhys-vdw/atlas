@@ -1,11 +1,17 @@
 import _ from 'lodash';
-import { isEmpty, isArray, isObject, isString } from 'lodash/lang';
-import { merge, extend } from 'lodash/object';
-import { map, each } from 'lodash/collection';
+import { isArray, isEmpty, isObject, isString, isUndefined } from 'lodash/lang';
+import { extend, merge, omit } from 'lodash/object';
+import { each, map } from 'lodash/collection';
 import { flow } from 'lodash/function';
 
 import { RELATION_TREE_SENTINEL } from './constants';
 import { assertType } from './assertions';
+
+const omitUndefined = object => {
+  const after = omit(object, isUndefined);
+  console.log({ before: object, after });
+  return after;
+}
 
 /**
  * @function isRelationTree
@@ -32,7 +38,7 @@ export function isRelationTree(maybeRelationTree) {
  */
 export function mergeTrees(destination, source) {
   assertType({destination, source}, {RelationTree: isRelationTree});
-  return merge(destination, source, mergeCustomizer);
+  return merge(new RelationTree(), destination, source, mergeCustomizer);
 }
 
 /**
@@ -51,7 +57,7 @@ export function fromString(string, initializer) {
   assertType({string}, {string: isString});
 
   const list = _(string).split('.');
-  const leaf = nodeFromString(list.last(), { initializer });
+  const leaf = nodeFromString(list.last(), initializer && { initializer });
 
   return list.reverse().rest().reduce((nested, relation) =>
     nodeFromString(relation, { nested })
@@ -157,12 +163,14 @@ function mergeCustomizer(objectValue, sourceValue) {
 }
 
 function nodeFromString(string, properties) {
+  const clonedProperties = { ...properties };
+
   const [name, recursionsString] = string.split('^');
-  let recursions;
 
   if (recursionsString != null) {
-    recursions = isEmpty(recursionsString) ? 1 : +recursionsString;
+    const recursions = isEmpty(recursionsString) ? 1 : +recursionsString;
+    clonedProperties.recursions = recursions;
   }
 
-  return new RelationTree({ [name]: { recursions, ...properties } });
+  return new RelationTree({ [name]: clonedProperties });
 }

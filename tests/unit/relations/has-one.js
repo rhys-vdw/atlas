@@ -10,31 +10,30 @@ test('== HasOne ==', t => {
 
     const Self = Mapper.table('selves');
     const Other = Mapper.table('others');
-    const atlas = identity;
 
-    const hasOneCustom = new HasOne(Other, {
+    const hasOneCustom = new HasOne(Self, Other, {
       selfKey: 'self_key', otherRef: 'other_ref'
-    }).initialize(Self);
+    });
 
     t.equal(
-      hasOneCustom.getSelfKey(atlas), 'self_key',
+      hasOneCustom.selfKey, 'self_key',
       'stores custom `selfKey` correctly'
     );
 
     t.equal(
-      hasOneCustom.getOtherRef(atlas), 'other_ref',
+      hasOneCustom.otherRef, 'other_ref',
       'stores custom `otherRef` correctly'
     );
 
-    const hasOneDefault = new HasOne(Other).initialize(Self);
+    const hasOneDefault = new HasOne(Self, Other);
 
     t.equal(
-      hasOneDefault.getSelfKey(atlas), 'id',
+      hasOneDefault.selfKey, 'id',
       'defaults `selfKey` to id attribute'
     );
 
     t.equal(
-      hasOneDefault.getOtherRef(atlas), 'self_id',
+      hasOneDefault.otherRef, 'self_id',
       'defaults `otherRef` to {singular table name}_{id attribute}'
     );
 
@@ -42,15 +41,12 @@ test('== HasOne ==', t => {
   });
 
   t.test('HasOne#toMapper() - bad config', t => {
-    const atlas = identity;
     const As = Mapper.table('as');
     const Bs = Mapper.table('bs');
-    const hasOne = new HasOne(Bs, { selfKey: 'id', otherRef: ['a', 'b'] })
-      .initialize(As);
 
     t.throws(
-      () => hasOne.toMapper(atlas, { id: 5 }),
-      /Mismatched key types/,
+      () => new HasOne(As, Bs, { selfKey: 'id', otherRef: ['a', 'b'] }),
+      TypeError,
       'throws error when keys are mismatched'
     );
 
@@ -58,14 +54,11 @@ test('== HasOne ==', t => {
   });
 
   t.test('HasOne#toMapper() - single target', t => {
-    const atlas = identity;
-
     const LoginRecords = Mapper.table('login_records');
     const User = Mapper.table('users').idAttribute('id_code');
 
     const user = { id_code: 6 };
-    const Login = new HasOne(LoginRecords)
-      .initialize(User).toMapper(atlas, user);
+    const Login = new HasOne(User, LoginRecords).toMapper(user);
 
     t.equal(Login.getOption('isSingle'), true, 'isSingle');
 
@@ -88,14 +81,11 @@ test('== HasOne ==', t => {
   });
 
   t.test('HasOne#toMapper() - multiple targets', t => {
-    const atlas = identity;
-
     const LoginRecords = Mapper.table('login_records');
     const User = Mapper.table('users').idAttribute('id_code');
 
     const users = [{ id_code: 6 }, { id_code: 4 }];
-    const Login = new HasOne(LoginRecords)
-      .initialize(User).toMapper(atlas, users);
+    const Login = new HasOne(User, LoginRecords).toMapper(users);
 
     t.equal(Login.getOption('isSingle'), false, '!isSingle');
 
@@ -118,14 +108,11 @@ test('== HasOne ==', t => {
 
 
   t.test('HasOne#toMapper() - single target with composite key', t => {
-    const atlas = identity;
-
     const Foos = Mapper.table('foos').idAttribute(['pk_a', 'pk_b']);
     const Bars = Mapper.table('bars');
 
     const foo = { pk_a: 1, pk_b: 2 };
-    const Bar = new HasOne(Bars)
-      .initialize(Foos).toMapper(atlas, foo);
+    const Bar = new HasOne(Foos, Bars).toMapper(foo);
 
     t.equal(Bar.getOption('isSingle'), true, 'isSingle');
 
@@ -148,14 +135,11 @@ test('== HasOne ==', t => {
   });
 
   t.test('HasOne#toMapper() - multiple targets with composite key', t => {
-    const atlas = identity;
-
     const Foos = Mapper.table('foos').idAttribute(['pk_a', 'pk_b']);
     const Bars = Mapper.table('bars');
 
     const foo = [{ pk_a: 1, pk_b: 2 }, { pk_a: 4, pk_b: 5 }];
-    const Bar = new HasOne(Bars)
-      .initialize(Foos).toMapper(atlas, foo);
+    const Bar = new HasOne(Foos, Bars).toMapper(foo);
 
     t.equal(Bar.getOption('isSingle'), false, 'isSingle');
 
@@ -179,12 +163,9 @@ test('== HasOne ==', t => {
   });
 
   t.test('HasOne#assignRelated() - with composite key', t => {
-    const atlas = identity;
-
     const Self = Mapper.table('selves').idAttribute(['id_a', 'id_b']);
     const Other = Mapper;
-    const hasOne = new HasOne(Other)
-      .initialize(Self);
+    const hasOne = new HasOne(Self, Other);
 
     const selves = [
       { id_a: 1, id_b: 2 },
@@ -195,7 +176,7 @@ test('== HasOne ==', t => {
       { index: 1, self_id_a: 1, self_id_b: 2 },
     ];
 
-    hasOne.assignRelated(atlas, 'other', selves, others);
+    hasOne.assignRelated(selves, 'other', others);
 
     t.equal(
       selves[0].other, others[1], `assigns related to record[0] correctly`
