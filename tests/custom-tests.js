@@ -49,7 +49,7 @@ Test.prototype.resolvesTo = function(promise, expected, message, extra) {
     error = err;
     actual = err;
   }).finally(() => {
-    this._assert(error == null, {
+    this._assert(error == null && passed, {
       message,
       operator: 'resolvesTo',
       actual,
