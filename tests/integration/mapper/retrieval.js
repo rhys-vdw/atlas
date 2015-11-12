@@ -6,7 +6,7 @@ function peopleTable(people) {
   people.string('name');
 }
 
-export default function (atlas) {
+export default function(atlas) {
 
   const Mapper = atlas('Mapper');
   const { knex } = atlas;
@@ -21,9 +21,9 @@ export default function (atlas) {
         { person_id: 3, name: 'Harry' }
       ]).then(() => {
 
-        const People = Mapper.table('people');
-
         t.plan(3);
+
+        const People = Mapper.table('people');
 
         t.resolvesToDeep(
           People.fetch(), [

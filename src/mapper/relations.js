@@ -27,6 +27,7 @@ const methods = {
     if (!(name in relations)) {
       throw new TypeError(`Unknown relation '${name}'`);
     }
+    console.log('relations', relations, 'name', name);
     return relations[name](this);
   },
 
@@ -54,9 +55,7 @@ const methods = {
   },
 
   related(relationName, ...targetIds) {
-    const relation = this.getRelation(relationName);
-    const atlas = this.getOption('atlas');
-    return relation.toMapper(atlas, ...targetIds);
+    return this.getRelation(relationName).toMapper(...targetIds);
   },
 
   loadInto: Promise.method(function(relationTree, records) {

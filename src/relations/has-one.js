@@ -24,10 +24,10 @@ export default class HasOne {
     this.otherRef = otherRef;
   }
 
-  toMapper(targetIds) {
+  toMapper(...targetIds) {
     const { Self, Other, selfKey, otherRef } = this;
 
-    const id = Self.identifyBy(selfKey, targetIds);
+    const id = Self.identifyBy(selfKey, ...targetIds);
     const isSingle = !isArray(id) ||
       isComposite(selfKey) && !isComposite(first(id));
 
