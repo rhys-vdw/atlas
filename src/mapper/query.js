@@ -12,18 +12,10 @@ const methods = {
 
   // -- Query --
 
-  /**
-   * @method knex
-   * @belongsTo Mapper
-   * @summary
-   *
-   * Set the underlying knex instance of this mapper.
-   *
-   * @param {Knex} knex
-   *   The new name of this table.
-   * @returns {Mapper}
-   *   Mapper instance with reference to given `Knex` instance.
-   */
+  atlas(atlas) {
+    return this.setOption('atlas', atlas);
+  },
+
   knex(knex) {
     return this.client(knex.client);
   },

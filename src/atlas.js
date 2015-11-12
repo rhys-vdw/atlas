@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import Registry from './registry';
 import Mapper from './mapper';
 import { initialize as initializeRelations } from './relations';
@@ -15,7 +16,7 @@ const createAtlas = (knex, registry) => {
   const toMapper = createToMapper(registry);
   return function atlas(mapperOrName) {
     const mapper = toMapper(mapperOrName);
-    return mapper.knex(knex);
+    return mapper.withMutations({ atlas, knex });
   };
 };
 

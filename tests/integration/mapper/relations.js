@@ -54,7 +54,7 @@ export default function(atlas) {
         st.resolvesToDeep(
           Users.related('avatar', { id: 2, name: 'Sarah' }).fetch(),
           { id: 12, user_id: 2, image_path: './sarah.jpg' },
-          `Mapper#related(relation, record) resolves correctly`
+          `Mapper#related(relation, {id}) resolves correctly`
         );
 
         st.resolvesToDeep(
@@ -74,17 +74,43 @@ export default function(atlas) {
         st.resolvesTo(
           Users.related('avatar', { id: 4 }).fetch(),
           null,
-          `Mapper#related(relation, record) resolves to null if none found`
+          `Mapper#related(relation, {id}) resolves to null if none found`
         );
 
         st.resolvesToDeep(
           Users.related('avatar', [{ id: 4 }, { id: 6 }]).fetch(),
           [],
-          `Mapper#related(relation, [record, record]) resolves to null if none found`
+          `Mapper#related(relation, [{id}, {id}]) resolves to [] if none found`
         );
+      });
+    });
 
+    t.databaseTest('`Mapper#loadInto()`', knex, { avatars: avatarsTable }, st => {
+
+      st.plan(1);
+
+      const Avatars = Mapper.table('avatars');
+
+      const Users = Mapper.table('users').relations({
+        avatar: hasOne(Avatars)
       });
 
+      return Promise.join(
+        knex('avatars').insert([
+          { id: 10, user_id: 1, image_path: './dean.jpg' },
+          { id: 11, user_id: 3, image_path: './bazza.jpg' },
+          { id: 12, user_id: 2, image_path: './sarah.jpg' },
+        ])
+      ).then(() => {
+
+        st.resolvesToDeep(
+          Users.loadInto('avatar', { id: 1, name: 'dean' }),
+          { id: 1, name: 'dean', avatar: {
+              id: 10, user_id: 1, image_path: './dean.jpg'
+          } },
+          'loads single record'
+        );
+      });
     });
 
     t.end();

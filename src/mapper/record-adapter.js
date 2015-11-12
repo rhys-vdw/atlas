@@ -86,6 +86,7 @@ const methods = {
 
   setRelated(record, relationName, related) {
     record[relationName] = related;
+    return record;
   },
 
   getRelated(record, relationName) {

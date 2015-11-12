@@ -56,6 +56,10 @@ export default class HasOne {
   assignRelated(records, relationName, related) {
     const { Self, Other, selfKey, otherRef } = this;
 
+    if (!isArray(records)) {
+      return Self.setRelated(records, relationName, related);
+    }
+
     const relatedById = indexBy(related, record =>
       Other.identifyBy(otherRef, record)
     );

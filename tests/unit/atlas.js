@@ -35,7 +35,7 @@ test('Atlas', t => {
     );
 
     t.deepEqual(
-      omit(atlas('TestMapper')._options, 'queryBuilder'),
+      omit(atlas('TestMapper')._options, 'atlas', 'queryBuilder'),
       omit(TestMapper._options, 'queryBuilder'),
       'Retrieved instance has correct options'
     );

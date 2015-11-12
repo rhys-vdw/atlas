@@ -8,8 +8,8 @@
     "lint-q": "eslint --quiet src/** || true",
     "lint-tests": "eslint tests/**",
     "lint-tests-q": "eslint --quiet tests/** || true",
-    "test": "npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && tape compiled-tests | tap-spec",
-    "test-plain": "npm run babel && npm run babel-tests && tape compiled-tests",
+    "test": "BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && tape compiled-tests | tap-spec",
+    "test-plain": "BLUEBIRD_DEBUG=1 && npm run babel && npm run babel-tests && tape compiled-tests",
     "cover": "npm run babel && npm run babel-tests && istanbul cover compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
     "babel-tests": "rm -rf compiled-tests && babel tests -d compiled-tests",
     "babel": "rm -rf lib && babel src -d lib"
@@ -35,6 +35,7 @@
   "dependencies": {
     "babel-plugin-transform-decorators": "^6.0.14",
     "babel-plugin-transform-object-rest-spread": "^6.0.14",
+    "babel-polyfill": "^6.1.4",
     "bluebird": "^2.10.0",
     "inflection": "^1.7.1",
     "lodash": "^3.10.1",

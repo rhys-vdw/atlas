@@ -1,7 +1,7 @@
 import Promise from 'bluebird';
-import { mapValues, reduce } from 'lodash/collection';
+import { reduce } from 'lodash/collection';
 import { first } from 'lodash/array';
-import { keys } from 'lodash/object';
+import { keys, mapValues } from 'lodash/object';
 import { isEmpty } from 'lodash/lang';
 import RelationTree, { compile, mergeTrees, normalize } from '../relation-tree';
 
@@ -27,7 +27,6 @@ const methods = {
     if (!(name in relations)) {
       throw new TypeError(`Unknown relation '${name}'`);
     }
-    console.log('relations', relations, 'name', name);
     return relations[name](this);
   },
 
@@ -58,34 +57,32 @@ const methods = {
     return this.getRelation(relationName).toMapper(...targetIds);
   },
 
-  loadInto: Promise.method(function(relationTree, records) {
+  loadInto(relationTree, records) {
 
     // This is a no-op if no relations are specified.
     if (isEmpty(relationTree)) {
-      return records;
+      return Promise.resolve(records);
     }
 
-    const tree = normalize(this.getOption('withRelated'));
+    const tree = normalize(relationTree);
     const atlas = this.getOption('atlas');
-    const relatedPromise = mapValues(tree, (
+    const relatedPromise = Promise.props(mapValues(tree, (
       { initializer, nested }, relationName
-    ) => this
-      .getRelation(relationName)
-      .toMapper(atlas, records)
+    ) =>
+      atlas(this.getRelation(relationName).toMapper(records))
       .withMutations({
         withMutations: initializer,
         withRelated: nested
       }).fetch()
-    );
-
-    return Promise.props(relatedPromise).then(relatedByName =>
+    ));
+    return relatedPromise.then(relatedByName =>
       reduce(relatedByName, (acc, related, relationName) =>
         this
-        .getRelation(relationName)
-        .assign(atlas, relationName, records, related)
+          .getRelation(relationName)
+          .assignRelated(records, relationName, related)
       , records)
     );
-  })
+  }
 
 };
 
