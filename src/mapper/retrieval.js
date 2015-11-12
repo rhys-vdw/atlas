@@ -93,10 +93,13 @@ const methods = {
     const isRequired = this.getOption('isRequired');
     const isSingle   = this.getOption('isSingle');
 
-    if (isRequired && isEmpty(response)) {
-      throw isSingle
-        ? new NotFoundError(this, queryBuilder, 'fetch')
-        : new NoRowsFoundError(this, queryBuilder, 'fetch');
+    if (isEmpty(response)) {
+      if (isRequired) {
+        throw isSingle
+          ? new NotFoundError(this, queryBuilder, 'fetch')
+          : new NoRowsFoundError(this, queryBuilder, 'fetch');
+      }
+      return isSingle ? null : [];
     }
 
     const attributes = _(response)
@@ -104,7 +107,7 @@ const methods = {
       .map(this.createRecord, this);
 
     const record = this.forge(
-      isSingle ? attributes.head() : attributes.value()
+      isSingle ? attributes.first() : attributes.value()
     );
 
     return record;

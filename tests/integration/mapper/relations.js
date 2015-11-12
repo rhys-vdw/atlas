@@ -23,7 +23,7 @@ export default function(atlas) {
       users: usersTable, avatars: avatarsTable
     }, st => {
 
-      st.plan(4);
+      st.plan(6);
 
       const Avatars = Mapper.table('avatars');
 
@@ -36,12 +36,12 @@ export default function(atlas) {
           { id: 1, name: 'Dean' },
           { id: 2, name: 'Sarah' },
           { id: 3, name: 'Baz' },
+          { id: 4, name: 'Faceless' },
         ]),
         knex('avatars').insert([
           { id: 10, user_id: 1, image_path: './dean.jpg' },
           { id: 11, user_id: 3, image_path: './bazza.jpg' },
           { id: 12, user_id: 2, image_path: './sarah.jpg' },
-          { id: 99, user_id: null, image_path: './NOBODY.jpg' },
         ])
       ).then(() => {
 
@@ -69,6 +69,18 @@ export default function(atlas) {
             { id: 10, user_id: 1, image_path: './dean.jpg' },
             { id: 11, user_id: 3, image_path: './bazza.jpg' },
           ], `Mapper#related(relation, [id, id]) resolves correctly`
+        );
+
+        st.resolvesTo(
+          Users.related('avatar', { id: 4 }).fetch(),
+          null,
+          `Mapper#related(relation, record) resolves to null if none found`
+        );
+
+        st.resolvesToDeep(
+          Users.related('avatar', [{ id: 4 }, { id: 6 }]).fetch(),
+          [],
+          `Mapper#related(relation, [record, record]) resolves to null if none found`
         );
 
       });

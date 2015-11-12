@@ -62,15 +62,17 @@ test('Mapper - retrieval', t => {
 
     const Thing = Mapper.table('things').one();
 
-    const result = Thing.handleFetchResponse({
+    const single = Thing.handleFetchResponse({
       response: [{ id: 1 }]
     });
 
-    t.deepEqual(
-      result,
-      { id: 1 },
-      `returns single record`
-    );
+    t.deepEqual(single, { id: 1 }, `returns single record`);
+
+    const empty = Thing.handleFetchResponse({
+      response: []
+    });
+
+    t.equal(empty, null, `returns null if not found`);
 
     t.end();
   });
