@@ -35,8 +35,7 @@ export default function(atlas) {
         knex('users').insert([
           { id: 1, name: 'Dean' },
           { id: 2, name: 'Sarah' },
-          { id: 3, name: 'Baz' },
-          { id: 4, name: 'Faceless' },
+          { id: 3, name: 'Baz' }
         ]),
         knex('avatars').insert([
           { id: 10, user_id: 1, image_path: './dean.jpg' },
@@ -87,7 +86,7 @@ export default function(atlas) {
 
     t.databaseTest('`Mapper#loadInto()`', knex, { avatars: avatarsTable }, st => {
 
-      st.plan(1);
+      st.plan(3);
 
       const Avatars = Mapper.table('avatars');
 
@@ -95,21 +94,44 @@ export default function(atlas) {
         avatar: hasOne(Avatars)
       });
 
-      return Promise.join(
-        knex('avatars').insert([
-          { id: 10, user_id: 1, image_path: './dean.jpg' },
-          { id: 11, user_id: 3, image_path: './bazza.jpg' },
-          { id: 12, user_id: 2, image_path: './sarah.jpg' },
-        ])
-      ).then(() => {
+      return knex('avatars').insert([
+        { id: 10, user_id: 1, image_path: './dean.jpg' },
+        { id: 11, user_id: 3, image_path: './bazza.jpg' },
+        { id: 12, user_id: 2, image_path: './sarah.jpg' },
+      ]).then(() => {
+
+        const dean = { id: 1, name: 'dean' }
+        const sarah = { id: 2, name: 'Sarah' };
+        const baz = { id: 3, name: 'Baz' };
+        const other = { id: 4, name: 'Other' };
 
         st.resolvesToDeep(
-          Users.loadInto('avatar', { id: 1, name: 'dean' }),
+          Users.loadInto('avatar', dean),
           { id: 1, name: 'dean', avatar: {
               id: 10, user_id: 1, image_path: './dean.jpg'
           } },
-          'loads single record'
+          'loads into single record'
         );
+
+
+        st.resolvesToDeep(
+          Users.loadInto('avatar', [sarah, baz]), [
+            { id: 2, name: 'Sarah', avatar:
+              { id: 12, user_id: 2, image_path: './sarah.jpg' }
+            }, { id: 3, name: 'Baz', avatar:
+              { id: 11, user_id: 3, image_path: './bazza.jpg' }
+            }
+          ], 'loads into multiple records'
+        );
+
+        st.resolvesToDeep(
+          Users.loadInto('avatar', [dean, other]), [
+            { id: 1, name: 'dean', avatar:
+              { id: 10, user_id: 1, image_path: './dean.jpg' }
+            }, { id: 4, name: 'Other', avatar: null }
+          ], 'loads null into one record and null into another'
+        );
+
       });
     });
 
