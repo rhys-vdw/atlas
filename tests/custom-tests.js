@@ -41,7 +41,7 @@ Test.prototype.resolvesTo = function(promise, expected, message, extra) {
   let actual;
   let error;
 
-  Promise.resolve(promise)
+  return Promise.resolve(promise)
   .then(result => {
     passed = result === expected;
     actual = result;
@@ -70,7 +70,7 @@ Test.prototype.resolvesToDeep = function(promise, expected, message, extra) {
   let actual;
   let error;
 
-  Promise.resolve(promise)
+  return Promise.resolve(promise)
   .then(result => {
     passed = deepEqual(result, expected);
     actual = result;
@@ -102,17 +102,20 @@ Test.prototype.rejects = function(promise, ErrorType, message, extra) {
   let passed = false;
   let caught = null;
 
+  let caughtPromise = null;
   if (ErrorType) {
-    promise = promise.catch(ErrorType, (error) => {
+    caughtPromise = promise.catch(ErrorType, (error) => {
+      caught = error;
+      passed = true;
+    });
+  } else {
+    caughtPromise = promise.catch((error) => {
       caught = error;
       passed = true;
     });
   }
 
-  promise.catch((error) => {
-    caught = error;
-    passed = true;
-  }).then(() => {
+  return caughtPromise.then(() => {
     this._assert(passed, {
       message,
       operator: 'rejects',
