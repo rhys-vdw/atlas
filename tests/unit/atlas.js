@@ -42,6 +42,4 @@ test('Atlas', t => {
 
     t.end();
   });
-
-  t.end();
 });

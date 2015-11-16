@@ -161,7 +161,7 @@ test('Options', t => {
 
     const OPTION = 'OPTION';
     const VALUE = 'VALUE';
-    
+
     const options = new Options();
 
     t.equal(
@@ -218,6 +218,4 @@ test('Options', t => {
 
     t.end();
   });
-
-  t.end();
 });
