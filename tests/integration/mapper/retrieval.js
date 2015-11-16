@@ -15,8 +15,6 @@ export default function(atlas) {
 
     t.databaseTest('Mapper.fetch()', knex, { people: peopleTable }, t => {
 
-      t.plan(3);
-
       return knex('people').insert([
         { person_id: 1, name: 'Tom' },
         { person_id: 2, name: 'Dick' },

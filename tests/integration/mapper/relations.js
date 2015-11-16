@@ -23,8 +23,6 @@ export default function(atlas) {
       users: usersTable, avatars: avatarsTable
     }, st => {
 
-      st.plan(6);
-
       const Avatars = Mapper.table('avatars');
 
       const Users = Mapper.table('users').relations({
@@ -86,8 +84,6 @@ export default function(atlas) {
 
     t.databaseTest('`Mapper#loadInto()`', knex, { avatars: avatarsTable }, st => {
 
-      st.plan(3);
-
       const Avatars = Mapper.table('avatars');
 
       const Users = Mapper.table('users').relations({
@@ -134,7 +130,5 @@ export default function(atlas) {
 
       });
     });
-
-    t.end();
   });
 }
