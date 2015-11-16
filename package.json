@@ -26,7 +26,7 @@
     "knex": "^0.9.0",
     "pg": "^4.4.3",
     "tap-spec": "^4.1.0",
-    "tape": "webthusiast/tape#b01c08bd852a5385eb62ffa994c960b8d505a466",
+    "tape": "^4.2.0",
     "tape-catch": "^1.0.4"
   },
   "peerDependencies": {
