@@ -3,7 +3,7 @@ import test from 'tape';
 import Mapper from '../../../lib/mapper';
 import Atlas from '../../../lib/atlas';
 
-test('Mapper - relations', t => {
+test('Mapper - relations unit test', t => {
   t.test('Mapper#relations', t => {
 
     const atlas = Atlas();
