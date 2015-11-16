@@ -1,4 +1,4 @@
-import _, { all } from 'lodash';
+import { all, each } from 'lodash/collection';
 import test from 'tape';
 
 import RelationTree, {
@@ -12,29 +12,29 @@ import RelationTree, {
 
 test('RelationTree', (t) => {
 
-  t.test('isRelationTree', (t) => {
-    t.equal(
+  t.test('isRelationTree', st => {
+    st.equal(
       RelationTree.isRelationTree(new RelationTree()),
       true,
       'correctly identifies a RelationTree'
     );
 
-    t.equal(
+    st.equal(
       RelationTree.isRelationTree(undefined),
       false,
       'returns false for `undefined`'
     );
 
-    t.equal(
+    st.equal(
       RelationTree.isRelationTree('a.b.c'),
       false,
       'returns false for string'
     );
 
-    t.end();
+    st.end();
   });
 
-  t.test('fromString', (t) => {
+  t.test('fromString', st => {
 
     const initializerFn = function() {};
 
@@ -75,33 +75,33 @@ test('RelationTree', (t) => {
       }
     };
 
-    _.each(tests, (item, message) => {
-      t.deepEqual(
+    each(tests, (item, message) => {
+      st.deepEqual(
         fromString(...item.input),
         item.output,
         message
       );
     });
 
-    t.throws(() => fromString(), TypeError,
+    st.throws(() => fromString(), TypeError,
       'throws `TypeError` without argument'
     );
 
-    t.throws(() => fromString(5), TypeError,
+    st.throws(() => fromString(5), TypeError,
       'throws `TypeError` with non-string argument'
     );
 
-    t.end();
+    st.end();
   });
 
-  t.test('mergeTrees', (t) => {
+  t.test('mergeTrees', st => {
 
     const a = fromString('a.b.c');
     const b = fromString('a.b.d');
 
     const merged = mergeTrees(a, b);
 
-    t.ok(
+    st.ok(
       all([
         merged,
         merged,
@@ -111,10 +111,10 @@ test('RelationTree', (t) => {
       'merged trees are RelationTree instances all the way down'
     );
 
-    t.end();
+    st.end();
   });
 
-  t.test('compile', (t) => {
+  t.test('compile', st => {
 
     const initializerFnA = function() {};
     const initializerFnB = function() {};
@@ -189,18 +189,18 @@ test('RelationTree', (t) => {
       }
     };
 
-    _.each(tests, (item, message) => {
-      t.deepEqual(
+    each(tests, (item, message) => {
+      st.deepEqual(
         compile(...item.input),
         item.output,
         message
       );
     });
 
-    t.end();
+    st.end();
   });
 
-  t.test('renestRecursives', (t) => {
+  t.test('renestRecursives', st => {
 
     const tests = {
       'simple recursive': {
@@ -254,8 +254,8 @@ test('RelationTree', (t) => {
       }
     };
 
-    _.each(tests, (item, message) => {
-      t.deepEqual(
+    each(tests, (item, message) => {
+      st.deepEqual(
         renestRecursives(...item.input),
         item.output,
         message
@@ -266,14 +266,14 @@ test('RelationTree', (t) => {
       a: { recursions: 1, nested: { a: { recursions: 1 } } }
     });
 
-    t.throws(() => renestRecursives(invalidRecursiveTree),
+    st.throws(() => renestRecursives(invalidRecursiveTree),
       'throws when given an invalid recursive tree'
     );
 
-    t.end();
+    st.end();
   });
 
-  t.test('normalize', (t) => {
+  t.test('normalize', st => {
 
     const initializerFnA = function() {};
     const initializerFnB = function() {};
@@ -304,8 +304,8 @@ test('RelationTree', (t) => {
       }
     };
 
-    _.each(tests, (item, message) => {
-      t.deepEqual(
+    each(tests, (item, message) => {
+      st.deepEqual(
         normalize(...item.input),
         item.output,
         message
@@ -314,10 +314,10 @@ test('RelationTree', (t) => {
 
     const normalized = normalize('a.b.c', 'a.c.d');
 
-    t.equal(normalized, normalize(normalized),
+    st.equal(normalized, normalize(normalized),
       'does nothing to an already normalized tree'
     );
 
-    t.end();
+    st.end();
   });
 });
