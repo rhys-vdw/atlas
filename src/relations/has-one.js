@@ -39,20 +39,6 @@ export default class HasOne {
     });
   }
 
-  load(atlas, relationName, records) {
-    const Mapper = atlas(this.toMapper(records));
-
-    if (!isArray(records)) {
-      return Mapper.fetch().then(related =>
-        Mapper.setRelated(records, relationName, related)
-      );
-    }
-
-    return Mapper.fetch().then(related =>
-      this.assign(atlas, relationName, records, related)
-    );
-  }
-
   assignRelated(records, relationName, related) {
     const { Self, Other, selfKey, otherRef } = this;
 
