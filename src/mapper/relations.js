@@ -57,7 +57,7 @@ const methods = {
     return this.getRelation(relationName).toMapper(...targetIds);
   },
 
-  loadInto(relationTree, records) {
+  loadInto(records, relationTree) {
 
     // This is a no-op if no relations are specified.
     if (isEmpty(relationTree)) {

@@ -73,7 +73,7 @@ const methods = {
       this.handleFetchResponse({ queryBuilder, response })
     ).then(records => {
       const relationTree = this.getOption('withRelated');
-      return this.loadInto(relationTree, records);
+      return this.loadInto(records, relationTree);
     });
   },
 

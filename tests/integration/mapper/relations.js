@@ -100,14 +100,14 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.loadInto('avatar', dean),
+            Users.loadInto(dean, 'avatar'),
             { id: 1, name: 'dean', avatar: {
                 id: 10, user_id: 1, image_path: './dean.jpg'
             } },
             'loads into single record'
           ),
           st.resolvesToDeep(
-            Users.loadInto('avatar', [sarah, baz]), [
+            Users.loadInto([sarah, baz], 'avatar'), [
               { id: 2, name: 'Sarah', avatar:
                 { id: 12, user_id: 2, image_path: './sarah.jpg' }
               }, { id: 3, name: 'Baz', avatar:
@@ -116,7 +116,7 @@ export default function(atlas) {
             ], 'loads into multiple records'
           ),
           st.resolvesToDeep(
-            Users.loadInto('avatar', [dean, other]), [
+            Users.loadInto([dean, other], 'avatar'), [
               { id: 1, name: 'dean', avatar:
                 { id: 10, user_id: 1, image_path: './dean.jpg' }
               }, { id: 4, name: 'Other', avatar: null }
