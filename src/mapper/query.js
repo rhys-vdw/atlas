@@ -2,6 +2,8 @@ import { assign } from 'lodash/object';
 import { isFunction, isEmpty, isString } from 'lodash/lang';
 import Knex from 'knex';
 
+import { NoopError } from '../errors';
+
 const knex = Knex({});
 
 const options = {
@@ -19,9 +21,7 @@ const methods = {
 
   assertNotNoop() {
     const reason = this.getOption('noop');
-    if (reason !== false) throw new Error(
-      `Mapper has been set to no-op, reason: ${reason}`
-    );
+    if (reason !== false) throw new NoopError(this, reason);
   },
 
   noop(reason) {

@@ -2,6 +2,7 @@ import test from 'tape';
 import Knex from 'knex';
 
 import Mapper from '../../../lib/mapper';
+import { NoopError } from '../../../lib/errors';
 
 test('Mapper - query', t => {
 
@@ -106,5 +107,28 @@ test('Mapper - query', t => {
     t.end();
   });
 
-  t.end();
+  t.test('Mapper#noop()', t => {
+
+    t.throws(
+      () => Mapper.noop(),
+      TypeError,
+      '`.noop()` rejects without reason'
+    );
+
+    const NoopMapper = Mapper.noop('reason');
+
+    t.equal(Mapper.isNoop(), false, '`isNoop()` is false');
+    t.equal(NoopMapper.isNoop(), true, '`isNoop()` is true');
+
+    try {
+      NoopMapper.toQueryBuilder();
+    } catch (error) {
+      t.true(error instanceof NoopError);
+      t.equal(error.Mapper, NoopMapper);
+      t.equal(error.reason, 'reason');
+    }
+
+    t.end();
+  });
+
 });

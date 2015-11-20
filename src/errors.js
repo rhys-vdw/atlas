@@ -10,6 +10,19 @@ AtlasError.prototype.toString = function() {
   return `${this.name}: ${this.message}`;
 };
 
+export class NoopError extends AtlasError {
+  constructor(Mapper, reason) {
+    super(
+      'NoopError',
+      `reason: ${reason},
+      mapper: ${Mapper}`
+    );
+
+    this.Mapper = Mapper;
+    this.reason = reason;
+  }
+}
+
 export class UnidentifiableRecordError extends AtlasError {
   constructor(Mapper, record, idAttribute) {
     super(
