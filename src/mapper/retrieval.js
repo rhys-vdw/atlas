@@ -68,6 +68,10 @@ const methods = {
   },
 
   fetch() {
+    if (this.isNoop()) {
+      return this.getOption('isSingle') ? null : [];
+    }
+
     const queryBuilder = this.prepareFetch().toQueryBuilder();
     return queryBuilder.then(response =>
       this.handleFetchResponse({ queryBuilder, response })

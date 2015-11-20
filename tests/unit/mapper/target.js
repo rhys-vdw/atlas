@@ -98,4 +98,64 @@ test('Mapper', t => {
     t.end();
   });
 
+  t.test('Mapper#target() - no target', t => {
+
+    const Items = Mapper
+      .table('items')
+      .idAttribute('the_id');
+
+    t.equal(
+      Items.target().isNoop(), true,
+      `target() is a noop`
+    );
+
+    t.equal(
+      Items.target().getOption('isSingle'), true,
+      `target() is single`
+    );
+
+    t.equal(
+      Items.target(null).isNoop(), true,
+      `target(null) is a noop`
+    );
+
+    t.equal(
+      Items.target(null).getOption('isSingle'), true,
+      `target() is single`
+    );
+
+    t.equal(
+      Items.target({}, {}).isNoop(), true,
+      `target({}, {}) is a noop`
+    );
+
+    t.equal(
+      Items.target({}, {}).getOption('isSingle'), false,
+      `target({}, {}) is not single`
+    );
+
+    t.equal(
+      Items.target([]).isNoop(), true,
+      `target([]) is a noop`
+    );
+
+    t.equal(
+      Items.target([]).getOption('isSingle'), false,
+      `target([]) is not single`
+    );
+
+    t.equal(
+      Items.target([null]).isNoop(), true,
+      `target([null]) is a noop`
+    );
+
+    t.equal(
+      Items.target([null]).getOption('isSingle'), false,
+      `target([null]) is not single`
+    );
+
+
+    t.end();
+  });
+
 });

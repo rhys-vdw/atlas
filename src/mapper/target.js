@@ -1,5 +1,6 @@
 import { isArray, isEmpty } from 'lodash/lang';
 import { head, zipObject } from 'lodash/array';
+import { reject } from 'lodash/collection';
 
 const methods = {
 
@@ -23,26 +24,30 @@ const methods = {
   targetBy(attribute, ...ids) {
     const normalized = this.identifyBy(attribute, ...ids);
 
-    if (normalized == null || isArray(normalized) && isEmpty(normalized)) {
-      throw new TypeError(
-        `'ids' failed to identify any rows. Got: ${ ids }`
-      );
-    }
-
     const isComposite = isArray(attribute);
     const isSingle = !isArray(normalized) ||
       isComposite && !isArray(head(normalized));
 
     return this.withMutations(mapper => {
+      mapper.setOption('isSingle', isSingle);
+
       if (isSingle) {
-        if (isComposite) {
-          mapper.one().where(zipObject(attribute, normalized));
+        if (normalized == null) {
+          mapper.noop(`'ids' failed to identify any rows. Got: ${ids}`);
+        } else if (isComposite) {
+          mapper.where(zipObject(attribute, normalized));
         } else {
-          mapper.one().where(attribute, normalized);
+          mapper.where(attribute, normalized);
         }
       } else {
-        mapper.all().whereIn(attribute, normalized);
+        const compacted = reject(normalized, id => id == null);
+        if (isEmpty(compacted)) {
+          mapper.noop(`'ids' failed to identify any rows. Got: ${ids}`);
+        } else {
+          mapper.whereIn(attribute, compacted);
+        }
       }
+
     });
   }
 };

@@ -11,6 +11,9 @@ const methods = {
    *   Number of attributes
    */
   updateColumns(attributes) {
+    if (this.isNoop()) {
+      return this.getOption('isSingle') ? null : [];
+    }
     const queryBuilder = this.prepareUpdateColumns(attributes).toQueryBuilder();
     return queryBuilder.then(response =>
       this.handleUpdateColumnsResponse({ attributes, queryBuilder, response })

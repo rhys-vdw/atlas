@@ -5,10 +5,31 @@ import Knex from 'knex';
 const knex = Knex({});
 
 const options = {
-  queryBuilder: knex.queryBuilder()
+  noop: false,
+  queryBuilder: knex.queryBuilder(),
 };
 
 const methods = {
+
+  // -- No-op --
+
+  isNoop() {
+    return this.getOption('noop') !== false;
+  },
+
+  assertNotNoop() {
+    const reason = this.getOption('noop');
+    if (reason !== false) throw new Error(
+      `Mapper has been set to no-op, reason: ${reason}`
+    );
+  },
+
+  noop(reason) {
+    if (!isString(reason)) throw new TypeError(
+      `Expected 'reason' to be a string, got: ${reason}`
+    );
+    return this.setOption('noop', reason);
+  },
 
   // -- Query --
 
@@ -58,6 +79,7 @@ const methods = {
    * @returns {QueryBuilder} QueryBuilder instance.
    */
   toQueryBuilder() {
+    this.assertNotNoop();
     return this.getOption('queryBuilder').clone();
   },
 
