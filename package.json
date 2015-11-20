@@ -10,9 +10,9 @@
     "lint-tests-q": "eslint --quiet tests/** || true",
     "test": "BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && tape compiled-tests | tap-spec",
     "test-plain": "BLUEBIRD_DEBUG=1 && npm run babel && npm run babel-tests && tape compiled-tests",
-    "cover": "npm run babel && npm run babel-tests && istanbul cover compiled-tests | ./node_modules/tap-spec/bin/cmd.js",
-    "babel-tests": "rm -rf compiled-tests && babel tests -d compiled-tests",
-    "babel": "rm -rf lib && babel src -d lib"
+    "cover": "npm run babel && npm run babel-tests && istanbul cover compiled-tests | tap-spec",
+    "babel-tests": "rm -rf compiled-tests && babel tests -d compiled-tests --source-maps=inline",
+    "babel": "rm -rf lib && babel src -d lib --source-maps=inline"
   },
   "author": "Rhys van der Waerden",
   "license": "to be announced",
@@ -25,6 +25,7 @@
     "istanbul": "^0.3.19",
     "knex": "^0.9.0",
     "pg": "^4.4.3",
+    "source-map-support": "^0.3.3",
     "tap-spec": "^4.1.0",
     "tape": "^4.2.0",
     "tape-catch": "^1.0.4"
