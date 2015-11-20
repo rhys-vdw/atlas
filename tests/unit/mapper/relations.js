@@ -1,5 +1,4 @@
 import test from 'tape';
-//import MockedKnex from '../mocked-knex';
 import Mapper from '../../../lib/mapper';
 import Atlas from '../../../lib/atlas';
 

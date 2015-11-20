@@ -73,13 +73,16 @@ export default function(atlas) {
           st.resolvesToDeep(
             Users.related('avatar', [{ id: 4 }, { id: 6 }]).fetch(),
             [],
-            `Mapper#related(relation, [{id}, {id}]) resolves to [] if none found`
+            `Mapper#related(relation, [{id}, {id}]) resolves to [] if none ` +
+            `found`
           )
         );
       });
     });
 
-    t.databaseTest('`Mapper#loadInto()`', knex, { avatars: avatarsTable }, st => {
+    t.databaseTest('`Mapper#loadInto()`', knex, {
+      avatars: avatarsTable
+    }, st => {
 
       const Avatars = Mapper.table('avatars');
 
@@ -93,7 +96,7 @@ export default function(atlas) {
         { id: 12, user_id: 2, image_path: './sarah.jpg' },
       ]).then(() => {
 
-        const dean = { id: 1, name: 'dean' }
+        const dean = { id: 1, name: 'dean' };
         const sarah = { id: 2, name: 'Sarah' };
         const baz = { id: 3, name: 'Baz' };
         const other = { id: 4, name: 'Other' };
@@ -101,9 +104,9 @@ export default function(atlas) {
         return Promise.join(
           st.resolvesToDeep(
             Users.loadInto(dean, 'avatar'),
-            { id: 1, name: 'dean', avatar: {
-                id: 10, user_id: 1, image_path: './dean.jpg'
-            } },
+            { id: 1, name: 'dean', avatar:
+              { id: 10, user_id: 1, image_path: './dean.jpg' }
+            },
             'loads into single record'
           ),
           st.resolvesToDeep(

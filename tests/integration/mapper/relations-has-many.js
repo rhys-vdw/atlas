@@ -73,7 +73,8 @@ export default function(atlas) {
           st.resolvesToDeep(
             Users.related('posts', [{ id: 4 }, { id: 6 }]).fetch(),
             [],
-            `Mapper#related(relation, [{id}, {id}]) resolves to [] if none found`
+            `Mapper#related(relation, [{id}, {id}]) resolves to [] if none ` +
+            `found`
           )
         );
       });
@@ -95,7 +96,7 @@ export default function(atlas) {
         { id: 14, author_id: 3, message: `Bazza again` },
       ]).then(() => {
 
-        const dean = { id: 1, name: 'dean' }
+        const dean = { id: 1, name: 'dean' };
         const sarah = { id: 2, name: 'Sarah' };
         const baz = { id: 3, name: 'Baz' };
         const other = { id: 4, name: 'Other' };

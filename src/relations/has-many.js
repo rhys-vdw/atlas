@@ -52,8 +52,6 @@ export default class HasMany {
       Other.identifyBy(otherRef, record)
     );
 
-    console.log({ relatedById });
-
     return records.map(record => {
       const id = Self.identifyBy(selfKey, record);
       const related = relatedById[id] || [];

@@ -1,17 +1,11 @@
 import _ from 'lodash';
-import { isArray, isEmpty, isObject, isString, isUndefined } from 'lodash/lang';
-import { extend, merge, omit } from 'lodash/object';
+import { isArray, isEmpty, isObject, isString } from 'lodash/lang';
+import { extend, merge } from 'lodash/object';
 import { each, map } from 'lodash/collection';
 import { flow } from 'lodash/function';
 
 import { RELATION_TREE_SENTINEL } from './constants';
 import { assertType } from './assertions';
-
-const omitUndefined = object => {
-  const after = omit(object, isUndefined);
-  console.log({ before: object, after });
-  return after;
-}
 
 /**
  * @function isRelationTree

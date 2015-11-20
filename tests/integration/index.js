@@ -15,7 +15,7 @@ const config = configPath == null
 
 each(config, (connection, dialect) => {
 
-  const knex = Knex({ dialect, connection, debug: true });
+  const knex = Knex({ dialect, connection /*, debug: true */ });
   const atlas = Atlas(knex);
 
   testMapper(atlas);
