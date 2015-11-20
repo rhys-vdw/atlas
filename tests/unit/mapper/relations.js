@@ -8,14 +8,14 @@ test('Mapper - relations unit test', t => {
     const atlas = Atlas();
     const { hasOne } = atlas.relations;
     const Things = Mapper.table('things');
-    const hasThingFactory = hasOne(Things);
-    const Owner = Mapper.table('owners').relations({ hasThing: hasThingFactory });
+    const hasOneThing = hasOne(Things);
+    const Owner = Mapper.table('owners').relations({ hasThing: hasOneThing });
 
     t.notEqual(Owner, Mapper, 'copies immutable Mapper');
 
     t.deepEqual(
       Owner.getOption('relations'),
-      { hasThing: hasThingFactory },
+      { hasThing: hasOneThing },
       'Correctly assigns relations'
     );
 
