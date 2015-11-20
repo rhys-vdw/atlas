@@ -17,7 +17,6 @@ export default function(atlas) {
   const Mapper = atlas('Mapper');
   const { knex } = atlas;
   const { hasMany } = atlas.relations;
-  console.log({ hasMany });
 
   test('Mapper - relations - HasMany', t => {
 
