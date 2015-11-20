@@ -1,13 +1,13 @@
 import { isArray } from 'lodash/lang';
 import { indexBy } from 'lodash/collection';
 import { first } from 'lodash/array';
-import * as DefaultColumn from './default-column';
+import * as DefaultColumn from '../naming/default-column';
 import { isComposite, keysCompatible } from '../arguments';
 
 export default class BelongsTo {
   constructor(Self, Other, { selfRef, otherKey } = {}) {
     if (selfRef == null) {
-      selfRef = DefaultColumn.fromMapperAttribute(Other, otherKey);
+      selfRef = DefaultColumn.mapperAttributeRef(Other, otherKey);
     }
 
     if (otherKey == null) {

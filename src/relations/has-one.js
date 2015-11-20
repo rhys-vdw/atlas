@@ -1,7 +1,7 @@
 import { isArray } from 'lodash/lang';
 import { indexBy } from 'lodash/collection';
 import { first } from 'lodash/array';
-import * as DefaultColumn from './default-column';
+import * as DefaultColumn from '../naming/default-column';
 import { isComposite, keysCompatible } from '../arguments';
 
 export default class HasOne {
@@ -11,7 +11,7 @@ export default class HasOne {
     }
 
     if (otherRef == null) {
-      otherRef = DefaultColumn.fromMapperAttribute(Self, selfKey);
+      otherRef = DefaultColumn.mapperAttributeRef(Self, selfKey);
     }
 
     if (!keysCompatible(selfKey, otherRef)) throw new TypeError(

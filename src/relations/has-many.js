@@ -1,7 +1,7 @@
 import { isArray } from 'lodash/lang';
 import { groupBy } from 'lodash/collection';
 import { first } from 'lodash/array';
-import * as DefaultColumn from './default-column';
+import * as DefaultColumn from '../naming/default-column';
 import { isComposite, keysCompatible } from '../arguments';
 
 export default class HasMany {
