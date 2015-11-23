@@ -11,7 +11,7 @@ export default class HasMany {
     }
 
     if (otherRef == null) {
-      otherRef = DefaultColumn.fromMapperAttribute(Self, selfKey);
+      otherRef = DefaultColumn.mapperAttributeRef(Self, selfKey);
     }
 
     if (!keysCompatible(selfKey, otherRef)) throw new TypeError(
@@ -31,12 +31,12 @@ export default class HasMany {
     const isSingle = !isArray(id) ||
       isComposite(selfKey) && !isComposite(first(id));
 
-    return Other.withMutations(mapper => {
+    return Other.withMutations(other => {
       if (isSingle) {
-        mapper.where(otherRef, id);
-        mapper.defaultAttribute(otherRef, id);
+        other.where(otherRef, id);
+        other.defaultAttribute(otherRef, id);
       } else {
-        mapper.whereIn(otherRef, id);
+        other.whereIn(otherRef, id);
       }
     });
   }
