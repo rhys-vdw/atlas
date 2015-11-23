@@ -1,3 +1,4 @@
+import './arguments';
 import './options';
 import './mapper';
 import './atlas';
