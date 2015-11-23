@@ -37,14 +37,14 @@ test('== Mapper - joins ==', t => {
     t.end();
   });
 
-  t.test('Mapper#joinRelated - simple join', t => {
+  t.test('Mapper#joinRelation - simple join', t => {
 
     const Other = Mapper.table('others').idAttribute('o_id');
     const Self = Mapper.table('selves').idAttribute('s_id');
 
     const Joined = Self.relations({
-      others: (self) => new HasMany(self, Other)
-    }).joinRelated('others');
+      others: (self) => new HasMany(self, Other),
+    }).joinRelation('others');
 
     t.queriesEqual(
       Joined.prepareFetch().toQueryBuilder(), `
@@ -76,10 +76,35 @@ test('== Mapper - joins ==', t => {
       `, 'pivot attributes can be omitted with `.omitPivot()`'
     );
 
+    t.queriesEqual(
+      WithPivot.omitPivot().prepareFetch().toQueryBuilder(), `
+        select "selves".* from "selves"
+        inner join "others" on "selves"."s_id" = "others"."self_s_id"
+      `, 'pivot attributes can be omitted with `.omitPivot()`'
+    );
+
     t.end();
   });
 
-  t.test('Mapper#joinRelated - complex join', t => {
+  t.test('Mapper#joinRelation - simple self join', t => {
+
+    const People = Mapper.table('people');
+
+    const Joined = People.relations({
+      mothers: (self) => new HasMany(self, People, { otherRef: 'mother_id' }),
+    }).joinRelation('mothers').pivotAttributes('a');
+
+    t.queriesEqual(
+      Joined.prepareFetch().toQueryBuilder(), `
+        select "pivot"."a" as "_pivot_a", "people".* from "people"
+        inner join "people" as "pivot" on "people"."id" = "pivot"."mother_id"
+      `, 'aliases join table when joining self'
+    );
+
+    t.end();
+  });
+
+  t.test('Mapper#joinRelation - complex join', t => {
 
     const Other = Mapper.table('others').idAttribute('o_id')
       .where('thing', '>', 5);
@@ -88,7 +113,7 @@ test('== Mapper - joins ==', t => {
 
     const Joined = Self.relations({
       others: (self) => new HasMany(self, Other)
-    }).joinRelated('others');
+    }).joinRelation('others');
 
     t.queriesEqual(
       Joined.prepareFetch().toQueryBuilder(), `

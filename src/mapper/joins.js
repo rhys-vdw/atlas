@@ -31,13 +31,26 @@ const methods = {
 
     const simpleJoin = isQueryBuilderEmpty(Other);
 
-    const table = simpleJoin
-      ? Other.getOption('table')
-      : Other.prepareFetch().toQueryBuilder().as(PIVOT_ALIAS);
+    let joinTable = null;
+    let pivotAlias = null;
+    let prefixTable = null;
+    if (simpleJoin) {
+      const selfTable = this.getOption('table');
+      const otherTable = Other.getOption('table');
+      if (selfTable === otherTable) {
+        pivotAlias = prefixTable = PIVOT_ALIAS;
+        joinTable = `${otherTable} as ${pivotAlias}`;
+      } else {
+        prefixTable = otherTable;
+        joinTable = otherTable;
+      }
+    } else {
+      pivotAlias = prefixTable = PIVOT_ALIAS;
+      joinTable = Other.prepareFetch().toQueryBuilder().as(pivotAlias);
+    }
 
-    const otherAttributeToTableColumn = simpleJoin
-      ? Other.attributeToTableColumn
-      : key => `${PIVOT_ALIAS}.${Other.attributeToColumn(key)}`;
+    const otherAttributeToTableColumn = attribute =>
+      `${prefixTable}.${Other.attributeToColumn(attribute)}`;
 
     const joinColumns = zipObject(
       map(selfKeys, this.attributeToTableColumn, this),
@@ -45,14 +58,14 @@ const methods = {
     );
 
     return this.withMutations(mapper => {
-      if (!simpleJoin) {
-        mapper.setOption('pivotAlias', PIVOT_ALIAS);
+      if (pivotAlias != null) {
+        mapper.setOption('pivotAlias', pivotAlias);
       }
-      mapper.query('join', table, joinColumns);
+      mapper.query('join', joinTable, joinColumns);
     });
   },
 
-  joinRelated(relationName) {
+  joinRelation(relationName) {
     const relation = this.getRelation(relationName);
     const selfAttribute = relation.selfKey || relation.selfRef;
     const otherAttribute = relation.otherKey || relation.otherRef;
