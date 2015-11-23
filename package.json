@@ -9,10 +9,12 @@
     "lint-tests": "eslint tests/**",
     "lint-tests-q": "eslint --quiet tests/** || true",
     "test": "BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && tape compiled-tests | tap-dot",
+    "test-debug": "BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && node-debug compiled-tests | tap-dot",
     "test-plain": "BLUEBIRD_DEBUG=1 && npm run babel && npm run babel-tests && tape compiled-tests",
     "cover": "npm run babel && npm run babel-tests && istanbul cover compiled-tests | tap-dot",
     "babel-tests": "rm -rf compiled-tests && babel tests -d compiled-tests --source-maps=inline",
-    "babel": "rm -rf lib && babel src -d lib --source-maps=inline"
+    "babel": "rm -rf lib && babel src -d lib --source-maps=inline",
+    "develop": "watch 'npm test' tests/ src/"
   },
   "author": "Rhys van der Waerden",
   "license": "to be announced",
