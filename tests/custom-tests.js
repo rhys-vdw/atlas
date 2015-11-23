@@ -14,6 +14,8 @@ function omitUndefined(object) {
 
 function compactWhitespace(string) {
   return string
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
     .replace(/\s+/g, ' ')
     .replace(/^\s+/g, '')
     .replace(/\s+$/g, '');
