@@ -110,11 +110,7 @@ const methods = {
       .map(this.columnsToAttributes, this)
       .map(this.createRecord, this);
 
-    const record = this.forge(
-      isSingle ? attributes.first() : attributes.value()
-    );
-
-    return record;
+    return isSingle ? attributes.first() : attributes.value();
   }
 };
 
