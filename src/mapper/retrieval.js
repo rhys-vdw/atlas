@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import { isEmpty } from 'lodash/lang';
+import { map } from 'lodash/collection';
 import { NotFoundError, NoRowsFoundError } from '../errors';
+import { PIVOT_PREFIX } from '../constants';
 
 const options = {
   isRequired: false,
@@ -82,14 +84,34 @@ const methods = {
   },
 
   prepareFetch() {
-    const isSingle = this.getOption('isSingle');
-    const table = this.getOption('table');
+    const isSingle  = this.getOption('isSingle');
+    const omitPivot = this.getOption('omitPivot');
 
     return this.query(queryBuilder => {
+
       if (isSingle) {
         queryBuilder.limit(1);
       }
-      queryBuilder.select(`${table}.*`);
+
+      if (!omitPivot) {
+        const pivotAttributes = this.getOption('pivotAttributes');
+
+        if (!isEmpty(pivotAttributes)) {
+          const pivotRelationName = this.getOption('pivotRelationName');
+          const alias             = this.getOption('pivotAlias');
+          const Pivot             = this.getRelation(pivotRelationName).Other;
+          const table             = Pivot.getOption('table');
+
+          const pivotColumns = map(pivotAttributes, attribute => {
+            const column = Pivot.attributeToColumn(attribute);
+            return `${alias || table}.${column} as ${PIVOT_PREFIX}${column}`;
+          });
+
+          queryBuilder.select(pivotColumns);
+        }
+      }
+
+      queryBuilder.select(this.columnToTableColumn('*'));
     });
   },
 

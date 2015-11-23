@@ -6,6 +6,7 @@ import Destruction from './destruction';
 import Forge from './forge';
 import Identification from './identification';
 import Insert from './insert';
+import Joins from './joins';
 import KeyConversion from './key-conversion';
 import Query from './query';
 import RecordAdapter from './record-adapter';
@@ -27,6 +28,7 @@ const mixins = [
   Forge,
   Identification,
   Insert,
+  Joins,
   KeyConversion,
   Query,
   RecordAdapter,
