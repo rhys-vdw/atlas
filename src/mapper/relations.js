@@ -35,7 +35,8 @@ const methods = {
 
     const createRelation = relations[relationName];
     if (!isFunction(createRelation)) throw new TypeError(
-      `Expected relation '${relationName}' to be a function, got: ${createRelation}`
+      `Expected relation '${relationName}' to be a function, ` +
+      `got: ${createRelation}`
     );
 
     return createRelation(this);
