@@ -1,6 +1,7 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
 import HasMany from '../../../lib/relations/has-many';
+import BelongsTo from '../../../lib/relations/belongs-to';
 
 test('== Mapper - joins ==', t => {
 
@@ -84,6 +85,28 @@ test('== Mapper - joins ==', t => {
     );
 
     t.end();
+  });
+
+  t.test('Mapper#joinRelation - simple join with composite keys', st => {
+
+    const Other = Mapper.table('others').idAttribute(['id_a', 'id_b']);
+    const Self = Mapper.table('selves').idAttribute('s_id');
+
+    const Joined = Self.relations({
+      others: (self) => new BelongsTo(self, Other),
+    }).joinRelation('others');
+
+    st.queriesEqual(
+      Joined.prepareFetch().toQueryBuilder(), `
+        select "selves".* from "selves"
+        inner join "others" on
+          "selves"."other_id_a" = "others"."id_a"
+        and
+          "selves"."other_id_b" = "others"."id_b"
+      `, 'performs simple join when target has no statements'
+    );
+
+    st.end();
   });
 
   t.test('Mapper#joinRelation - simple self join', t => {

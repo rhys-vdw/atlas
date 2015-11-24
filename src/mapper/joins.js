@@ -67,9 +67,7 @@ const methods = {
 
   joinRelation(relationName) {
     const relation = this.getRelation(relationName);
-    const selfAttribute = relation.selfKey || relation.selfRef;
-    const otherAttribute = relation.otherKey || relation.otherRef;
-    const { Other } = relation;
+    const { selfAttribute, otherAttribute, Other } = relation;
 
     return this.withMutations(mapper =>
       mapper

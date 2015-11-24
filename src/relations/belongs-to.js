@@ -1,58 +1,54 @@
 import { isArray } from 'lodash/lang';
 import { indexBy } from 'lodash/collection';
 import { first } from 'lodash/array';
-import * as DefaultColumn from '../naming/default-column';
-import { isComposite, keysCompatible } from '../arguments';
+import { mapperAttributeRef } from '../naming/default-column';
+import { isComposite, assertKeysCompatible } from '../arguments';
 
 export default class BelongsTo {
   constructor(Self, Other, { selfRef, otherKey } = {}) {
-    if (selfRef == null) {
-      selfRef = DefaultColumn.mapperAttributeRef(Other, otherKey);
-    }
 
-    if (otherKey == null) {
-      otherKey = Other.getOption('idAttribute');
-    }
-
-    if (!keysCompatible(selfRef, otherKey)) throw new TypeError(
-      `Mismatched key types. selfRef=${selfRef} otherKey=${otherKey}`
+    const otherAttribute = otherKey || Other.getOption('idAttribute');
+    const selfAttribute = selfRef || Other.columnToAttribute(
+      mapperAttributeRef(Other, otherAttribute)
     );
+
+    assertKeysCompatible({ selfAttribute, otherAttribute });
 
     this.Self = Self;
     this.Other = Other;
-    this.selfRef = selfRef;
-    this.otherKey = otherKey;
+    this.selfAttribute = selfAttribute;
+    this.otherAttribute = otherAttribute;
   }
 
   toMapper(...targetIds) {
-    const { Self, Other, selfRef, otherKey } = this;
+    const { Self, Other, selfAttribute, otherAttribute } = this;
 
-    const id = Self.identifyBy(selfRef, ...targetIds);
+    const id = Self.identifyBy(selfAttribute, ...targetIds);
 
     const isSingle = !isArray(id) ||
-      isComposite(selfRef) && !isComposite(first(id));
+      isComposite(selfAttribute) && !isComposite(first(id));
 
     return Other.withMutations(mapper => {
-      mapper.targetBy(otherKey, id);
+      mapper.targetBy(otherAttribute, id);
       if (isSingle) {
-        mapper.defaultAttribute(otherKey, id);
+        mapper.defaultAttribute(otherAttribute, id);
       }
     });
   }
 
   assignRelated(records, relationName, related) {
-    const { Self, Other, selfRef, otherKey } = this;
+    const { Self, Other, selfAttribute, otherAttribute } = this;
 
     if (!isArray(records)) {
       return Self.setRelated(records, relationName, related);
     }
 
     const relatedById = indexBy(related, record =>
-      Other.identifyBy(otherKey, record)
+      Other.identifyBy(otherAttribute, record)
     );
 
     return records.map(record => {
-      const id = Self.identifyBy(selfRef, record);
+      const id = Self.identifyBy(selfAttribute, record);
       const related = relatedById[id] || null;
       return Self.setRelated(record, relationName, related);
     });
