@@ -1,22 +1,24 @@
 import identity from 'lodash/utility/identity';
 
 import BelongsTo from './belongs-to';
+import BelongsToMany from './belongs-to-many';
 import HasMany from './has-many';
 import HasOne from './has-one';
 
-export const belongsTo = (toMapper) => (Other, ...args) => (Self) =>
-  new BelongsTo(Self, toMapper(Other), ...args);
+export const initialize = (toMapper = identity) => ({
 
-export const hasMany = (toMapper) => (Other, ...args) => (Self) =>
-  new HasMany(Self, toMapper(Other), ...args);
+  belongsTo: (Other, options) => (Self) =>
+    new BelongsTo(Self, toMapper(Other), options),
 
-export const hasOne = (toMapper) => (Other, ...args) => (Self) =>
-  new HasOne(Self, toMapper(Other), ...args);
+  belongsToMany: (Other, { Pivot, ...options}) => (Self) =>
+    new BelongsToMany(Self, toMapper(Other), toMapper(Pivot), options),
 
-export function initialize(toMapper = identity) {
-  return {
-    belongsTo: belongsTo(toMapper),
-    hasMany: hasMany(toMapper),
-    hasOne: hasOne(toMapper),
-  };
-}
+  hasMany: (Other, options) => (Self) =>
+    new HasMany(Self, toMapper(Other), options),
+
+  hasOne: (Other, options) => (Self) =>
+    new HasOne(Self, toMapper(Other), options),
+});
+
+const { belongsTo, belongsToMany, hasMany, hasOne } = initialize();
+export { belongsTo, belongsToMany, hasMany, hasOne };
