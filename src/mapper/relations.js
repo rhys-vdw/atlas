@@ -2,7 +2,7 @@ import Promise from 'bluebird';
 import { reduce } from 'lodash/collection';
 import { first } from 'lodash/array';
 import { keys, mapValues } from 'lodash/object';
-import { isEmpty } from 'lodash/lang';
+import { isEmpty, isFunction, isString } from 'lodash/lang';
 import RelationTree, { compile, mergeTrees, normalize } from '../relation-tree';
 
 const options = {
@@ -22,12 +22,23 @@ const methods = {
     return keys(this.getOption('relations'));
   },
 
-  getRelation(name) {
+  getRelation(relationName) {
+
+    if (!isString(relationName)) throw new TypeError(
+      `Expected 'relationName' to be a string, got: ${relationName}`
+    );
+
     const relations = this.getOption('relations');
-    if (!(name in relations)) {
-      throw new TypeError(`Unknown relation '${name}'`);
-    }
-    return relations[name](this);
+    if (!(relationName in relations)) throw new TypeError(
+      `Unknown relation, got: '${relationName}'`
+    );
+
+    const createRelation = relations[relationName];
+    if (!isFunction(createRelation)) throw new TypeError(
+      `Expected relation '${relationName}' to be a function, got: ${createRelation}`
+    );
+
+    return createRelation(this);
   },
 
   withRelated(...relations) {
