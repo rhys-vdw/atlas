@@ -8,12 +8,15 @@ import { mapperAttributeRef } from '../naming/default-column';
 import * as DefaultTable from '../naming/table';
 import { isComposite, assertKeysCompatible } from '../arguments';
 import { hasMany } from './index';
+import { PIVOT_PREFIX } from '../constants';
 
 export default class BelongsToMany {
   constructor(Self, Other, Pivot = null, {
     selfKey, otherKey,
     pivotSelfRef, pivotOtherRef, pivotTable, pivotName = 'pivot'
   } = {}) {
+
+    // Default self keys.
 
     if (selfKey == null) {
       selfKey = Self.getOption('idAttribute');
@@ -25,6 +28,8 @@ export default class BelongsToMany {
 
     assertKeysCompatible({ selfKey, pivotSelfRef });
 
+    // Default other keys.
+
     if (otherKey == null) {
       otherKey = Other.getOption('idAttribute');
     }
@@ -35,59 +40,75 @@ export default class BelongsToMany {
 
     assertKeysCompatible({ otherKey, pivotOtherRef });
 
+    // Create Pivot mapper if none provided.
+
     if (Pivot == null) {
-      Pivot = Mapper
-        .table(pivotTable || DefaultTable.pivot(Other, Self))
-        .idAttribute(pivotSelfRef, pivotOtherRef);
+      Pivot = Mapper.withMutations({
+        table: pivotTable || DefaultTable.pivot(Other, Self),
+        idAttribute: [pivotSelfRef, pivotOtherRef]
+      });
     }
 
+    // Create the relation between Other and Pivot
+    const pivots = hasMany(Pivot, {
+      selfKey: otherKey,
+      otherRef: pivotOtherRef,
+      pivotTable
+    });
+
+    // Constrain pivot relation
+
+    const JoinedOther = Other.withMutations({
+      relations: { [pivotName]: pivots },
+      joinRelation: pivotName,
+      pivotAttributes: [pivotSelfRef, pivotOtherRef]
+    });
+
+    const selfAttribute = selfKey;
+    const pivotSelfColumn = Pivot.attributeToColumn(pivotSelfRef);
+    const pivotSelfTableColumn = Pivot.columnToTableColumn(pivotSelfColumn);
+    const otherAttribute = Other.columnToAttribute(
+      `${PIVOT_PREFIX}${pivotSelfColumn}`
+    );
+
     assign(this, {
-      Self, Other, Pivot,
-      selfKey, otherKey, pivotSelfRef, pivotOtherRef, pivotName,
-      selfAttribute: selfKey, otherAttribute: pivotSelfRef
+      Self, Other: JoinedOther,
+      selfAttribute, otherAttribute, pivotSelfTableColumn,
     });
   }
 
   toMapper(...targetIds) {
     const {
-      Self, Other, Pivot,
-      selfKey, otherKey, pivotSelfRef, pivotOtherRef, pivotName
+      Self, Other, selfAttribute, otherAttribute, pivotSelfTableColumn
     } = this;
 
-    const id = Self.identifyBy(selfKey, ...targetIds);
+    const id = Self.identifyBy(selfAttribute, ...targetIds);
     const isSingle = !isArray(id) ||
-      isComposite(selfKey) && !isComposite(first(id));
+      isComposite(selfAttribute) && !isComposite(first(id));
 
-    const ConstrainedPivot = isSingle
-      ? Pivot.where(pivotSelfRef, id)
-      : Pivot.whereIn(pivotSelfRef, id);
-
-    const pivotRelation = hasMany(
-      ConstrainedPivot,
-      { selfKey: otherKey, otherRef: pivotOtherRef }
-    );
-
-    return Other.withMutations(other =>
-      other
-        .relations({ [pivotName]: pivotRelation })
-        .joinRelation(pivotName)
-        .pivotAttributes(pivotSelfRef, pivotOtherRef)
-    );
+    return Other.withMutations(other => {
+      if (isSingle) {
+        other.query('where', pivotSelfTableColumn, id);
+        other.defaultAttribute(otherAttribute, id);
+      } else {
+        other.query('whereIn', pivotSelfTableColumn, id);
+      }
+    });
   }
 
   assignRelated(records, relationName, related) {
-    const { Self, Other, selfKey, otherRef } = this;
+    const { Self, Other, selfAttribute, otherAttribute } = this;
 
     if (!isArray(records)) {
       return Self.setRelated(records, relationName, related);
     }
 
     const relatedById = groupBy(related, record =>
-      Other.identifyBy(otherRef, record)
+      Other.identifyBy(otherAttribute, record)
     );
 
     return records.map(record => {
-      const id = Self.identifyBy(selfKey, record);
+      const id = Self.identifyBy(selfAttribute, record);
       const related = relatedById[id] || [];
       return Self.setRelated(record, relationName, related);
     });

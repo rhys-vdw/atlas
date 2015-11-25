@@ -77,7 +77,10 @@ export default function(atlas) {
           st.resolvesToDeep(
             Users.related('groups', 1, 3)
               .omitPivot()
-              .query('orderBy', 'pivot.user_id', 'pivot.group_id').fetch(),
+              .query('orderBy',
+                'memberships.user_id',
+                'memberships.group_id'
+              ).fetch(),
             [
               { id: 10, name: `General` },
               { id: 11, name: `Balloon Enthusiasts` },
@@ -89,7 +92,10 @@ export default function(atlas) {
           st.resolvesToDeep(
             Users.related('groups', [1, 3])
               .omitPivot()
-              .query('orderBy', 'pivot.user_id', 'pivot.group_id').fetch(),
+              .query('orderBy',
+                'memberships.user_id',
+                'memberships.group_id'
+              ).fetch(),
             [
               { id: 10, name: `General` },
               { id: 11, name: `Balloon Enthusiasts` },

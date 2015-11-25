@@ -98,13 +98,12 @@ const methods = {
 
         if (!isEmpty(pivotAttributes)) {
           const pivotRelationName = this.getOption('pivotRelationName');
-          const alias             = this.getOption('pivotAlias');
+          const pivotAlias        = this.getOption('pivotAlias');
           const Pivot             = this.getRelation(pivotRelationName).Other;
-          const table             = Pivot.getOption('table');
 
           const pivotColumns = map(pivotAttributes, attribute => {
             const column = Pivot.attributeToColumn(attribute);
-            return `${alias || table}.${column} as ${PIVOT_PREFIX}${column}`;
+            return `${pivotAlias}.${column} as ${PIVOT_PREFIX}${column}`;
           });
 
           queryBuilder.select(pivotColumns);
