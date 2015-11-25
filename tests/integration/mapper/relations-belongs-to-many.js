@@ -181,50 +181,54 @@ export default function(atlas) {
       });
     });
 
-    /*
-    t.databaseTest('`Mapper#withRelated()`', knex, {
-      users: usersTable, groups: groupsTable
-    }, st => {
+    t.databaseTest('`Mapper#withRelated()`', knex, tables, st => {
 
       const Groups = Mapper.table('groups');
 
       const Users = Mapper.table('users').relations({
-        groups: hasMany(Groups.query('orderBy', 'id'), { otherRef: 'author_id' })
+        groups: belongsToMany(Groups, {
+          otherRef: 'author_id', pivotTable: 'memberships'
+        })
       });
 
-      return knex('groups').insert([
-        { id: 10, author_id: 1, message: `Dean's first post` },
-        { id: 11, author_id: 3, message: `Barry's first post` },
-        { id: 12, author_id: 2, message: `Hello I'm Sarah` },
-        { id: 13, author_id: 1, message: `Dean again` },
-        { id: 14, author_id: 3, message: `Bazza again` },
-      ]).then(() => knex('users').insert([
+      return knex('users').insert([
         { id: 1, name: 'Dean' },
         { id: 2, name: 'Sarah' },
         { id: 3, name: 'Baz' },
-        { id: 4, name: 'Other guy' }
+        { id: 4, name: 'Other' },
+      ]).then(() => knex('groups').insert([
+        { id: 10, name: `General` },
+        { id: 11, name: `Balloon Enthusiasts` },
+        { id: 12, name: `Off topic` },
+      ])).then(() => knex('memberships').insert([
+        { user_id: 1, group_id: 10, is_owner: true },
+        { user_id: 2, group_id: 10, is_owner: false },
+        { user_id: 3, group_id: 10, is_owner: false },
+        { user_id: 1, group_id: 11, is_owner: true },
+        { user_id: 2, group_id: 12, is_owner: false },
+        { user_id: 3, group_id: 12, is_owner: true },
       ])).then(() => {
 
         return st.resolvesToDeep(
           Users.query('orderBy', 'id').withRelated('groups').fetch(), [
             { id: 1, name: 'Dean', groups: [
-                { id: 10, author_id: 1, message: `Dean's first post` },
-                { id: 13, author_id: 1, message: `Dean again` },
+              { _pivot_user_id: 1, id: 10, name: `General` },
+              { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
             ] },
             { id: 2, name: 'Sarah', groups: [
-              { id: 12, author_id: 2, message: `Hello I'm Sarah` },
+              { _pivot_user_id: 2, id: 10, name: `General` },
+              { _pivot_user_id: 2, id: 12, name: `Off topic` }
             ] },
             { id: 3, name: 'Baz', groups: [
-              { id: 11, author_id: 3, message: `Barry's first post` },
-              { id: 14, author_id: 3, message: `Bazza again` },
+              { _pivot_user_id: 3, id: 10, name: `General` },
+              { _pivot_user_id: 3, id: 12, name: `Off topic` }
             ] },
-            { id: 4, name: 'Other guy', groups: [] }
+            { id: 4, name: 'Other', groups: [] }
           ], 'fetches records with related models'
         );
-      });
+      })
 
     });
-*/
 
   });
 }
