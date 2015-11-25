@@ -1,7 +1,6 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
-import HasMany from '../../../lib/relations/has-many';
-import BelongsTo from '../../../lib/relations/belongs-to';
+import { hasMany, belongsTo } from '../../../lib/relations';
 
 test('== Mapper - joins ==', t => {
 
@@ -44,7 +43,7 @@ test('== Mapper - joins ==', t => {
     const Self = Mapper.table('selves').idAttribute('s_id');
 
     const Joined = Self.relations({
-      others: (self) => new HasMany(self, Other),
+      others: hasMany(Other)
     }).joinRelation('others');
 
     t.queriesEqual(
@@ -93,7 +92,7 @@ test('== Mapper - joins ==', t => {
     const Self = Mapper.table('selves').idAttribute('s_id');
 
     const Joined = Self.relations({
-      others: (self) => new BelongsTo(self, Other),
+      others: belongsTo(Other),
     }).joinRelation('others');
 
     st.queriesEqual(
@@ -114,8 +113,8 @@ test('== Mapper - joins ==', t => {
     const People = Mapper.table('people');
 
     const Joined = People.relations({
-      mothers: (self) => new HasMany(self, People, { otherRef: 'mother_id' }),
-    }).joinRelation('mothers').pivotAttributes('a');
+      children: hasMany(People, { otherRef: 'mother_id' })
+    }).joinRelation('children').pivotAttributes('a');
 
     t.queriesEqual(
       Joined.prepareFetch().toQueryBuilder(), `
@@ -135,7 +134,7 @@ test('== Mapper - joins ==', t => {
     const Self = Mapper.table('selves').idAttribute('s_id');
 
     const Joined = Self.relations({
-      others: (self) => new HasMany(self, Other)
+      others: hasMany(Other)
     }).joinRelation('others');
 
     t.queriesEqual(
