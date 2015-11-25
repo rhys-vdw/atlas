@@ -61,7 +61,7 @@ export default class BelongsToMany {
     const JoinedOther = Other.withMutations({
       relations: { [pivotName]: pivots },
       joinRelation: pivotName,
-      pivotAttributes: [pivotSelfRef, pivotOtherRef]
+      pivotAttributes: [pivotSelfRef]
     });
 
     const selfAttribute = selfKey;

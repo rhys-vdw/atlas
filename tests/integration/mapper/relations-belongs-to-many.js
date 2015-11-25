@@ -57,20 +57,19 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.related('groups', 1).pivotAttributes('is_owner').fetch(), [{
-              _pivot_user_id: 1, _pivot_group_id: 10, _pivot_is_owner: true,
-              id: 10, name: `General`
-            }, {
-              _pivot_user_id: 1, _pivot_group_id: 11, _pivot_is_owner: true,
-              id: 11, name: `Balloon Enthusiasts`
-            }],
+            Users.related('groups', 1).pivotAttributes('is_owner').fetch(), [
+              { _pivot_user_id: 1, _pivot_is_owner: true, id: 10,
+                name: `General` },
+              { _pivot_user_id: 1, _pivot_is_owner: true, id: 11,
+                name: `Balloon Enthusiasts` }
+            ],
             `Mapper#related(relation, id).pivotAttributes() resolves correctly`
           ),
           st.resolvesToDeep(
             Users.related('groups', { id: 2, name: 'Sarah' }).fetch(), [{
-              _pivot_user_id: 2, _pivot_group_id: 10, id: 10, name: `General`
+              _pivot_user_id: 2, id: 10, name: `General`
             }, {
-              _pivot_user_id: 2, _pivot_group_id: 12, id: 12, name: `Off topic`
+              _pivot_user_id: 2, id: 12, name: `Off topic`
             }],
             `Mapper#related(relation, {id}) resolves correctly`
           ),
