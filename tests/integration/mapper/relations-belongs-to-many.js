@@ -118,7 +118,6 @@ export default function(atlas) {
       });
     });
 
-    /*
     t.databaseTest('`Mapper#loadInto()`', knex, tables, st => {
 
       const Groups = Mapper.table('groups');
@@ -130,12 +129,17 @@ export default function(atlas) {
       });
 
       return knex('groups').insert([
-        { id: 10, author_id: 1, message: `Dean's first post` },
-        { id: 11, author_id: 3, message: `Barry's first post` },
-        { id: 12, author_id: 2, message: `Hello I'm Sarah` },
-        { id: 13, author_id: 1, message: `Dean again` },
-        { id: 14, author_id: 3, message: `Bazza again` },
-      ]).then(() => {
+        { id: 10, name: `General` },
+        { id: 11, name: `Balloon Enthusiasts` },
+        { id: 12, name: `Off topic` },
+      ]).then(() => knex('memberships').insert([
+        { user_id: 1, group_id: 10, is_owner: true },
+        { user_id: 2, group_id: 10, is_owner: false },
+        { user_id: 3, group_id: 10, is_owner: false },
+        { user_id: 1, group_id: 11, is_owner: true },
+        { user_id: 2, group_id: 12, is_owner: false },
+        { user_id: 3, group_id: 12, is_owner: true },
+      ])).then(() => {
 
         const dean = { id: 1, name: 'dean' };
         const sarah = { id: 2, name: 'Sarah' };
@@ -144,29 +148,31 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.loadInto(dean, 'groups'),
+            Users.loadInto({ id: 1, name: 'dean' }, 'groups'),
             { id: 1, name: 'dean', groups: [
-                { id: 10, author_id: 1, message: `Dean's first post` },
-                { id: 13, author_id: 1, message: `Dean again` },
+              { _pivot_user_id: 1, id: 10, name: `General` },
+              { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
             ] },
             'loads into single record'
           ),
           st.resolvesToDeep(
             Users.loadInto([sarah, baz], 'groups'), [
               { id: 2, name: 'Sarah', groups: [
-                { id: 12, author_id: 2, message: `Hello I'm Sarah` },
+                { _pivot_user_id: 2, id: 10, name: `General` },
+                { _pivot_user_id: 2, id: 12, name: `Off topic` }
               ] },
               { id: 3, name: 'Baz', groups: [
-                { id: 11, author_id: 3, message: `Barry's first post` },
-                { id: 14, author_id: 3, message: `Bazza again` },
+                { _pivot_user_id: 3, id: 10, name: `General` },
+                { _pivot_user_id: 3, id: 12, name: `Off topic` }
               ] }
             ], 'loads into multiple records'
+
           ),
           st.resolvesToDeep(
             Users.loadInto([dean, other], 'groups'), [
               { id: 1, name: 'dean', groups: [
-                { id: 10, author_id: 1, message: `Dean's first post` },
-                { id: 13, author_id: 1, message: `Dean again` },
+                { _pivot_user_id: 1, id: 10, name: `General` },
+                { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
               ] },
               { id: 4, name: 'Other', groups: [] }
             ], 'loads related into one record and [] into another'
@@ -175,6 +181,7 @@ export default function(atlas) {
       });
     });
 
+    /*
     t.databaseTest('`Mapper#withRelated()`', knex, {
       users: usersTable, groups: groupsTable
     }, st => {
