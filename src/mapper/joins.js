@@ -29,28 +29,28 @@ const methods = {
     const selfKeys = ensureArray(selfAttribute);
     const otherKeys = ensureArray(otherAttribute);
 
-    const simpleJoin = isQueryBuilderEmpty(Other);
-
     let joinTable = null;
     let pivotAlias = null;
-    let prefixTable = null;
-    if (simpleJoin) {
+
+    if (isQueryBuilderEmpty(Other)) {
+
       const selfTable = this.getOption('table');
       const otherTable = Other.getOption('table');
+
       if (selfTable === otherTable) {
-        pivotAlias = prefixTable = PIVOT_ALIAS;
+        pivotAlias = PIVOT_ALIAS;
         joinTable = `${otherTable} as ${pivotAlias}`;
       } else {
-        prefixTable = otherTable;
+        pivotAlias = otherTable;
         joinTable = otherTable;
       }
     } else {
-      pivotAlias = prefixTable = PIVOT_ALIAS;
+      pivotAlias = PIVOT_ALIAS;
       joinTable = Other.prepareFetch().toQueryBuilder().as(pivotAlias);
     }
 
     const otherAttributeToTableColumn = attribute =>
-      `${prefixTable}.${Other.attributeToColumn(attribute)}`;
+      `${pivotAlias}.${Other.attributeToColumn(attribute)}`;
 
     const joinColumns = zipObject(
       map(selfKeys, this.attributeToTableColumn, this),
@@ -58,9 +58,7 @@ const methods = {
     );
 
     return this.withMutations(mapper => {
-      if (pivotAlias != null) {
-        mapper.setOption('pivotAlias', pivotAlias);
-      }
+      mapper.setOption('pivotAlias', pivotAlias);
       mapper.query('join', joinTable, joinColumns);
     });
   },
