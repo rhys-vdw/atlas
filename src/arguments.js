@@ -1,8 +1,8 @@
-import { compact, first, flatten } from 'lodash/array';
+import { compact, first, flatten, zipObject } from 'lodash/array';
 import { every, map } from 'lodash/collection';
 import { flow } from 'lodash/function';
-import { isArray, isEmpty, isUndefined } from 'lodash/lang';
-import { values } from 'lodash/object';
+import { isArray, isEmpty, isFunction, isUndefined } from 'lodash/lang';
+import { keys as objectKeys, mapValues, omit, values } from 'lodash/object';
 
 // Functions
 const flatCompact = flow(flatten, compact);
@@ -80,4 +80,42 @@ export function ensureArray(maybeArray) {
     return [];
   }
   return isArray(maybeArray) ? maybeArray : [maybeArray];
+}
+
+
+/**
+ * Resolves any key values of the given object into their return values.
+ */
+export function resolveObject(object) {
+  return mapValues(object, (value, key) =>
+    isFunction(value) ? value(object) : value
+  );
+}
+
+/**
+ * Like `_.defaults`, but resolves any functions properties into their
+ * return values before assigning them.
+ *
+ * @returns {Object}
+ *   Target object, or copy of target object with defaults applied.
+ */
+export function defaultsResolved(target, source) {
+  const required = omit(source, objectKeys(target));
+  if (isEmpty(required)) {
+    return target || {};
+  }
+  const defaults = resolveObject(required);
+  return { ...defaults, ...target };
+}
+
+export function assignResolved(target, source) {
+  return isEmpty(source)
+    ? target || {}
+    : { ...target, ...resolveObject(source) };
+}
+
+export function keyValueToObject(key, value) {
+  return isArray(key)
+    ? zipObject(key, value)
+    : { [key] : value };
 }

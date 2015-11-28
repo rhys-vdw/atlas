@@ -1,3 +1,4 @@
+import './defaults';
 import './destruction';
 import './identification';
 import './query';

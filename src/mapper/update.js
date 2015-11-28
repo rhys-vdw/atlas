@@ -4,7 +4,7 @@ import { first } from 'lodash/array';
 import Promise from 'bluebird';
 
 import { NotFoundError, UnidentifiableRecordError } from '../errors';
-import { normalizeRecords } from '../arguments';
+import { assignResolved, keyCardinality, normalizeRecords } from '../arguments';
 
 const methods = {
 
@@ -92,7 +92,10 @@ const methods = {
 
   getUpdateAttributes(record) {
     const idAttribute = this.getOption('idAttribute');
-    return this.omitAttributes(record, idAttribute);
+    const strictAttributes = this.getOption('strictAttributes');
+    return assignResolved(
+      this.omitAttributes(record, idAttribute), strictAttributes
+    );
   },
 
   getUpdateColumns(record) {
@@ -104,19 +107,16 @@ const methods = {
     // Get ID attributes as an array.
     //
     const idAttribute = this.getOption('idAttribute');
-    const attributeNames = isArray(idAttribute)
-      ? idAttribute.toArray()
-      : [idAttribute];
 
     // Get ID attribute/value pairs for this record.
     //
-    const attributes = this.pickAttributes(record, attributeNames);
+    const attributes = this.pickAttributes(record, idAttribute);
 
     // If fewer attributes were picked than ID attributes on the Mapper, then
     // it cannot reliably be updated.
     //
-    if (size(attributes) !== attributeNames.length) {
-      throw new UnidentifiableRecordError(this, record, attributeNames);
+    if (size(attributes) !== keyCardinality(idAttribute)) {
+      throw new UnidentifiableRecordError(this, record, idAttribute);
     }
 
     // Process attributes for insertion. This is a no-op unless these methods

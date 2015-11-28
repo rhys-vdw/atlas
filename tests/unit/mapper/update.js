@@ -134,5 +134,46 @@ test('== Mapper - update ==', t => {
     t.end();
   });
 
+  t.test('Mapper.defaultAttributes().prepareUpdate()', st => {
+
+    const Defaults = Mapper.table('table').defaultAttributes({
+      default: 'default'
+    });
+
+    st.queriesEqual(
+      Defaults.prepareUpdate({ id: 1, value: 'value' }).toQueryBuilder(),
+      `update "table" set "value" = 'value' where "id" = 1`,
+      'do not affect update query'
+    );
+
+    st.end();
+  });
+
+  t.test('Mapper.strictAttributes().prepareUpdate()', st => {
+
+    const Strict = Mapper.table('table').strictAttributes({
+      strict: 'strict'
+    });
+
+    st.queriesEqual(
+      Strict.prepareUpdate({ id: 1, strict: 'overridden' }).toQueryBuilder(),
+      `update "table" set "strict" = 'strict' where "id" = 1`
+    );
+
+    const FnStrict = Mapper.table('table').strictAttributes({
+      strict: () => 'strict'
+    });
+
+    st.queriesEqual(
+      FnStrict
+        .prepareUpdate({ id: 2, other: 'other', strict: 'overridden' })
+        .toQueryBuilder(),
+      `update "table" set "other" = 'other', "strict" = 'strict' where "id" = 2`
+    );
+
+
+    st.end();
+  });
+
   t.end();
 });

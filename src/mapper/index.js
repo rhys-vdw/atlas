@@ -2,6 +2,7 @@ import _, { assign } from 'lodash';
 
 import Options from '../options';
 
+import Defaults from './defaults';
 import Destruction from './destruction';
 import Forge from './forge';
 import Identification from './identification';
@@ -24,6 +25,7 @@ class Mapper extends Options {
 }
 
 const mixins = [
+  Defaults,
   Destruction,
   Forge,
   Identification,
