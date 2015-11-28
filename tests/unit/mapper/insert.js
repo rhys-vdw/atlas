@@ -140,5 +140,60 @@ test('== Mapper - insert ==', t => {
     t.end();
   });
 
-  t.end();
+  t.test('Mapper.defaultAttributes().prepareInsert()', st => {
+
+    const Defaults = Mapper.table('table').defaultAttributes({
+      default: 'default'
+    });
+
+    st.queriesEqual(
+      Defaults.prepareInsert({ default: 'override' }).toQueryBuilder(),
+      `insert into "table" ("default") values ('override')`
+    );
+
+    st.queriesEqual(
+      Defaults.prepareInsert({}).toQueryBuilder(),
+      `insert into "table" ("default") values ('default')`
+    );
+
+    const FnDefaults = Mapper.table('table').defaultAttributes({
+      default: () => 'default'
+    });
+
+    st.queriesEqual(
+      FnDefaults.prepareInsert({}).toQueryBuilder(),
+      `insert into "table" ("default") values ('default')`
+    );
+
+    st.end();
+  });
+
+  t.test('Mapper.strictAttributes().prepareInsert()', st => {
+
+    const Strict = Mapper.table('table').strictAttributes({
+      strict: 'strict'
+    });
+
+    st.queriesEqual(
+      Strict.prepareInsert({ strict: 'overridden' }).toQueryBuilder(),
+      `insert into "table" ("strict") values ('strict')`
+    );
+
+    st.queriesEqual(
+      Strict.prepareInsert({}).toQueryBuilder(),
+      `insert into "table" ("strict") values ('strict')`
+    );
+
+    const FnStrict = Mapper.table('table').strictAttributes({
+      strict: () => 'strict'
+    });
+
+    st.queriesEqual(
+      FnStrict.prepareInsert({ strict: 'overridden' }).toQueryBuilder(),
+      `insert into "table" ("strict") values ('strict')`
+    );
+
+    st.end();
+  });
+
 });

@@ -3,7 +3,9 @@ import { isArray, isEmpty, isObject } from 'lodash/lang';
 import { first, zipWith } from 'lodash/array';
 import Promise from 'bluebird';
 
-import { normalizeRecords } from '../arguments';
+import {
+  assignResolved, defaultsResolved, normalizeRecords
+} from '../arguments';
 
 const methods = {
 
@@ -76,6 +78,9 @@ const methods = {
    */
   prepareInsert(...records) {
 
+    const defaultAttributes = this.getOption('defaultAttributes');
+    const strictAttributes = this.getOption('strictAttributes');
+
     // `QueryBuilder#insert` accepts a single row or an array of rows.
     //
     // Apply any necessary processing to the records. If these methods haven't
@@ -85,6 +90,8 @@ const methods = {
       .flatten()
       .compact()
       .map(this.getAttributes, this)
+      .map(attributes => defaultsResolved(attributes, defaultAttributes))
+      .map(attributes => assignResolved(attributes, strictAttributes))
       .map(this.attributesToColumns, this)
       .value();
 
