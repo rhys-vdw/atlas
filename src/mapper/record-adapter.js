@@ -64,7 +64,10 @@ const methods = {
     // Important to support non-array in the case of passing in a key (which
     // may be an array or single value).
     if (isString(attributes)) {
-      return this.getAttribute(record, attributes);
+      const value = this.getAttribute(record, attributes);
+      return isUndefined(value)
+        ? {}
+        : { [attributes]: value };
     }
 
     // Don't use `_.pick` here because `getAttribute` may be overridden to do
