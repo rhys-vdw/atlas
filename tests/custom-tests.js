@@ -33,6 +33,15 @@ Test.prototype.queriesEqual = function(a, b, message = 'query as expected') {
   );
 };
 
+function testPromise(promise) {
+  if (promise == null || !('then' in promise)) {
+    return Promise.reject(
+      new TypeError(`promise was not 'thenable', got: ${promise}`)
+    );
+  }
+  return promise;
+}
+
 Test.prototype.resolvesTo = function(promise, expected, message, extra) {
 
   if (!message) {
@@ -43,8 +52,7 @@ Test.prototype.resolvesTo = function(promise, expected, message, extra) {
   let actual;
   let error;
 
-  return Promise.resolve(promise)
-  .then(result => {
+  return testPromise(promise).then(result => {
     passed = result === expected;
     actual = result;
   }).catch(err => {
@@ -72,17 +80,16 @@ Test.prototype.resolvesToDeep = function(promise, expected, message, extra) {
   let actual;
   let error;
 
-  return Promise.resolve(promise)
-  .then(result => {
+  return testPromise(promise).then(result => {
     passed = deepEqual(result, expected);
     actual = result;
   }).catch(err => {
     error = err;
     actual = err;
-  }).then(() => {
-    this._assert(passed, {
+  }).finally(() => {
+    this._assert(error == null && passed, {
       message,
-      operator: 'resolvesTo',
+      operator: 'resolvesToDeep',
       actual,
       expected,
       error,
@@ -106,22 +113,22 @@ Test.prototype.rejects = function(promise, ErrorType, message, extra) {
 
   let caughtPromise = null;
   if (ErrorType) {
-    caughtPromise = promise.catch(ErrorType, (error) => {
+    caughtPromise = testPromise(promise).catch(ErrorType, error => {
       caught = error;
       passed = true;
     });
   } else {
-    caughtPromise = promise.catch((error) => {
+    caughtPromise = testPromise(promise).catch(error => {
       caught = error;
       passed = true;
     });
   }
 
-  return caughtPromise.then(() => {
+  return caughtPromise.then(result => {
     this._assert(passed, {
       message,
       operator: 'rejects',
-      actual: caught,
+      actual: caught || result,
       expected: ErrorType || Error,
       error: !passed && caught,
       extra

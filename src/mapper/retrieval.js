@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import _ from 'lodash';
 import { isEmpty } from 'lodash/lang';
 import { map } from 'lodash/collection';
@@ -70,9 +71,9 @@ const methods = {
   },
 
   fetch() {
-    if (this.isNoop()) {
-      return this.getOption('isSingle') ? null : [];
-    }
+    if (this.isNoop()) return Promise.resolve(
+      this.getOption('isSingle') ? null : []
+    );
 
     const queryBuilder = this.prepareFetch().toQueryBuilder();
     return queryBuilder.then(response =>
