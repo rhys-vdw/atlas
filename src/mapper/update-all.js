@@ -10,13 +10,13 @@ const methods = {
    * @returns
    *   Number of attributes
    */
-  updateColumns(attributes) {
+  updateAll(attributes) {
     if (this.isNoop()) {
       return this.getOption('isSingle') ? null : [];
     }
-    const queryBuilder = this.prepareUpdateColumns(attributes).toQueryBuilder();
+    const queryBuilder = this.prepareUpdateAll(attributes).toQueryBuilder();
     return queryBuilder.then(response =>
-      this.handleUpdateColumnsResponse({ attributes, queryBuilder, response })
+      this.handleUpdateAllResponse({ attributes, queryBuilder, response })
     );
   },
 
@@ -24,7 +24,7 @@ const methods = {
    * @param {Object} attributes
    *   Attributes to be set on all matched rows.
    */
-  prepareUpdateColumns(attributes) {
+  prepareUpdateAll(attributes) {
     const columns = this.attributesToColumns(attributes);
     return this.query('update', columns, '*');
   },
@@ -32,9 +32,9 @@ const methods = {
   /**
    * @param {Object} info
    * @param {Object} info.attributes
-   *   Attributes passed to `updateColumns()`.
+   *   Attributes passed to `updateAll()`.
    * @param {Object} info.queryBuilder
-   *   The `QueryBuilder` instance that generated the `updateColumns` query.
+   *   The `QueryBuilder` instance that generated the `updateAll` query.
    * @param {Object[]|Number} info.response
    *   Either a count of updated rows, or an array of updated rows.
    * @returns {Object[]|Number}
@@ -43,7 +43,7 @@ const methods = {
    * @throws NoRowsFoundError
    * @private
    */
-  handleUpdateColumnsResponse({ attributes,  queryBuilder, response }) {
+  handleUpdateAllResponse({ attributes,  queryBuilder, response }) {
 
     const isRequired = this.getOption('isRequired');
 
@@ -59,7 +59,7 @@ const methods = {
 
     // Reject if chained with `.require()` and response is empty.
     if (isRequired && count === 0) {
-      throw new NoRowsFoundError(this, queryBuilder, 'updateColumns');
+      throw new NoRowsFoundError(this, queryBuilder, 'updateAll');
     }
 
     // If we have a full response (as is enabled by PostgreSQL), then

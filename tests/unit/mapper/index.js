@@ -5,7 +5,7 @@ import './query';
 import './update';
 import './insert';
 import './joins';
-import './update-columns';
+import './update-all';
 import './retrieval';
 import './target';
 import './relations';

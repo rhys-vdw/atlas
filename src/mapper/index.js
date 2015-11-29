@@ -16,7 +16,7 @@ import Retrieval from './retrieval';
 import Save from './save';
 import Target from './target';
 import Update from './update';
-import UpdateColumns from './update-columns';
+import UpdateAll from './update-all';
 import Where from './where';
 
 import { MAPPER_SENTINEL } from '../constants';
@@ -39,7 +39,7 @@ const mixins = [
   Save,
   Target,
   Update,
-  UpdateColumns,
+  UpdateAll,
   Where,
 ];
 

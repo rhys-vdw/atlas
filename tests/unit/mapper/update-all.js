@@ -6,12 +6,12 @@ import { NoRowsFoundError } from '../../../lib/errors';
 const pg = Knex({ client: 'pg' });
 const Pg = Mapper.knex(pg);
 
-test('== Mapper - update columns ==', t => {
+test('== Mapper - update all ==', t => {
 
-  t.test('Mapper.prepareUpdateColumns()', t => {
+  t.test('Mapper.prepareUpdateAll()', t => {
 
     const Users = Mapper.table('users').target(0, 1, 2)
-      .prepareUpdateColumns({ first_name: 'John', last_name: 'Smith' });
+      .prepareUpdateAll({ first_name: 'John', last_name: 'Smith' });
 
     t.queriesEqual(
       Users.toQueryBuilder(), `
@@ -25,7 +25,7 @@ test('== Mapper - update columns ==', t => {
     const PgUsers = Pg.table('users')
       .idAttribute('thing')
       .target(0, 1, 2)
-      .prepareUpdateColumns({ first_name: 'John', last_name: 'Smith' });
+      .prepareUpdateAll({ first_name: 'John', last_name: 'Smith' });
 
     t.queriesEqual(
       PgUsers.toQueryBuilder(), `
@@ -40,7 +40,7 @@ test('== Mapper - update columns ==', t => {
     t.end();
   });
 
-  t.test('Mapper.handleUpdateColumnsResponse() - receiving row data', t => {
+  t.test('Mapper.handleUpdateAllResponse() - receiving row data', t => {
 
     const SomeUsers = Pg.table('users').target(0, 1, 2).require();
 
@@ -51,13 +51,13 @@ test('== Mapper - update columns ==', t => {
     ];
 
     t.deepEqual(
-      SomeUsers.handleUpdateColumnsResponse({ response: rowResponse }),
+      SomeUsers.handleUpdateAllResponse({ response: rowResponse }),
       rowResponse,
       'returns records'
     );
 
     t.throws(
-      () => SomeUsers.handleUpdateColumnsResponse({ response: [] }),
+      () => SomeUsers.handleUpdateAllResponse({ response: [] }),
       NoRowsFoundError,
       'throws `NoRowsFoundError` if none returned'
     );
@@ -65,17 +65,17 @@ test('== Mapper - update columns ==', t => {
     t.end();
   });
 
-  t.test('Mapper.handleUpdateColumnsResponse() - receiving count', t => {
+  t.test('Mapper.handleUpdateAllResponse() - receiving count', t => {
     const SomeUsers = Mapper.table('users').target(0, 1, 2).require();
 
     t.equal(
-      SomeUsers.handleUpdateColumnsResponse({ response: 3 }),
+      SomeUsers.handleUpdateAllResponse({ response: 3 }),
       3,
       'returns count'
     );
 
     t.throws(
-      () => SomeUsers.handleUpdateColumnsResponse({ response: 0 }),
+      () => SomeUsers.handleUpdateAllResponse({ response: 0 }),
       NoRowsFoundError,
       'throws `NoRowsFoundError` if count is zero'
     );
