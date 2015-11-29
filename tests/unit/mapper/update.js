@@ -8,45 +8,45 @@ const Pg = Mapper.knex(Knex({ client: 'pg' }));
 
 test('== Mapper - update ==', t => {
 
-  t.test('Mapper.update()', t => {
+  t.test('Mapper.update()', st => {
 
-    t.plan(5);
+    st.plan(5);
 
-    t.throws(
+    st.throws(
       () => Mapper.update(),
       TypeError,
       'throws `TypeError` synchronously with no arguments'
     );
 
-    t.resolvesTo(
+    st.resolvesTo(
       Mapper.update(null), null,
       'resolves `null` to `null`'
     );
 
-    t.resolvesToDeep(
+    st.resolvesToDeep(
       Mapper.update([]), [],
       'resolves empty array to empty array'
     );
 
-    t.resolvesToDeep(
+    st.resolvesToDeep(
       Mapper.update([null, null]), [],
       'resolves array of `null` values to an empty array'
     );
 
-    t.resolvesToDeep(
+    st.resolvesToDeep(
       Mapper.update(null, null), [],
       'resolves multiple `null` value arguments to an empty array'
     );
   });
 
-  t.test('Mapper.prepareUpdate()', t => {
+  t.test('Mapper.prepareUpdate()', st => {
 
     const Records = Mapper
       .table('records')
       .idAttribute('record_id')
       .prepareUpdate({ record_id: 5, text: 'a' });
 
-    t.queriesEqual(
+    st.queriesEqual(
       Records.toQueryBuilder(), `
         update "records"
         set "text" = 'a'
@@ -59,7 +59,7 @@ test('== Mapper - update ==', t => {
       .idAttribute('record_id')
       .prepareUpdate({ record_id: 5, text: 'a' });
 
-    t.queriesEqual(
+    st.queriesEqual(
       PgRecords.toQueryBuilder(), `
         update "records"
         set "text" = 'a'
@@ -68,76 +68,77 @@ test('== Mapper - update ==', t => {
       `, 'single record with PostgreSQL returning *'
     );
 
-    t.throws(
+    st.throws(
       () => Mapper.prepareUpdate({}),
       UnidentifiableRecordError,
       'rejects with `UnidentifiableRecordError`'
     );
 
-    t.throws(
+    st.throws(
       () => Mapper.prepareUpdate({ id: null }),
       UnidentifiableRecordError,
       'rejects with `UnidentifiableRecordError` on `null` key'
     );
 
-    t.end();
+    st.end();
+  });
   });
 
-  t.test('Mapper.handleUpdateRowResponse() - data response', t => {
+  t.test('Mapper.handleUpdateRowResponse() - data response', st => {
 
     const record = { id: 5, name: 'Bob' };
     const result = Mapper.handleUpdateRowResponse({
       response: [{ id: 5, updated_at: 'time' }], record
     });
 
-    t.deepEqual(
+    st.deepEqual(
       result,
       { id: 5, updated_at: 'time', name: 'Bob' },
       'result is correct when response is row data array'
     );
 
-    t.equal(result, record,
+    st.equal(result, record,
       'record is mutated in place when response is row data array'
     );
 
-    t.end();
+    st.end();
   });
 
-  t.test('Mapper.handleUpdateRowResponse() - changed count response', t => {
+  t.test('Mapper.handleUpdateRowResponse() - changed count response', st => {
 
     const record = { id: 5, name: 'Bob' };
     const result = Mapper.handleUpdateRowResponse({
       response: 1, record
     });
 
-    t.deepEqual(
+    st.deepEqual(
       result,
       { id: 5, name: 'Bob' },
       'result is correct when response is count'
     );
 
-    t.equal(result, record,
+    st.equal(result, record,
       'record returned when response is count'
     );
 
-    t.end();
+    st.end();
   });
 
-  t.test('Mapper.require().handleUpdateRowResponse()', t => {
+  t.test('Mapper.require().handleUpdateRowResponse()', st => {
 
-    t.throws(
+    st.throws(
       () => Mapper.require().handleUpdateRowResponse({ response: 0 }),
       NotFoundError,
       'Throws `NotFoundError` when response is `0`'
     );
 
-    t.throws(
+    st.throws(
       () => Mapper.require().handleUpdateRowResponse({ response: [] }),
       NotFoundError,
       'Throws `NotFoundError` when response is `[]`'
     );
 
-    t.end();
+    st.end();
   });
 
   t.test('Mapper.defaultAttributes().prepareUpdate()', st => {
