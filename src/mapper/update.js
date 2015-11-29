@@ -1,10 +1,13 @@
 import { isArray, isEmpty } from 'lodash/lang';
 import { map, size } from 'lodash/collection';
+import { values as objectValues } from 'lodash/object';
 import { first } from 'lodash/array';
 import Promise from 'bluebird';
 
 import { NotFoundError, UnidentifiableRecordError } from '../errors';
-import { assignResolved, keyCardinality, normalizeRecords } from '../arguments';
+import {
+  assignResolved, isValidId, keyCardinality, normalizeRecords
+} from '../arguments';
 
 const methods = {
 
@@ -110,12 +113,15 @@ const methods = {
 
     // Get ID attribute/value pairs for this record.
     //
-    const attributes = this.pickAttributes(record, idAttribute);
+    const whereAttributes = this.pickAttributes(record, idAttribute);
 
     // If fewer attributes were picked than ID attributes on the Mapper, then
     // it cannot reliably be updated.
     //
-    if (size(attributes) !== keyCardinality(idAttribute)) {
+    if (
+      !isValidId(objectValues(whereAttributes)) ||
+      size(whereAttributes) !== keyCardinality(idAttribute)
+    ) {
       throw new UnidentifiableRecordError(this, record, idAttribute);
     }
 
@@ -123,7 +129,7 @@ const methods = {
     // have been overridden.
     //
     const updateColumns = this.getUpdateColumns(record);
-    const whereColumns = this.attributesToColumns(attributes);
+    const whereColumns = this.attributesToColumns(whereAttributes);
 
     // Update the specific row, appending a `RETURNS` clause if PostgreSQL.
     //

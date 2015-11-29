@@ -1,4 +1,5 @@
-import { isString, isUndefined } from 'lodash/lang';
+import { isUndefined } from 'lodash/lang';
+import { flatten } from 'lodash/array';
 import { omit } from 'lodash/object';
 import { identity } from 'lodash/utility';
 import { reduce } from 'lodash/collection';
@@ -59,20 +60,15 @@ const methods = {
   },
 
   /** @private */
-  pickAttributes(record, attributes) {
+  pickAttributes(record, ...attributes) {
 
-    // Important to support non-array in the case of passing in a key (which
-    // may be an array or single value).
-    if (isString(attributes)) {
-      const value = this.getAttribute(record, attributes);
-      return isUndefined(value)
-        ? {}
-        : { [attributes]: value };
+    if (record == null) {
+      return {};
     }
 
-    // Don't use `_.pick` here because `getAttribute` may be overridden to do
-    // something expensive.
-    return reduce(attributes, (acc, attribute) => {
+    const flattened = flatten(attributes);
+
+    return reduce(flattened, (acc, attribute) => {
       const value = this.getAttribute(record, attribute);
       if (!isUndefined(value)) {
         acc[attribute] = value;

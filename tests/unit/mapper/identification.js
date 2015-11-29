@@ -216,4 +216,76 @@ test('Mapper - identification', t => {
     t.end();
   });
 
+  t.test('Mapper#pickAttributes()', st => {
+
+    const A = 'A';
+    const B = 'B';
+    const C = 'C';
+
+    // bad input
+
+    st.deepEqual(
+      Mapper.pickAttributes(null, A), {},
+      'with null target'
+    );
+
+    st.deepEqual(
+      Mapper.pickAttributes({}, null), {},
+      'with null key'
+    );
+
+    // string input
+
+    st.deepEqual(
+      Mapper.pickAttributes({A, B}, A), {A},
+      'by single string'
+    );
+
+    st.deepEqual(
+      Mapper.pickAttributes({A, B, C}, A, B), {A, B},
+      'by multiple strings'
+    );
+
+    st.deepEqual(
+      Mapper.pickAttributes({B}, A), {},
+      'by absent string'
+    );
+
+    // array input
+
+    st.deepEqual(
+      Mapper.pickAttributes({A, B}, []), {},
+      'by empty array'
+    );
+
+    st.deepEqual(
+      Mapper.pickAttributes({A, B}, [A]), {A},
+      'by array length 1'
+    );
+
+    st.deepEqual(
+      Mapper.pickAttributes({A, B, C}, [A, B]), {A, B},
+      'by string length 2'
+    );
+
+    st.deepEqual(
+      Mapper.pickAttributes({B}, [A, C]), {},
+      'by array containing absent keys'
+    );
+
+    // empty attributes
+
+    st.deepEqual(
+      Mapper.pickAttributes({[B]: null, A}, [A, B]), {[B]: null, A},
+      'includes null value attribute'
+    );
+
+    st.deepEqual(
+      Mapper.pickAttributes({[B]: undefined, A}, [A, B]), {A},
+      'exclude undefined value attribute'
+    );
+
+    st.end();
+  });
+
 });

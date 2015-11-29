@@ -1,6 +1,6 @@
 import { isArray, isEmpty, isObject } from 'lodash/lang';
-import { any } from 'lodash/collection';
 import { first, flatten } from 'lodash/array';
+import { isValidId } from '../arguments';
 
 const options = {
   idAttribute: 'id'
@@ -28,31 +28,7 @@ const methods = {
    */
   isNew(record) {
     const id = this.identify(record);
-    return this.isValidId(id);
-  },
-
-  /**
-   * @method isValidId
-   * @belongsTo Mapper
-   * @summary
-   *
-   * Validate an ID value.
-   *
-   * @description
-   *
-   * Checks if a supplied ID value is a valid identifier. For a single value
-   * this will return false only for `undefined` or `null`. For an array, will
-   * return false if any of the elements are `null` or `undefined`.
-   *
-   * @param {mixed|mixed[]} id
-   *   Either a single ID value or, for composite IDs, an array of values.
-   * @returns {bool}
-   *   True if this ID is valid. Otherwise false.
-   */
-  isValidId(id) {
-    return isArray(id)
-      ? any(id, id => id == null)
-      : id == null;
+    return !isValidId(id);
   },
 
   /**

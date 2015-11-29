@@ -74,6 +74,12 @@ test('== Mapper - update ==', t => {
       'rejects with `UnidentifiableRecordError`'
     );
 
+    t.throws(
+      () => Mapper.prepareUpdate({ id: null }),
+      UnidentifiableRecordError,
+      'rejects with `UnidentifiableRecordError` on `null` key'
+    );
+
     t.end();
   });
 

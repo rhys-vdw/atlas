@@ -119,3 +119,28 @@ export function keyValueToObject(key, value) {
     ? zipObject(key, value)
     : { [key] : value };
 }
+
+/**
+ * @function isValidId
+ * @summary
+ *
+ * Validate an ID value.
+ *
+ * @description
+ *
+ * Checks if a supplied ID value is a valid identifier. For a single value
+ * this will return false only for `undefined` or `null`. For an array, will
+ * return false if any of the elements are `null` or `undefined`.
+ *
+ * @param {mixed|mixed[]} id
+ *   Either a single ID value or, for composite IDs, an array of values.
+ * @returns {bool}
+ *   True if this ID is valid. Otherwise false.
+ */
+export function isValidId(id) {
+  const result = isComposite(id)
+    ? every(id, value => value != null)
+    : id != null;
+  return result;
+}
+
