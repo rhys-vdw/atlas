@@ -37,11 +37,6 @@ export default function(atlas) {
         })
       });
 
-      const dean = { id: 1, name: 'dean' };
-      const sarah = { id: 2, name: 'Sarah' };
-      const baz = { id: 3, name: 'Baz' };
-      const other = { id: 4, name: 'Other' };
-
       return knex('groups').insert([
         { id: 10, name: `General` },
         { id: 11, name: `Balloon Enthusiasts` },
@@ -226,7 +221,7 @@ export default function(atlas) {
             { id: 4, name: 'Other', groups: [] }
           ], 'fetches records with related models'
         );
-      })
+      });
 
     });
 
