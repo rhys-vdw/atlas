@@ -82,6 +82,46 @@ test('== Mapper - update ==', t => {
 
     st.end();
   });
+
+  t.test('Mapper.prepareUpdate() - composite keys', st => {
+
+    const A = 'A';
+    const B = 'B';
+
+    const Composite = Pg.table('things').idAttribute([A, B]);
+
+    st.throws(
+      () => Composite.prepareUpdate({}),
+      UnidentifiableRecordError,
+      'rejects with `UnidentifiableRecordError` on empty record'
+    );
+
+    st.throws(
+      () => Composite.prepareUpdate({A}),
+      UnidentifiableRecordError,
+      'rejects with `UnidentifiableRecordError` on one key missing'
+    );
+
+    st.throws(
+      () => Composite.prepareUpdate({A: null, B}),
+      UnidentifiableRecordError,
+      'rejects with `UnidentifiableRecordError` when one key is null'
+    );
+
+    const UpdateComposite = Composite.prepareUpdate(
+      {A: 'valA', B: 'valB', name: 'Bob' }
+    );
+
+    st.queriesEqual(
+      UpdateComposite.toQueryBuilder(), `
+        update "things"
+        set "name" = 'Bob'
+        where "A" = 'valA' and "B" = 'valB'
+        returning *
+      `, 'single record with PostgreSQL returning *'
+    );
+
+    st.end();
   });
 
   t.test('Mapper.handleUpdateRowResponse() - data response', st => {
@@ -177,7 +217,6 @@ test('== Mapper - update ==', t => {
         .toQueryBuilder(),
       `update "table" set "other" = 'other', "strict" = 'strict' where "id" = 2`
     );
-
 
     st.end();
   });
