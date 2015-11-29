@@ -1,12 +1,12 @@
 import test from 'tape';
-import mapper from '../../../lib/mapper';
+import Mapper from '../../../lib/Mapper';
 
 test('Mapper - identification', t => {
 
   t.test('defaultOptions', t => {
 
     t.equal(
-      mapper.getOption('idAttribute'), 'id',
+      Mapper.getOption('idAttribute'), 'id',
       "idAttribute = 'id'"
     );
 
@@ -16,7 +16,7 @@ test('Mapper - identification', t => {
   t.test('Mapper#isNew() - single primary key', t => {
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
 
-    const withIdAttribute = mapper.idAttribute(ID_ATTRIBUTE);
+    const withIdAttribute = Mapper.idAttribute(ID_ATTRIBUTE);
 
     t.equal(
       withIdAttribute.isNew({ [ID_ATTRIBUTE]: 5 }),
@@ -45,7 +45,7 @@ test('Mapper - identification', t => {
     const ID_ATTRIBUTE_B = 'ID_ATTRIBUTE_B';
     const ID_ATTRIBUTE = [ID_ATTRIBUTE_A, ID_ATTRIBUTE_B];
 
-    const withIdAttribute = mapper.idAttribute(ID_ATTRIBUTE);
+    const withIdAttribute = Mapper.idAttribute(ID_ATTRIBUTE);
 
     t.equal(
       withIdAttribute.isNew({
@@ -83,7 +83,7 @@ test('Mapper - identification', t => {
   t.test('Mapper#identify() - bad input', t => {
 
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
-    const withId = mapper.idAttribute(ID_ATTRIBUTE);
+    const withId = Mapper.idAttribute(ID_ATTRIBUTE);
 
     t.equal(
       withId.identify(),
@@ -129,7 +129,7 @@ test('Mapper - identification', t => {
     const ID_ATTRIBUTE = 'ID_ATTRIBUTE';
     const RECORD = { [ID_ATTRIBUTE]: 10 };
 
-    const withIdAttribute = mapper.idAttribute(ID_ATTRIBUTE);
+    const withIdAttribute = Mapper.idAttribute(ID_ATTRIBUTE);
 
 
     t.equal(
@@ -172,7 +172,7 @@ test('Mapper - identification', t => {
     const ID_ATTRIBUTE_B = 'ID_ATTRIBUTE_B';
     const ID_ATTRIBUTE = [ID_ATTRIBUTE_A, ID_ATTRIBUTE_B];
 
-    const withIdAttribute = mapper.idAttribute(ID_ATTRIBUTE);
+    const withIdAttribute = Mapper.idAttribute(ID_ATTRIBUTE);
 
     const RECORD = {
       [ID_ATTRIBUTE_A]: 10,
