@@ -1,5 +1,6 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
+import { UnidentifiableRecordError } from '../../../lib/errors';
 
 test('Mapper', t => {
 
@@ -104,6 +105,12 @@ test('Mapper', t => {
       .table('items')
       .idAttribute('the_id');
 
+    t.throws(
+      () => Items.target({}),
+      UnidentifiableRecordError,
+      'target({}) throws `UnidentifiableRecordError`'
+    );
+
     t.equal(
       Items.target().isNoop(), true,
       `target() is a noop`
@@ -122,16 +129,6 @@ test('Mapper', t => {
     t.equal(
       Items.target(null).getOption('isSingle'), true,
       `target() is single`
-    );
-
-    t.equal(
-      Items.target({}, {}).isNoop(), true,
-      `target({}, {}) is a noop`
-    );
-
-    t.equal(
-      Items.target({}, {}).getOption('isSingle'), false,
-      `target({}, {}) is not single`
     );
 
     t.equal(

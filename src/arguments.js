@@ -62,10 +62,10 @@ export function keyCardinality(key) {
  * Check that keys both have the same cardinality (and can therefore be used in
  * a join).
  */
-export function keysCompatible(...keys) {
-  const cardinality = keyCardinality(first(keys));
+export function keysCompatible(firstKey, ...otherKeys) {
+  const cardinality = keyCardinality(firstKey);
   return cardinality > 0 &&
-    every(keys, key => keyCardinality(key) === cardinality);
+    every(otherKeys, key => keyCardinality(key) === cardinality);
 }
 
 export function assertKeysCompatible(keys) {

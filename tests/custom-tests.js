@@ -85,7 +85,7 @@ Test.prototype.resolvesToDeep = function(promise, expected, message, extra) {
     actual = result;
   }).catch(err => {
     error = err;
-    actual = err;
+    actual = error.toString();
   }).finally(() => {
     this._assert(error == null && passed, {
       message,
@@ -128,7 +128,7 @@ Test.prototype.rejects = function(promise, ErrorType, message, extra) {
     this._assert(passed, {
       message,
       operator: 'rejects',
-      actual: caught || result,
+      actual: caught ? caught.toString() : result,
       expected: ErrorType || Error,
       error: !passed && caught,
       extra

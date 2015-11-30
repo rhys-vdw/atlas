@@ -1,6 +1,7 @@
 import { isArray, isEmpty } from 'lodash/lang';
 import { head, zipObject } from 'lodash/array';
 import { reject } from 'lodash/collection';
+import { isComposite as isCompositeKey } from '../arguments';
 
 const methods = {
 
@@ -24,9 +25,9 @@ const methods = {
   targetBy(attribute, ...ids) {
     const normalized = this.identifyBy(attribute, ...ids);
 
-    const isComposite = isArray(attribute);
+    const isComposite = isCompositeKey(attribute);
     const isSingle = !isArray(normalized) ||
-      isComposite && !isArray(head(normalized));
+      isComposite && !isCompositeKey(head(normalized));
 
     return this.withMutations(mapper => {
       mapper.setOption('isSingle', isSingle);

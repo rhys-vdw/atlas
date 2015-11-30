@@ -63,11 +63,15 @@ const methods = {
   },
 
   find(...ids) {
-    return this.target(...ids).fetch();
+    return Promise.try(() =>
+      this.target(...ids).fetch()
+    );
   },
 
   findBy(attribute, ...ids) {
-    return this.targetBy(attribute, ...ids).fetch();
+    return Promise.try(() =>
+      this.targetBy(attribute, ...ids).fetch()
+    );
   },
 
   fetch() {
@@ -75,9 +79,10 @@ const methods = {
       this.getOption('isSingle') ? null : []
     );
 
-    const queryBuilder = this.prepareFetch().toQueryBuilder();
+    const mapper = this.prepareFetch();
+    const queryBuilder = mapper.toQueryBuilder();
     return queryBuilder.then(response =>
-      this.handleFetchResponse({ queryBuilder, response })
+      mapper.handleFetchResponse({ queryBuilder, response })
     ).then(records => {
       const relationTree = this.getOption('withRelated');
       return this.loadInto(records, relationTree);

@@ -1,12 +1,13 @@
 import Promise from 'bluebird';
 import test from 'tape';
-import { NoRowsFoundError } from '../../../lib/errors';
+import {
+  UnidentifiableRecordError, NoRowsFoundError
+} from '../../../lib/errors';
 
 function peopleTable(people) {
   people.integer('person_id');
   people.string('name');
 }
-
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
@@ -104,12 +105,14 @@ export default function(atlas) {
           '`findBy([])` resolves to []'
         ),
 
-        t.resolvesTo(
-          People.find({}), null,
-          '`findBy({})` resolves to []'
+        t.rejects(
+          People.find({}),
+          UnidentifiableRecordError,
+          '`findBy({})` rejects with UnidentifiableRecordError'
         )
 
       ));
     });
   });
+
 }

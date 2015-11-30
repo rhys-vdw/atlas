@@ -2,7 +2,8 @@ import 'babel-polyfill';
 import Registry from './registry';
 import Mapper from './mapper';
 import { initialize as initializeRelations } from './relations';
-import { isString } from 'lodash/lang';
+import { isObject, isString } from 'lodash/lang';
+import { each } from 'lodash/collection';
 
 const createRegistry = () => new Registry({ Mapper });
 
@@ -28,12 +29,20 @@ export default function Atlas(knex, registry = createRegistry()) {
   atlas.registry = registry;
 
   atlas.register = (name, mapper) => {
-    registry.register(name, mapper);
+    if (isObject(name)) {
+      each(name, (value, key) => registry.register(key, value));
+    } else {
+      registry.register(name, mapper);
+    }
     return atlas;
   };
 
   atlas.override = (name, mapper) => {
-    registry.override(name, mapper);
+    if (isObject(name)) {
+      each(name, (value, key) => registry.override(key, value));
+    } else {
+      registry.override(name, mapper);
+    }
     return atlas;
   };
 

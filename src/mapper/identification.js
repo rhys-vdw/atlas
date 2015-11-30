@@ -1,6 +1,8 @@
-import { isArray, isEmpty, isObject } from 'lodash/lang';
+import { each, some } from 'lodash/collection';
+import { isArray, isEmpty, isObject, isUndefined } from 'lodash/lang';
 import { first, flatten } from 'lodash/array';
-import { isValidId } from '../arguments';
+import { ensureArray, isComposite } from '../arguments';
+import { UnidentifiableRecordError } from '../errors';
 
 const options = {
   idAttribute: 'id'
@@ -27,8 +29,8 @@ const methods = {
    *   `true` if the model exists in database, otherwise `false`.
    */
   isNew(record) {
-    const id = this.identify(record);
-    return !isValidId(id);
+    const attributes = ensureArray(this.getOption('idAttribute'));
+    return some(attributes, id => this.getAttribute(record, id) == null);
   },
 
   /**
@@ -98,12 +100,11 @@ const methods = {
       return undefined;
     }
 
-    const isComposite = isArray(attribute);
     const record = first(records);
     const isSingle =
       records.length === 1 &&
       !isArray(record) ||
-      isComposite && !isObject(record);
+      isComposite(attribute) && !isObject(record);
 
     return isSingle
       ? this.identifyOneBy(attribute, record)
@@ -111,6 +112,13 @@ const methods = {
   },
 
   identifyOneBy(attribute, record) {
+
+    const ensure = (id) => {
+      if (isUndefined(id)) throw new UnidentifiableRecordError(
+        this, record, attribute
+      );
+      return id;
+    };
 
     if (attribute == null) {
       throw new TypeError(`'attribute' cannot be null or undefined`);
@@ -122,17 +130,15 @@ const methods = {
     //     ('id', 5) -> 5
     //
     if (!isObject(record)) {
-      return record;
+      return ensure(record);
     }
 
     // Simple non-composite key.
     //
     //     ('id', {id: 5}) -> 5
     //
-    const isComposite = isObject(attribute);
-
-    if (!isComposite) {
-      return this.getAttribute(record, attribute);
+    if (!isComposite(attribute)) {
+      return ensure(this.getAttribute(record, attribute));
     }
 
     // Composite keys are handled differently, return an array.
@@ -149,14 +155,14 @@ const methods = {
         ` got '${record}'`
       );
 
-      return record;
+      return each(record, ensure);
     }
 
     // If this is a record with a composite key, do this:
-    // 
+    //
     //     (['id_a', 'id_b'], {id_a: 0, id_b: 1}) -> [0, 1]
     //
-    return attribute.map(a => this.getAttribute(record, a));
+    return attribute.map(a => ensure(this.getAttribute(record, a)));
   },
 
   identifyAllBy(attribute, records) {

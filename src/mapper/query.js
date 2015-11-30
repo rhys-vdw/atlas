@@ -102,7 +102,7 @@ const methods = {
    */
   query(method, ...args) {
 
-    if (!isFunction(method) && isEmpty(method)) return this;
+    if (this.isNoop() || !isFunction(method) && isEmpty(method)) return this;
 
     const queryBuilder = this.toQueryBuilder();
 
