@@ -1,4 +1,5 @@
-import { all, each } from 'lodash/collection';
+import { all, each, every } from 'lodash/collection';
+import { range } from 'lodash/utility';
 import test from 'tape';
 
 import RelationTree, {
@@ -104,7 +105,6 @@ test('RelationTree', (t) => {
     st.ok(
       all([
         merged,
-        merged,
         merged.a.nested,
         merged.a.nested.b.nested
       ], isRelationTree),
@@ -122,78 +122,96 @@ test('RelationTree', (t) => {
     const tests = {
       'with no arguments': {
         input: [],
-        output: {}
+        expected: {}
       },
       'with nested empty arrays, empty objects and `null` values': {
         input: [[[[{}, {}], {}],[null, null]]],
-        output: {}
+        expected: {}
       },
       'with single string relation': {
         input: ['test'],
-        output: { test: {} }
+        expected: { test: {} }
       },
       'with single string in array': {
         input: [['test']],
-        output: { test: {} }
+        expected: { test: {} }
       },
       'with two strings': {
         input: ['a', 'b'],
-        output: { a: {}, b: {} }
+        expected: { a: {}, b: {} }
       },
       'with an array of two strings': {
         input: [['a', 'b']],
-        output: { a: {}, b: {} }
+        expected: { a: {}, b: {} }
       },
       'an object {[relation]: initializer}': {
         input: [{a: initializerFnA, b: initializerFnB}],
-        output: {
+        expected: {
           a: { initializer: initializerFnA },
           b: { initializer: initializerFnB }
         }
       },
       'an array with single string and an object': {
         input: ['a', {b: initializerFnB}],
-        output: {
+        expected: {
           a: {}, b: { initializer: initializerFnB }
         }
       },
       'two relations sharing a child as common parent': {
         input: ['a.b', 'a.c'],
-        output: {
+        expected: {
           a: { nested: { b: {}, c: {} } }
         }
       },
       'two relations sharing a deeply nested child as parent': {
         input: ['a.b.c.d', 'a.b.c.e'],
-        output: {
+        expected: {
           a: { nested: { b: { nested: { c: { nested: { d: {}, e: {} } } } } } }
         }
       },
       'two relations from a common child, one with initializer': {
         input: ['a.b', {'a.c': initializerFnA}],
-        output: {
+        expected: {
           a: { nested: { b: {}, c: { initializer: initializerFnA } } }
         }
       },
       'merges two `RelationTree` instances': {
         input: [fromString('a.b'), fromString('a.c')],
-        output: {
+        expected: {
           a: { nested: { b: {}, c: {} } }
         }
       },
       'merges recursive relations': {
         input: ['a^.b', 'a^.c^2'],
-        output: {
-          a: { recursions: 1, nested: { b: {}, c: { recursions: 2 } } }
-        }
+        expected:
+          { a: { recursions: 1,
+                 nested: {
+                   b: {},
+                   c: { recursions: 2 } } } }
       }
     };
 
-    each(tests, (item, message) => {
-      st.deepEqual(
-        compile(...item.input),
-        item.output,
-        message
+    const assertValidRelationTree = (relationTree, key) => {
+      // Probably need to test this test...
+      if (!isRelationTree(relationTree)) {
+        throw new TypeError('Not a relation tree: ' + relationTree);
+      }
+      each(relationTree.nested, tree => {
+        assertValidRelationTree(tree.nested);
+      });
+    }
+
+    const isRelationTreeDeep = (relationTree) =>
+      isRelationTree(relationTree) &&
+        every(relationTree.nested, isRelationTreeDeep);
+
+    each(tests, ({ input, expected }, message) => {
+      const actual = compile(...input);
+      st.deepEqual(actual, expected, `${message} - deep equal`);
+
+      st.true(
+        isRelationTreeDeep(actual),
+        `${message} - tree is valid`
       );
     });
 
@@ -262,6 +280,7 @@ test('RelationTree', (t) => {
       );
     });
 
+    /*
     const invalidRecursiveTree = new RelationTree({
       a: { recursions: 1, nested: { a: { recursions: 1 } } }
     });
@@ -269,8 +288,36 @@ test('RelationTree', (t) => {
     st.throws(() => renestRecursives(invalidRecursiveTree),
       'throws when given an invalid recursive tree'
     );
+    */
 
     st.end();
+  });
+
+  t.test('renestRecursives - repeated use', st => {
+
+    let tree = new RelationTree({
+      next: { recursions: 10 }
+    });
+
+    st.plan(9 * 2); // two for `doesNotThrow` and `deepEqual`.
+
+    for (const i of range(10, 1, -1)) {
+      st.doesNotThrow(() => {
+
+        const renested = renestRecursives(tree);
+
+        st.deepEqual(
+          renested,
+          { next:
+            { recursions: i, nested:
+              { next: { recursions: i - 1 } } } },
+          `tree is as expected with ${i} recursions to go`
+        );
+
+        tree = tree.next.nested;
+
+      }, `did not throw with ${i} recursions to do`);
+    }
   });
 
   t.test('normalize', st => {

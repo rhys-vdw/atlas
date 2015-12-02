@@ -50,10 +50,10 @@ export function mergeTrees(destination, source) {
 export function fromString(string, initializer) {
   assertType({string}, {string: isString});
 
-  const list = _(string).split('.');
-  const leaf = nodeFromString(list.last(), initializer && { initializer });
+  const path = _(string).split('.');
+  const leaf = nodeFromString(path.last(), initializer && { initializer });
 
-  return list.reverse().rest().reduce((nested, relation) =>
+  return path.reverse().rest().reduce((nested, relation) =>
     nodeFromString(relation, { nested })
   , leaf);
 }
@@ -69,7 +69,7 @@ export function renestRecursives(relationTree) {
       // See if recursion has already been renested. If it has, we don't need
       // to do it again.
       const existing = node.nested && node.nested[relationName];
-      if (existing) {
+      if (existing != null) {
 
         // Assert that the tree is valid. This should never be fired.
         if (existing.recursions !== nestedRecursions) throw new Error(
@@ -80,13 +80,16 @@ export function renestRecursives(relationTree) {
 
         // Push recursive node down from root by inserting a copy in its place
         // and renesting it in with a decremented recursion count.
-        const nestedNode = new RelationTree(node);
-        nestedNode.recursions = nestedRecursions;
+        //
+        // TODO: this is broken. it will whipe out any relations that ought to
+        // be attached to the node. eg. compile(`thing^3`, `thing.other`) -
+        // other will be blown away on renesting.
+        const nestedNode = { ...node, recursions: nestedRecursions };
         relationTree[relationName] = {
           recursions,
-          nested: {
+          nested: new RelationTree({
             [relationName]: nestedNode
-          }
+          })
         };
       }
     }

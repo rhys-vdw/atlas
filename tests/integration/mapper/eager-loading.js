@@ -1,30 +1,6 @@
 import Promise from 'bluebird';
 import test from 'tape';
 
-const tables = {
-  actors(actors) {
-    actors.integer('id');
-    actors.string('name');
-  },
-
-  movies(movies) {
-    movies.integer('id');
-    movies.string('title');
-    movies.integer('director_id');
-  },
-
-  roles(roles) {
-    roles.integer('actor_id');
-    roles.integer('movie_id');
-    roles.string('character_name');
-  },
-
-  directors(directors) {
-    directors.integer('id');
-    directors.string('name');
-  }
-};
-
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
@@ -32,7 +8,32 @@ export default function(atlas) {
   const { hasMany, belongsTo, belongsToMany } = relations;
 
   test('Mapper - eager loading', t => {
-    t.databaseTest('with ', knex, tables, st => {
+
+    const filmTables = {
+      actors(actors) {
+        actors.integer('id');
+        actors.string('name');
+      },
+
+      movies(movies) {
+        movies.integer('id');
+        movies.string('title');
+        movies.integer('director_id');
+      },
+
+      roles(roles) {
+        roles.integer('actor_id');
+        roles.integer('movie_id');
+        roles.string('character_name');
+      },
+
+      directors(directors) {
+        directors.integer('id');
+        directors.string('name');
+      }
+    };
+
+    t.databaseTest('loading nested relations', knex, filmTables, st => {
       register({
         Actors: Mapper.table('actors').relations({
           movies: belongsToMany('Movies', { pivotTable: 'roles' })
@@ -119,6 +120,66 @@ export default function(atlas) {
                } ]
           }]
         , 'eager loads two subchildren')
+
+      ));
+    });
+
+    const nodesTables = {
+      nodes(nodes) {
+        nodes.integer('id');
+        nodes.string('value');
+        nodes.integer('next_id');
+      }
+    };
+
+    t.databaseTest('loading recursive relations', knex, nodesTables, st => {
+
+      register({
+        Nodes: Mapper.table('nodes').relations({
+          next: belongsTo('Nodes', { selfRef: 'next_id' }),
+        })
+      });
+
+      return knex('nodes').insert([
+          { id: 1, value: 'a', next_id: 2 },
+          { id: 2, value: 't', next_id: 3 },
+          { id: 3, value: 'l', next_id: 4 },
+          { id: 4, value: 'a', next_id: 5 },
+          { id: 5, value: 's', next_id: 6 },
+          { id: 6, value: '.', next_id: 7 },
+          { id: 7, value: 'j', next_id: 8 },
+          { id: 8, value: 's', next_id: null }
+      ]).then(() => Promise.join(
+
+          st.resolvesToDeep(
+            atlas('Nodes').withRelated('next.next.next').find(2),
+            { id: 2, value: 't', next_id: 3, next:
+            { id: 3, value: 'l', next_id: 4, next:
+            { id: 4, value: 'a', next_id: 5, next:
+            { id: 5, value: 's', next_id: 6 } } } },
+            'resolves `next.next.next`'
+          ),
+
+          st.resolvesToDeep(
+            atlas('Nodes').withRelated('next^2').find(2),
+            { id: 2, value: 't', next_id: 3, next:
+            { id: 3, value: 'l', next_id: 4, next:
+            { id: 4, value: 'a', next_id: 5, next:
+            { id: 5, value: 's', next_id: 6 } } } },
+            'resolves `next^3`'
+          ),
+
+          st.resolvesToDeep(
+            atlas('Nodes').withRelated('next^Infinity').find(2),
+            { id: 2, value: 't', next_id: 3, next:
+            { id: 3, value: 'l', next_id: 4, next:
+            { id: 4, value: 'a', next_id: 5, next:
+            { id: 5, value: 's', next_id: 6, next:
+            { id: 6, value: '.', next_id: 7, next:
+            { id: 7, value: 'j', next_id: 8, next:
+            { id: 8, value: 's', next_id: null, next: null} } } } } } },
+            'resolves `next^Infinity`'
+          )
 
       ));
     });
