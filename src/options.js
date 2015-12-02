@@ -275,7 +275,9 @@ export default class Options {
   _applyInitializerObject(object) {
 
     each(object, (argument, method) => {
-      assertType({method: this[method]}, {function: isFunction});
+      if (!isFunction(this[method])) throw new TypeError(
+        `Could not find method '${method}' on Mapper.`
+      );
       this[method](argument);
     });
 
