@@ -1,6 +1,7 @@
 import { any, each } from 'lodash/collection';
 import { dropRight, last, compact } from 'lodash/array';
 import { keys } from 'lodash/object';
+import Util from 'util';
 
 export function assertType(variables, testsByTypeName) {
   each(variables, (value, name) => {
@@ -20,8 +21,9 @@ function singleAssertType(value, name, testsByTypeName) {
       last(validTypes)
     ]).join(' or ');
 
+    const prettyValue = Util.inspect(value, { depth: 4 });
     throw new TypeError(
-      `Expected '${name}' to be a ${humanized}, got ${value}`
+      `Expected '${name}' to be a ${humanized}, got ${prettyValue}`
     );
   }
 }
