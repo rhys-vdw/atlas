@@ -18,7 +18,7 @@ test('ImmutableBase', t => {
     );
 
     t.notEqual(
-      before._options, after._options,
+      before.state, after.state,
       'should have a different options object'
     );
 
@@ -102,13 +102,13 @@ test('ImmutableBase', t => {
     );
 
     t.notEqual(
-      options._options, mutable._options,
-      'mutable copy has a different `_options` instance'
+      options.state, mutable.state,
+      'mutable copy has a different `state` instance'
     );
 
     t.deepEqual(
-      omit(options._options, 'isMutable'),
-      omit(mutable._options, 'isMutable'),
+      omit(options.state, 'isMutable'),
+      omit(mutable.state, 'isMutable'),
       'mutable copy has the same options set (other than `isMutable`)'
     );
 

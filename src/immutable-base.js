@@ -12,17 +12,17 @@ export default class ImmutableBase {
   /** @private */
   constructor(options = {}) {
 
-    this._options = 'isMutable' in options
+    this.state = 'isMutable' in options
       ? options
       : { isMutable: false, ...options };
   }
 
   toString() {
     const type = this.constructor.name || 'ImmutableBase';
-    const options = objectToString(this._options, {
+    const stateString = objectToString(this.state, {
       keySeparator: '=', attrSeparator: ', '
     });
-    return `[${type}: ${options}]`;
+    return `[${type}: ${stateString}]`;
   }
 
   /**
@@ -42,11 +42,11 @@ export default class ImmutableBase {
   getOption(option) {
 
     // Options must be initialized before they are accessed.
-    if (!(option in this._options)) {
+    if (!(option in this.state)) {
       throw new InvalidOptionError(option, this);
     }
 
-    return this._options[option];
+    return this.state[option];
   }
 
   /**
@@ -70,7 +70,7 @@ export default class ImmutableBase {
   setOptions(options) {
 
     const isNoop = every(options, (value, option) =>
-      this._options[option] === value
+      this.state[option] === value
     );
 
     if (isNoop) {
@@ -79,12 +79,12 @@ export default class ImmutableBase {
 
     // If mutable, set the option and return.
     if (this.isMutable()) {
-      assign(this._options, options);
+      assign(this.state, options);
       return this;
     }
 
     // Otherwise duplicate the options object and pass it on in a new instance.
-    return new this.constructor({ ...this._options, ...options });
+    return new this.constructor({ ...this.state, ...options });
   }
 
   /**
@@ -158,7 +158,7 @@ export default class ImmutableBase {
     assign(Extended.prototype, methods);
 
     // Instantiate the new instance.
-    return new Extended(this._options)
+    return new Extended(this.state)
       .withMutations(initializer)
       .asImmutable();
   }
