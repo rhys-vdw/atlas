@@ -1,7 +1,7 @@
 import './arguments';
-import './options';
-import './mapper';
 import './atlas';
+import './immutable-base';
+import './mapper';
 import './registry';
 import './relation-tree';
 import './relations';

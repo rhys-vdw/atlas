@@ -7,7 +7,7 @@ import objectToString from 'object-to-string';
 import { assertType } from './assertions';
 import { InvalidOptionError } from './errors';
 
-export default class Options {
+export default class ImmutableBase {
 
   /** @private */
   constructor(options = {}) {
@@ -18,7 +18,7 @@ export default class Options {
   }
 
   toString() {
-    const type = this.constructor.name || 'Options';
+    const type = this.constructor.name || 'ImmutableBase';
     const options = objectToString(this._options, {
       keySeparator: '=', attrSeparator: ', '
     });
@@ -27,7 +27,7 @@ export default class Options {
 
   /**
    * @method getOption
-   * @belongsTo Options
+   * @belongsTo ImmutableBase
    * @summary
    *
    * Get an option that has previously been set on the model.
@@ -51,17 +51,17 @@ export default class Options {
 
   /**
    * @method setOption
-   * @belongsTo Options
+   * @belongsTo ImmutableBase
    * @summary
    *
-   * Set an option on the Options.
+   * Set an option on the ImmutableBase.
    *
    * @param {string} option
    *   Name of the option to set.
    * @param {mixed} value
    *   New option value.
-   * @returns {Options}
-   *   Options instance with option set to value.
+   * @returns {ImmutableBase}
+   *   ImmutableBase instance with option set to value.
    */
   setOption(option, value) {
     return this.setOptions({ [option]: value });
@@ -89,16 +89,16 @@ export default class Options {
 
   /**
    * @method updateOption
-   * @belongsTo Options
+   * @belongsTo ImmutableBase
    * @summary
    *
-   * Update an option on the Options.
+   * Update an option on the ImmutableBase.
    *
    * @description
    *
    * Accepts an `update` callback invoked with the current value for the
    * specified `option`. The value returned from `update` will be set
-   * on the `Options`'s option hash.
+   * on the `ImmutableBase`'s option hash.
    *
    * Never mutate the previous value directly. If the option is a mutable value
    * such as an `Object` or `Array` it must be copied before being returned by
@@ -108,8 +108,8 @@ export default class Options {
    *   Name of the option to set.
    * @param {function} updater
    *   Callback receiving the current option value, and returning the new value.
-   * @returns {Options}
-   *   Options instance with option updated to value returned by `updater`.
+   * @returns {ImmutableBase}
+   *   ImmutableBase instance with option updated to value returned by `updater`.
    */
   updateOption(option, updater) {
     const value = this.getOption(option);
@@ -118,14 +118,14 @@ export default class Options {
 
   /**
    * @method extend
-   * @belongsTo Options
+   * @belongsTo ImmutableBase
    * @summary
    *
-   * Create a new Options instance with custom methods.
+   * Create a new ImmutableBase instance with custom methods.
    *
    * @description
    *
-   * Creates an inheriting `Options` class with supplied `methods`. Returns an
+   * Creates an inheriting `ImmutableBase` class with supplied `methods`. Returns an
    * instance of this class.
    *
    * @param {Object} methods
@@ -172,23 +172,23 @@ export default class Options {
 
   /**
    * @method asMutable
-   * @belongsTo Options
+   * @belongsTo ImmutableBase
    * @summary
    *
    * Create a mutable copy of this instance.
    *
    * @description
    *
-   * Calling {@link Options#query}, {@link Options#setOption} or other methods
-   * usually return new instaces of `Options`. A mutable `Options` instance can
+   * Calling {@link ImmutableBase#query}, {@link ImmutableBase#setOption} or other methods
+   * usually return new instaces of `ImmutableBase`. A mutable `ImmutableBase` instance can
    * be modified in place.
    *
-   * Usually using {@link Options#withMutations} is preferable to `asMutable`.
+   * Usually using {@link ImmutableBase#withMutations} is preferable to `asMutable`.
    *
-   * @see {@link Options#asImmutable}
-   * @see {@link Options#withMutations}
+   * @see {@link ImmutableBase#asImmutable}
+   * @see {@link ImmutableBase#withMutations}
    *
-   * @returns {Options} Mutable copy of this instance.
+   * @returns {ImmutableBase} Mutable copy of this instance.
    */
   asMutable() {
     return this.setOption('isMutable', true);
@@ -196,12 +196,12 @@ export default class Options {
 
   /**
    * @method asImmutable
-   * @belongsTo Options
+   * @belongsTo ImmutableBase
    * @summary
    *
    * Prevent this instance from being mutated further.
    *
-   * @returns {Options} This instance.
+   * @returns {ImmutableBase} This instance.
    */
   asImmutable() {
     return this.setOption('isMutable', false);
@@ -209,7 +209,7 @@ export default class Options {
 
   /**
    * @method withMutations
-   * @belongsTo Options
+   * @belongsTo ImmutableBase
    * @summary
    *
    * Create a mutated copy of this instance.
@@ -239,11 +239,11 @@ export default class Options {
    * });
    *
    * @param {?(Object|function)} initializer
-   *  An initializer callback, taking the Options instance as its first
+   *  An initializer callback, taking the ImmutableBase instance as its first
    *  argument. Alternatively an object of {[method]: argument} pairs to be
    *  invoked.
    *
-   * @returns {Options}
+   * @returns {ImmutableBase}
    *   Mutated copy of this instance.
    */
   withMutations(initializer) {

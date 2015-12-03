@@ -1,15 +1,15 @@
 import test from 'tape';
 import { omit } from 'lodash/object';
 
-import Options from '../../lib/options';
+import ImmutableBase from '../../lib/immutable-base';
 
-test('Options', t => {
+test('ImmutableBase', t => {
 
-  t.test('Options#setOption(), Options#getOption()', t => {
+  t.test('ImmutableBase#setOption(), ImmutableBase#getOption()', t => {
     const OPTION = 'testOption';
     const VALUE = 'testValue';
 
-    const before = new Options();
+    const before = new ImmutableBase();
     const after = before.setOption(OPTION, VALUE);
 
     t.notEqual(
@@ -40,7 +40,7 @@ test('Options', t => {
     t.end();
   });
 
-  t.test('Options#extend()', t => {
+  t.test('ImmutableBase#extend()', t => {
 
     const OPTION = 'testOption';
     const VALUE = 'testValue';
@@ -51,7 +51,7 @@ test('Options', t => {
       c: function() {},
     };
 
-    const parent = new Options()
+    const parent = new ImmutableBase()
       .setOption(OPTION, VALUE);
 
     const child = parent.extend(methods);
@@ -81,13 +81,13 @@ test('Options', t => {
     t.end();
   });
 
-  t.test('Options#asMutable(), Options#asImmutable()', t => {
+  t.test('ImmutableBase#asMutable(), ImmutableBase#asImmutable()', t => {
 
     const OPTION = 'OPTION';
     const VALUE_A = 'VALUE_A';
     const VALUE_B = 'VALUE_B';
 
-    const options = new Options({ a: 'a', b: 'b' });
+    const options = new ImmutableBase({ a: 'a', b: 'b' });
 
     t.equal(
       options, options.asImmutable(),
@@ -157,12 +157,12 @@ test('Options', t => {
     t.end();
   });
 
-  t.test('Options#withMutations()', t => {
+  t.test('ImmutableBase#withMutations()', t => {
 
     const OPTION = 'OPTION';
     const VALUE = 'VALUE';
 
-    const options = new Options();
+    const options = new ImmutableBase();
 
     t.equal(
       options, options.withMutations(),
@@ -197,7 +197,7 @@ test('Options', t => {
       'returned mutated instance is no longer mutable'
     );
 
-    const mutable = new Options().asMutable();
+    const mutable = new ImmutableBase().asMutable();
 
     const alreadyMutableResult = mutable.withMutations(alreadyMutable => {
       t.equal(

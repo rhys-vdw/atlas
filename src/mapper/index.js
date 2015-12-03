@@ -1,6 +1,6 @@
 import _, { assign } from 'lodash';
 
-import Options from '../options';
+import ImmutableBase from '../immutable-base';
 
 import Defaults from './defaults';
 import Destruction from './destruction';
@@ -21,7 +21,7 @@ import Where from './where';
 
 import { MAPPER_SENTINEL } from '../constants';
 
-class Mapper extends Options {
+class Mapper extends ImmutableBase {
 }
 
 const mixins = [
