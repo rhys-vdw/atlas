@@ -22,7 +22,7 @@ test('Mapper', t => {
     `);
 
     t.equals(
-      Item.getOption('isSingle'), true,
+      Item.requireState('isSingle'), true,
       '`isSingle` is set to `true`'
     );
 
@@ -45,7 +45,7 @@ test('Mapper', t => {
     `);
 
     t.equals(
-      Items.getOption('isSingle'), false,
+      Items.requireState('isSingle'), false,
       '`isSingle` is set to `false`'
     );
 
@@ -69,7 +69,7 @@ test('Mapper', t => {
     `);
 
     t.equals(
-      Items.getOption('isSingle'), true,
+      Items.requireState('isSingle'), true,
       '`isSingle` is set to `true`'
     );
 
@@ -92,7 +92,7 @@ test('Mapper', t => {
     `);
 
     t.equals(
-      Items.getOption('isSingle'), false,
+      Items.requireState('isSingle'), false,
       '`isSingle` is set to `false`'
     );
 
@@ -117,7 +117,7 @@ test('Mapper', t => {
     );
 
     t.equal(
-      Items.target().getOption('isSingle'), true,
+      Items.target().requireState('isSingle'), true,
       `target() is single`
     );
 
@@ -127,7 +127,7 @@ test('Mapper', t => {
     );
 
     t.equal(
-      Items.target(null).getOption('isSingle'), true,
+      Items.target(null).requireState('isSingle'), true,
       `target() is single`
     );
 
@@ -137,7 +137,7 @@ test('Mapper', t => {
     );
 
     t.equal(
-      Items.target([]).getOption('isSingle'), false,
+      Items.target([]).requireState('isSingle'), false,
       `target([]) is not single`
     );
 
@@ -147,7 +147,7 @@ test('Mapper', t => {
     );
 
     t.equal(
-      Items.target([null]).getOption('isSingle'), false,
+      Items.target([null]).requireState('isSingle'), false,
       `target([null]) is not single`
     );
 

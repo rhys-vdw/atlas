@@ -5,7 +5,7 @@ import { assign } from 'lodash/object';
 import objectToString from 'object-to-string';
 
 import { assertType } from './assertions';
-import { InvalidOptionError } from './errors';
+import { UnsetStateError } from './errors';
 
 export default class ImmutableBase {
 
@@ -26,50 +26,32 @@ export default class ImmutableBase {
   }
 
   /**
-   * @method getOption
+   * @method requireState
    * @belongsTo ImmutableBase
    * @summary
    *
    * Get an option that has previously been set on the model.
    *
-   * @param {string} option
-   *   Name of the option to set.
+   * @param {string} key
+   *   State key to retrieve.
    * @returns {mixed}
-   *   Value previously assigned to option. Do not mutate this value.
-   * @throws InvalidOptionError
+   *   Value previously assigned to state key. Do not mutate this value.
+   * @throws UnsetStateError
    *   If the option has not been set.
    */
-  getOption(option) {
+  requireState(key) {
 
     // Options must be initialized before they are accessed.
-    if (!(option in this.state)) {
-      throw new InvalidOptionError(option, this);
+    if (!(key in this.state)) {
+      throw new UnsetStateError(key, this);
     }
 
-    return this.state[option];
+    return this.state[key];
   }
 
-  /**
-   * @method setOption
-   * @belongsTo ImmutableBase
-   * @summary
-   *
-   * Set an option on the ImmutableBase.
-   *
-   * @param {string} option
-   *   Name of the option to set.
-   * @param {mixed} value
-   *   New option value.
-   * @returns {ImmutableBase}
-   *   ImmutableBase instance with option set to value.
-   */
-  setOption(option, value) {
-    return this.setOptions({ [option]: value });
-  }
+  setState(nextState) {
 
-  setOptions(options) {
-
-    const isNoop = every(options, (value, option) =>
+    const isNoop = every(nextState, (value, option) =>
       this.state[option] === value
     );
 
@@ -79,41 +61,12 @@ export default class ImmutableBase {
 
     // If mutable, set the option and return.
     if (this.isMutable()) {
-      assign(this.state, options);
+      assign(this.state, nextState);
       return this;
     }
 
-    // Otherwise duplicate the options object and pass it on in a new instance.
-    return new this.constructor({ ...this.state, ...options });
-  }
-
-  /**
-   * @method updateOption
-   * @belongsTo ImmutableBase
-   * @summary
-   *
-   * Update an option on the ImmutableBase.
-   *
-   * @description
-   *
-   * Accepts an `update` callback invoked with the current value for the
-   * specified `option`. The value returned from `update` will be set
-   * on the `ImmutableBase`'s option hash.
-   *
-   * Never mutate the previous value directly. If the option is a mutable value
-   * such as an `Object` or `Array` it must be copied before being returned by
-   * the `updater`.
-   *
-   * @param {string} option
-   *   Name of the option to set.
-   * @param {function} updater
-   *   Callback receiving the current option value, and returning the new value.
-   * @returns {ImmutableBase}
-   *   ImmutableBase instance with option updated to value returned by `updater`.
-   */
-  updateOption(option, updater) {
-    const value = this.getOption(option);
-    return this.setOption(option, updater(value));
+    // Otherwise duplicate the nextState object and pass it on in a new instance.
+    return new this.constructor({ ...this.state, ...nextState });
   }
 
   /**
@@ -167,7 +120,7 @@ export default class ImmutableBase {
 
 
   isMutable() {
-    return this.getOption('isMutable');
+    return this.state.isMutable;
   }
 
   /**
@@ -179,11 +132,12 @@ export default class ImmutableBase {
    *
    * @description
    *
-   * Calling {@link ImmutableBase#query}, {@link ImmutableBase#setOption} or other methods
-   * usually return new instaces of `ImmutableBase`. A mutable `ImmutableBase` instance can
-   * be modified in place.
+   * Calling {@link ImmutableBase#setState} usually returns new instace of
+   * `ImmutableBase`. A mutable `ImmutableBase` instance can be modified
+   * in place.
    *
-   * Usually using {@link ImmutableBase#withMutations} is preferable to `asMutable`.
+   * Usually using {@link ImmutableBase#withMutations} is preferable to
+   * `asMutable`.
    *
    * @see {@link ImmutableBase#asImmutable}
    * @see {@link ImmutableBase#withMutations}
@@ -191,7 +145,7 @@ export default class ImmutableBase {
    * @returns {ImmutableBase} Mutable copy of this instance.
    */
   asMutable() {
-    return this.setOption('isMutable', true);
+    return this.setState({ isMutable: true });
   }
 
   /**
@@ -204,7 +158,7 @@ export default class ImmutableBase {
    * @returns {ImmutableBase} This instance.
    */
   asImmutable() {
-    return this.setOption('isMutable', false);
+    return this.setState({ isMutable: false });
   }
 
   /**

@@ -5,12 +5,12 @@ import ImmutableBase from '../../lib/immutable-base';
 
 test('ImmutableBase', t => {
 
-  t.test('ImmutableBase#setOption(), ImmutableBase#getOption()', t => {
-    const OPTION = 'testOption';
+  t.test('ImmutableBase#setState()', t => {
+    const KEY = 'testKey';
     const VALUE = 'testValue';
 
     const before = new ImmutableBase();
-    const after = before.setOption(OPTION, VALUE);
+    const after = before.setState({ [KEY]: VALUE });
 
     t.notEqual(
       before, after,
@@ -23,18 +23,18 @@ test('ImmutableBase', t => {
     );
 
     t.equal(
-      after, after.setOption(OPTION, VALUE),
+      after, after.setState({ [KEY]: VALUE }),
       'should not copy when reassigning the same value'
     );
 
     t.equal(
-      after.getOption(OPTION), VALUE,
-      'should be retrievable via `getOption`'
+      after.state[KEY], VALUE,
+      'has correct state'
     );
 
     t.throws(
-      () => before.getOption(OPTION),
-      'should leave original unchanged (throws on `getOption`)'
+      () => before.requireState(KEY),
+      'should leave original unchanged (throws on `requireState`)'
     );
 
     t.end();
@@ -42,7 +42,7 @@ test('ImmutableBase', t => {
 
   t.test('ImmutableBase#extend()', t => {
 
-    const OPTION = 'testOption';
+    const KEY = 'testKey';
     const VALUE = 'testValue';
 
     const methods = {
@@ -52,7 +52,7 @@ test('ImmutableBase', t => {
     };
 
     const parent = new ImmutableBase()
-      .setOption(OPTION, VALUE);
+      .setState({ [KEY]: VALUE });
 
     const child = parent.extend(methods);
 
@@ -74,7 +74,7 @@ test('ImmutableBase', t => {
     );
 
     t.equal(
-      child.getOption(OPTION), VALUE,
+      child.requireState(KEY), VALUE,
       'child has parent options'
     );
 
@@ -83,7 +83,7 @@ test('ImmutableBase', t => {
 
   t.test('ImmutableBase#asMutable(), ImmutableBase#asImmutable()', t => {
 
-    const OPTION = 'OPTION';
+    const KEY = 'KEY';
     const VALUE_A = 'VALUE_A';
     const VALUE_B = 'VALUE_B';
 
@@ -117,16 +117,16 @@ test('ImmutableBase', t => {
       '`asMutable` is a no-op on a mutable instance'
     );
 
-    const withOption = mutable.setOption(OPTION, VALUE_A);
+    const withOption = mutable.setState({ [KEY]: VALUE_A });
 
     t.equal(
       mutable, withOption,
-      '`setOption` on a mutable instance does not return a copy'
+      '`setState` on a mutable instance does not return a copy'
     );
 
     t.equal(
-      withOption.getOption(OPTION), VALUE_A,
-      '`setOption` correctly sets value on mutable instance'
+      withOption.requireState(KEY), VALUE_A,
+      '`setState` correctly sets value on mutable instance'
     );
 
     const immutable = mutable.asImmutable();
@@ -136,21 +136,21 @@ test('ImmutableBase', t => {
       '`asImmutable` returns the same instance'
     );
 
-    const immutableWithOption = immutable.setOption(OPTION, VALUE_B);
+    const immutableWithOption = immutable.setState({ [KEY]: VALUE_B });
 
     t.notEqual(
       immutable, immutableWithOption,
-      '`setOption` returns a copy on an immutable instance that was ' +
+      '`setState` returns a copy on an immutable instance that was ' +
       'previously mutable...'
     );
 
     t.equal(
-      immutableWithOption.getOption(OPTION), VALUE_B,
+      immutableWithOption.requireState(KEY), VALUE_B,
       '...new instance is set correctly...'
     );
 
     t.equal(
-      immutable.getOption(OPTION), VALUE_A,
+      immutable.requireState(KEY), VALUE_A,
       '...previous instance remains unchanged.'
     );
 
@@ -159,7 +159,7 @@ test('ImmutableBase', t => {
 
   t.test('ImmutableBase#withMutations()', t => {
 
-    const OPTION = 'OPTION';
+    const KEY = 'KEY';
     const VALUE = 'VALUE';
 
     const options = new ImmutableBase();
@@ -178,7 +178,7 @@ test('ImmutableBase', t => {
 
     const result = options.withMutations(scopedMutable => {
 
-      mutatedOnce = scopedMutable.setOption(OPTION, VALUE);
+      mutatedOnce = scopedMutable.setState({ [KEY]: VALUE });
 
       t.equal(
         mutatedOnce, scopedMutable,

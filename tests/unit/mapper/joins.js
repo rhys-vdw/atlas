@@ -10,7 +10,7 @@ test('== Mapper - joins ==', t => {
       .pivotAttributes('c');
 
     t.deepEqual(
-      WithPivot.getOption('pivotAttributes'),
+      WithPivot.requireState('pivotAttributes'),
       ['a', 'b', 'c'],
       `is additive`
     );
@@ -20,7 +20,7 @@ test('== Mapper - joins ==', t => {
       .pivotAttributes(['a']);
 
     t.deepEqual(
-      ToDedupe.getOption('pivotAttributes'),
+      ToDedupe.requireState('pivotAttributes'),
       ['a'],
       `deduplicates`
     );
@@ -31,8 +31,8 @@ test('== Mapper - joins ==', t => {
   t.test('Mapper#omitPivot()', t => {
     const Omitted = Mapper.omitPivot();
 
-    t.equal(Mapper.getOption('omitPivot'), false, 'defaults to false');
-    t.equal(Omitted.getOption('omitPivot'), true, 'can be set to true');
+    t.equal(Mapper.requireState('omitPivot'), false, 'defaults to false');
+    t.equal(Omitted.requireState('omitPivot'), true, 'can be set to true');
 
     t.end();
   });

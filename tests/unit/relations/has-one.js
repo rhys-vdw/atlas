@@ -59,7 +59,7 @@ test('== HasOne ==', t => {
     const user = { id_code: 6 };
     const Login = new HasOne(User, LoginRecords).toMapper(user);
 
-    t.equal(Login.getOption('isSingle'), true, 'isSingle');
+    t.equal(Login.requireState('isSingle'), true, 'isSingle');
 
     t.deepEqual(
       Login.forge({ created_at: '<some date>' }),
@@ -86,7 +86,7 @@ test('== HasOne ==', t => {
     const users = [{ id_code: 6 }, { id_code: 4 }];
     const Login = new HasOne(User, LoginRecords).toMapper(users);
 
-    t.equal(Login.getOption('isSingle'), false, '!isSingle');
+    t.equal(Login.requireState('isSingle'), false, '!isSingle');
 
     t.deepEqual(
       Login.forge({ created_at: '<some date>' }),
@@ -113,7 +113,7 @@ test('== HasOne ==', t => {
     const foo = { pk_a: 1, pk_b: 2 };
     const Bar = new HasOne(Foos, Bars).toMapper(foo);
 
-    t.equal(Bar.getOption('isSingle'), true, 'isSingle');
+    t.equal(Bar.requireState('isSingle'), true, 'isSingle');
 
     t.deepEqual(
       Bar.forge({ field: 'value' }),
@@ -140,7 +140,7 @@ test('== HasOne ==', t => {
     const foo = [{ pk_a: 1, pk_b: 2 }, { pk_a: 4, pk_b: 5 }];
     const Bar = new HasOne(Foos, Bars).toMapper(foo);
 
-    t.equal(Bar.getOption('isSingle'), false, 'isSingle');
+    t.equal(Bar.requireState('isSingle'), false, 'isSingle');
 
     t.deepEqual(
       Bar.forge({ field: 'value' }),

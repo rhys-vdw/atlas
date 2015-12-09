@@ -78,8 +78,7 @@ const methods = {
    */
   prepareInsert(...records) {
 
-    const defaultAttributes = this.getOption('defaultAttributes');
-    const strictAttributes = this.getOption('strictAttributes');
+    const { defaultAttributes, strictAttributes } = this.state;
 
     // `QueryBuilder#insert` accepts a single row or an array of rows.
     //
@@ -151,7 +150,7 @@ const methods = {
     // PostgreSQL can only return auto-incremented keys (and only one of them),
     // so this shouldn't be a problem.
     //
-    const idAttribute = this.getOption('idAttribute');
+    const idAttribute = this.requireState('idAttribute');
     if (!isArray(idAttribute)) {
       return this.setAttribute(record, idAttribute, returned);
     }

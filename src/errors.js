@@ -38,15 +38,15 @@ export class UnidentifiableRecordError extends AtlasError {
   }
 }
 
-export class InvalidOptionError extends AtlasError {
-  constructor(option, Mapper) {
+export class UnsetStateError extends AtlasError {
+  constructor(key, Mapper) {
     super(
-      'InvalidOptionError',
-      `Tried to retrieve unset option "${option}" on mapper:
+      'UnsetStateError',
+      `Tried to retrieve unset state key "${key}" on mapper:
       ${Mapper}`
     );
 
-    this.option = option;
+    this.key = key;
     this.Mapper = Mapper;
   }
 }

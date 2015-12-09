@@ -3,10 +3,10 @@ import Mapper from '../../../lib/Mapper';
 
 test('Mapper - identification', t => {
 
-  t.test('defaultOptions', t => {
+  t.test('default state', t => {
 
     t.equal(
-      Mapper.getOption('idAttribute'), 'id',
+      Mapper.requireState('idAttribute'), 'id',
       "idAttribute = 'id'"
     );
 

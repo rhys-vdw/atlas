@@ -8,27 +8,23 @@ const options = {
 const methods = {
 
   defaultAttribute(attribute, value) {
-    return this.updateOption('defaultAttributes', previous =>
-      ({ ...previous, ...keyValueToObject(attribute, value) })
-    );
+    return this.defaultAttributes(keyValueToObject(attribute, value));
   },
 
   defaultAttributes(attributes) {
-    return this.updateOption('defaultAttributes', previous =>
-      ({ ...previous, ...attributes })
-    );
+    return this.setState({ defaultAttributes:
+      { ...this.state.defaultAttributes, ...attributes }
+    });
   },
 
   strictAttribute(attribute, value) {
-    return this.updateOption('strictAttributes', previous =>
-      ({ ...previous, ...keyValueToObject(attribute, value) })
-    );
+    return this.strictAttributes(keyValueToObject(attribute, value));
   },
 
   strictAttributes(attributes) {
-    return this.updateOption('strictAttributes', previous =>
-      ({ ...previous, ...attributes })
-    );
+    return this.setState({ strictAttributes:
+      { ...this.state.strictAttributes, ...attributes }
+    });
   },
 
 };

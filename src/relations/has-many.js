@@ -6,7 +6,7 @@ import { isComposite, assertKeysCompatible } from '../arguments';
 
 export default class HasMany {
   constructor(Self, Other, { selfKey, otherRef } = {}) {
-    const selfAttribute = selfKey || Self.getOption('idAttribute');
+    const selfAttribute = selfKey || Self.requireState('idAttribute');
     const otherAttribute = otherRef || Other.columnToAttribute(
       mapperAttributeRef(Self, selfAttribute)
     );

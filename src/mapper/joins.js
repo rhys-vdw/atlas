@@ -14,13 +14,15 @@ const options = {
 
 const methods = {
   omitPivot() {
-    return this.setOption('omitPivot', true);
+    return this.setState({ omitPivot: true });
   },
 
   pivotAttributes(...attributes) {
-    return this.updateOption('pivotAttributes', previous =>
-      uniq([...previous, ...flatten(attributes)])
-    );
+    const pivotAttributes = uniq([
+      ...this.state.pivotAttributes,
+      ...flatten(attributes)
+    ])
+    return this.setState({ pivotAttributes });
   },
 
   joinMapper(Other, selfAttribute, otherAttribute) {
@@ -34,8 +36,8 @@ const methods = {
 
     if (isQueryBuilderEmpty(Other)) {
 
-      const selfTable = this.getOption('table');
-      const otherTable = Other.getOption('table');
+      const selfTable = this.requireState('table');
+      const otherTable = Other.requireState('table');
 
       if (selfTable === otherTable) {
         pivotAlias = PIVOT_ALIAS;
@@ -58,7 +60,7 @@ const methods = {
     );
 
     return this.withMutations(mapper => {
-      mapper.setOption('pivotAlias', pivotAlias);
+      mapper.setState({ pivotAlias });
       mapper.query('join', joinTable, joinColumns);
     });
   },
@@ -69,7 +71,7 @@ const methods = {
 
     return this.withMutations(mapper =>
       mapper
-        .setOption('pivotRelationName', relationName)
+        .setState({ pivotRelationName: relationName })
         .joinMapper(Other, selfAttribute, otherAttribute)
     );
   },

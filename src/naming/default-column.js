@@ -14,12 +14,12 @@ export function tableColumnRef(table, column) {
 }
 
 export function mapperColumnRef(Mapper, column) {
-  const table = Mapper.getOption('table');
+  const table = Mapper.requireState('table');
   return tableColumnRef(table, column);
 }
 
 export function mapperAttributeRef(Mapper, attribute) {
-  const table = Mapper.getOption('table');
+  const table = Mapper.requireState('table');
   const column = isArray(attribute)
     ? map(attribute, Mapper.attributeToColumn, Mapper)
     : Mapper.attributeToColumn(attribute);

@@ -5,15 +5,15 @@ import { NoRowsFoundError, NotFoundError } from '../../../lib/errors';
 
 test('Mapper - retrieval', t => {
 
-  t.test('defaultOptions', t => {
+  t.test('default state', t => {
 
     t.equal(
-      Mapper.getOption('isSingle'), false,
+      Mapper.requireState('isSingle'), false,
       'isSingle = false'
     );
 
     t.equal(
-      Mapper.getOption('isRequired'), false,
+      Mapper.requireState('isRequired'), false,
       'isRequired = false'
     );
 

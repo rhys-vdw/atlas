@@ -17,7 +17,7 @@ test('Atlas', t => {
     );
 
     t.equal(
-      atlas('Mapper').getOption('queryBuilder').client,
+      atlas('Mapper').state.queryBuilder.client,
       knex.client,
       'Assigns `knex.client` to retrieved mapper'
     );

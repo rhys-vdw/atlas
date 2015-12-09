@@ -83,7 +83,7 @@ const methods = {
   /** @private **/
   _handleDestroyResponse({ response, queryBuilder }) {
     if (response === 0) {
-      const isSingle = this.getOption('isSingle');
+      const { isSingle } = this.state;
       throw isSingle
         ? new NotFoundError(this, queryBuilder, 'destroy')
         : new NoRowsFoundError(this, queryBuilder, 'destroy');

@@ -15,13 +15,13 @@ test('== Mapper - defaults ==', t => {
       .defaultAttribute('keyA', 'valueA')
       .defaultAttribute('keyB', 'valueB');
 
-    st.deepEqual(A.getOption('defaultAttributes'), {key: 'value'});
-    st.deepEqual(B.getOption('defaultAttributes'),
+    st.deepEqual(A.requireState('defaultAttributes'), {key: 'value'});
+    st.deepEqual(B.requireState('defaultAttributes'),
       {keyA: 'valueA', keyB: 'valueB'}
     );
-    st.deepEqual(C.getOption('defaultAttributes'), {fnKey: fn});
-    st.deepEqual(D.getOption('defaultAttributes'), {key: 'value', fnKey: fn});
-    st.deepEqual(E.getOption('defaultAttributes'),
+    st.deepEqual(C.requireState('defaultAttributes'), {fnKey: fn});
+    st.deepEqual(D.requireState('defaultAttributes'), {key: 'value', fnKey: fn});
+    st.deepEqual(E.requireState('defaultAttributes'),
       {keyA: 'valueA', keyB: 'valueB'}
     );
 
@@ -38,11 +38,11 @@ test('== Mapper - defaults ==', t => {
       .defaultAttributes({keyA: 'valueA'})
       .defaultAttributes({keyB: 'valueB'});
 
-    st.deepEqual(A.getOption('defaultAttributes'), {key: 'value'});
-    st.deepEqual(B.getOption('defaultAttributes'),
+    st.deepEqual(A.requireState('defaultAttributes'), {key: 'value'});
+    st.deepEqual(B.requireState('defaultAttributes'),
       {key: 'value', fn: fn}
     );
-    st.deepEqual(C.getOption('defaultAttributes'),
+    st.deepEqual(C.requireState('defaultAttributes'),
       {keyA: 'valueA', keyB: 'valueB'}
     );
 
@@ -61,13 +61,13 @@ test('== Mapper - defaults ==', t => {
       .strictAttribute('keyA', 'valueA')
       .strictAttribute('keyB', 'valueB');
 
-    st.deepEqual(A.getOption('strictAttributes'), {key: 'value'});
-    st.deepEqual(B.getOption('strictAttributes'),
+    st.deepEqual(A.requireState('strictAttributes'), {key: 'value'});
+    st.deepEqual(B.requireState('strictAttributes'),
       {keyA: 'valueA', keyB: 'valueB'}
     );
-    st.deepEqual(C.getOption('strictAttributes'), {fnKey: fn});
-    st.deepEqual(D.getOption('strictAttributes'), {key: 'value', fnKey: fn});
-    st.deepEqual(E.getOption('strictAttributes'),
+    st.deepEqual(C.requireState('strictAttributes'), {fnKey: fn});
+    st.deepEqual(D.requireState('strictAttributes'), {key: 'value', fnKey: fn});
+    st.deepEqual(E.requireState('strictAttributes'),
       {keyA: 'valueA', keyB: 'valueB'}
     );
 
@@ -84,11 +84,11 @@ test('== Mapper - defaults ==', t => {
       .strictAttributes({keyA: 'valueA'})
       .strictAttributes({keyB: 'valueB'});
 
-    st.deepEqual(A.getOption('strictAttributes'), {key: 'value'});
-    st.deepEqual(B.getOption('strictAttributes'),
+    st.deepEqual(A.requireState('strictAttributes'), {key: 'value'});
+    st.deepEqual(B.requireState('strictAttributes'),
       {key: 'value', fn: fn}
     );
-    st.deepEqual(C.getOption('strictAttributes'),
+    st.deepEqual(C.requireState('strictAttributes'),
       {keyA: 'valueA', keyB: 'valueB'}
     );
 

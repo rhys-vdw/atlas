@@ -14,7 +14,7 @@ test('Mapper - relations unit test', t => {
     t.notEqual(Owner, Mapper, 'copies immutable Mapper');
 
     t.deepEqual(
-      Owner.getOption('relations'),
+      Owner.requireState('relations'),
       { hasThing: hasOneThing },
       'Correctly assigns relations'
     );
@@ -33,13 +33,13 @@ test('Mapper - relations unit test', t => {
 
     const OwnerWithAll = Owner.withRelated(true);
     t.deepLooseEqual(
-      OwnerWithAll.getOption('withRelated'),
+      OwnerWithAll.requireState('withRelated'),
       { a: {}, b: {}, c: {} },
       '`true` adds all relations'
     );
 
     t.deepEqual(
-      OwnerWithAll.withRelated(false).getOption('withRelated'),
+      OwnerWithAll.withRelated(false).requireState('withRelated'),
       {},
       '`false` removes all relations'
     );

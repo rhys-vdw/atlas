@@ -16,11 +16,11 @@ const methods = {
   // -- No-op --
 
   isNoop() {
-    return this.getOption('noop') !== false;
+    return this.state.noop !== false;
   },
 
   assertNotNoop() {
-    const reason = this.getOption('noop');
+    const reason = this.state.noop;
     if (reason !== false) throw new NoopError(this, reason);
   },
 
@@ -28,13 +28,13 @@ const methods = {
     if (!isString(reason)) throw new TypeError(
       `Expected 'reason' to be a string, got: ${reason}`
     );
-    return this.setOption('noop', reason);
+    return this.setState({ noop: reason });
   },
 
   // -- Query --
 
   atlas(atlas) {
-    return this.setOption('atlas', atlas);
+    return this.setState({ atlas });
   },
 
   knex(knex) {
@@ -42,11 +42,12 @@ const methods = {
   },
 
   client(client) {
-    return this.updateOption('queryBuilder', queryBuilder =>
+    const { queryBuilder } = this.state;
+    return this.setState({ queryBuilder:
       queryBuilder.client === client
         ? queryBuilder
-        : assign(queryBuilder.clone(), {client})
-    );
+        : assign(queryBuilder.clone(), { client })
+    });
   },
 
   /**
@@ -63,7 +64,7 @@ const methods = {
    */
   table(table) {
     return this.withMutations(mapper => {
-      mapper.setOption('table', table);
+      mapper.setState({ table });
       mapper.query('from', table);
     });
   },
@@ -80,7 +81,7 @@ const methods = {
    */
   toQueryBuilder() {
     this.assertNotNoop();
-    return this.getOption('queryBuilder').clone();
+    return this.state.queryBuilder.clone();
   },
 
   /**
@@ -112,7 +113,7 @@ const methods = {
       queryBuilder[method](...args);
     }
 
-    return this.setOption('queryBuilder', queryBuilder);
+    return this.setState({ queryBuilder });
   },
 };
 

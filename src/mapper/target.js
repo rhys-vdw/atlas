@@ -18,7 +18,7 @@ const methods = {
    *   Mapper targeting a one or more rows.
    */
   target(...ids) {
-    const idAttribute = this.getOption('idAttribute');
+    const idAttribute = this.requireState('idAttribute');
     return this.targetBy(idAttribute, ...ids);
   },
 
@@ -30,7 +30,7 @@ const methods = {
       isComposite && !isCompositeKey(head(normalized));
 
     return this.withMutations(mapper => {
-      mapper.setOption('isSingle', isSingle);
+      mapper.setState({ isSingle });
 
       if (isSingle) {
         if (normalized == null) {
