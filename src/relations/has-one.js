@@ -7,7 +7,7 @@ import { isComposite, keysCompatible } from '../arguments';
 export default class HasOne {
   constructor(Self, Other, { selfKey, otherRef } = {}) {
     if (selfKey == null) {
-      selfKey = Self.getOption('idAttribute');
+      selfKey = Self.requireState('idAttribute');
     }
 
     if (otherRef == null) {

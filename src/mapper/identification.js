@@ -29,7 +29,7 @@ const methods = {
    *   `true` if the model exists in database, otherwise `false`.
    */
   isNew(record) {
-    const attributes = ensureArray(this.getOption('idAttribute'));
+    const attributes = ensureArray(this.requireState('idAttribute'));
     return some(attributes, id => this.getAttribute(record, id) == null);
   },
 
@@ -46,7 +46,7 @@ const methods = {
    *   Mapper with primary key attribute set.
    */
   idAttribute(idAttribute) {
-    return this.setOption('idAttribute', idAttribute);
+    return this.setState({ idAttribute });
   },
 
   /**
@@ -90,7 +90,7 @@ const methods = {
    *   ID or IDs of given records.
    */
   identify(...records) {
-    const idAttribute = this.getOption('idAttribute');
+    const { idAttribute } = this.state;
     return this.identifyBy(idAttribute, ...records);
   },
 
@@ -172,7 +172,7 @@ const methods = {
   },
 
   pickIdentity(record) {
-    const idAttribute = this.getOption('idAttribute');
+    const { idAttribute } = this.state;
     return this.pickAttributes(record, idAttribute);
   }
 };

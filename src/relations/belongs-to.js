@@ -7,7 +7,7 @@ import { isComposite, assertKeysCompatible } from '../arguments';
 export default class BelongsTo {
   constructor(Self, Other, { selfRef, otherKey } = {}) {
 
-    const otherAttribute = otherKey || Other.getOption('idAttribute');
+    const otherAttribute = otherKey || Other.requireState('idAttribute');
     const selfAttribute = selfRef || Other.columnToAttribute(
       mapperAttributeRef(Other, otherAttribute)
     );

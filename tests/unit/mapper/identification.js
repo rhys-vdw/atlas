@@ -1,12 +1,12 @@
 import test from 'tape';
-import Mapper from '../../../lib/Mapper';
+import Mapper from '../../../lib/mapper';
 
 test('Mapper - identification', t => {
 
-  t.test('defaultOptions', t => {
+  t.test('default state', t => {
 
     t.equal(
-      Mapper.getOption('idAttribute'), 'id',
+      Mapper.requireState('idAttribute'), 'id',
       "idAttribute = 'id'"
     );
 

@@ -11,9 +11,9 @@ const methods = {
    *   Number of attributes
    */
   updateAll(attributes) {
-    if (this.isNoop()) {
-      return this.getOption('isSingle') ? null : [];
-    }
+    if (this.isNoop()) return Promise.resolve(
+      this.state.isSingle ? null : []
+    );
     const queryBuilder = this.prepareUpdateAll(attributes).toQueryBuilder();
     return queryBuilder.then(response =>
       this.handleUpdateAllResponse({ attributes, queryBuilder, response })
@@ -45,7 +45,7 @@ const methods = {
    */
   handleUpdateAllResponse({ attributes,  queryBuilder, response }) {
 
-    const isRequired = this.getOption('isRequired');
+    const { isRequired } = this.state;
 
     // Handle either rows or count response.
     let rows, count;

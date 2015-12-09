@@ -17,13 +17,13 @@ const methods = {
 
   /** @private */
   columnToTableColumn(column) {
-    const table = this.getOption('table');
+    const table = this.requireState('table');
     return `${table}.${column}`;
   },
 
   /** @private */
   columnsToTableColumns(columns) {
-    const table = this.getOption('table');
+    const table = this.requireState('table');
     return mapKeys(columns, (value, column) => `${table}.${column}`);
   },
 

@@ -7,6 +7,6 @@ function formatPivot(...tables) {
 
 export function pivot(...mappersOrTables) {
   return formatPivot(...map(mappersOrTables, table =>
-    isMapper(table) ? table.getOption('table') : table
+    isMapper(table) ? table.requireState('table') : table
   ));
 }

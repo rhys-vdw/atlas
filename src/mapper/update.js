@@ -94,8 +94,8 @@ const methods = {
   },
 
   getUpdateAttributes(record) {
-    const idAttribute = this.getOption('idAttribute');
-    const strictAttributes = this.getOption('strictAttributes');
+    const idAttribute = this.requireState('idAttribute');
+    const { strictAttributes } = this.state;
     return assignResolved(
       this.omitAttributes(record, idAttribute), strictAttributes
     );
@@ -109,7 +109,7 @@ const methods = {
 
     // Get ID attributes as an array.
     //
-    const idAttribute = this.getOption('idAttribute');
+    const idAttribute = this.requireState('idAttribute');
 
     // Get ID attribute/value pairs for this record.
     //

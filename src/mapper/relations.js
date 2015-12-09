@@ -13,13 +13,13 @@ const options = {
 const methods = {
 
   relations(relations) {
-    return this.updateOption('relations', previous =>
-      ({ ...previous, ...relations })
-    );
+    return this.setState({ relations:
+      { ...this.state.relations, ...relations }
+    });
   },
 
   getRelationNames() {
-    return keys(this.getOption('relations'));
+    return keys(this.state.relations);
   },
 
   getRelation(relationName) {
@@ -28,7 +28,7 @@ const methods = {
       `Expected 'relationName' to be a string, got: ${relationName}`
     );
 
-    const relations = this.getOption('relations');
+    const { relations } = this.state;
     if (!(relationName in relations)) throw new TypeError(
       `Unknown relation, got: '${relationName}'`
     );
@@ -51,18 +51,18 @@ const methods = {
     // Include all relations defined on model.
     if (isEmpty(relations) || allFlag === true) {
       const relationNames = this.getRelationNames();
-      return this.setOption('withRelated', compile(...relationNames));
+      return this.setState({ withRelated: compile(...relationNames) });
     }
 
     // Include no relations.
     if (allFlag === false) {
-      return this.setOption('withRelated', new RelationTree());
+      return this.setState({ withRelated: new RelationTree() });
     }
 
     // Otherwise merge in tree.
-    return this.updateOption('withRelated', previous =>
-      mergeTrees(previous, compile(...relations))
-    );
+    return this.setState({
+      withRelated: mergeTrees(this.state.withRelated, compile(...relations))
+    });
   },
 
   related(relationName, ...targetIds) {
@@ -77,7 +77,7 @@ const methods = {
     }
 
     const tree = normalize(relationTree);
-    const atlas = this.getOption('atlas');
+    const atlas = this.requireState('atlas');
     const relatedPromise = Promise.props(mapValues(tree, (
       { initializer, nested }, name
     ) =>

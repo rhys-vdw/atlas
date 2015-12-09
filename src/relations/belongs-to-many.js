@@ -19,7 +19,7 @@ export default class BelongsToMany {
     // Default self keys.
 
     if (selfKey == null) {
-      selfKey = Self.getOption('idAttribute');
+      selfKey = Self.requireState('idAttribute');
     }
 
     if (pivotSelfRef == null) pivotSelfRef = Self.attributeToColumn(
@@ -31,7 +31,7 @@ export default class BelongsToMany {
     // Default other keys.
 
     if (otherKey == null) {
-      otherKey = Other.getOption('idAttribute');
+      otherKey = Other.requireState('idAttribute');
     }
 
     if (pivotOtherRef == null) pivotOtherRef = Other.attributeToColumn(

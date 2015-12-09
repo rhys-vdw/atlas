@@ -13,7 +13,7 @@ const options = {
 const methods = {
 
   require() {
-    return this.setOption('isRequired', true);
+    return this.setState({ isRequired: true });
   },
 
   /**
@@ -33,7 +33,7 @@ const methods = {
    *   Mapper targeting a single row.
    */
   one() {
-    return this.setOption('isSingle', true);
+    return this.setState({ isSingle: true });
   },
 
   /**
@@ -51,7 +51,7 @@ const methods = {
    *   Mapper targeting a single row.
    */
   all() {
-    return this.setOption('isSingle', false);
+    return this.setState({ isSingle: false });
   },
 
   fetchOne() {
@@ -76,7 +76,7 @@ const methods = {
 
   fetch() {
     if (this.isNoop()) return Promise.resolve(
-      this.getOption('isSingle') ? null : []
+      this.state.isSingle ? null : []
     );
 
     const mapper = this.prepareFetch();
@@ -84,14 +84,13 @@ const methods = {
     return queryBuilder.then(response =>
       mapper.handleFetchResponse({ queryBuilder, response })
     ).then(records => {
-      const relationTree = this.getOption('withRelated');
-      return this.loadInto(records, relationTree);
+      const { withRelated } = this.state;
+      return this.loadInto(records, withRelated);
     });
   },
 
   prepareFetch() {
-    const isSingle  = this.getOption('isSingle');
-    const omitPivot = this.getOption('omitPivot');
+    const { isSingle, omitPivot } = this.state;
 
     return this.query(queryBuilder => {
 
@@ -100,12 +99,11 @@ const methods = {
       }
 
       if (!omitPivot) {
-        const pivotAttributes = this.getOption('pivotAttributes');
+        const { pivotAttributes } = this.state;
 
         if (!isEmpty(pivotAttributes)) {
-          const pivotRelationName = this.getOption('pivotRelationName');
-          const pivotAlias        = this.getOption('pivotAlias');
-          const Pivot             = this.getRelation(pivotRelationName).Other;
+          const { pivotRelationName, pivotAlias } = this.state;
+          const Pivot = this.getRelation(pivotRelationName).Other;
 
           const pivotColumns = map(pivotAttributes, attribute => {
             const column = Pivot.attributeToColumn(attribute);
@@ -121,8 +119,7 @@ const methods = {
   },
 
   handleFetchResponse({ queryBuilder, response }) {
-    const isRequired = this.getOption('isRequired');
-    const isSingle   = this.getOption('isSingle');
+    const { isRequired, isSingle } = this.state;
 
     if (isEmpty(response)) {
       if (isRequired) {
