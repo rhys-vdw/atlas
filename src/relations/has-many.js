@@ -19,7 +19,7 @@ export default class HasMany {
     this.otherAttribute = otherAttribute;
   }
 
-  toMapper(...targetIds) {
+  target(...targetIds) {
     const { Self, Other, selfAttribute, otherAttribute } = this;
 
     const id = Self.identifyBy(selfAttribute, ...targetIds);
@@ -36,12 +36,12 @@ export default class HasMany {
     });
   }
 
-  assignRelated(records, relationName, related) {
-    const { Self, Other, selfAttribute, otherAttribute } = this;
-
+  mapRelated(records, related) {
     if (!isArray(records)) {
-      return Self.setRelated(records, { [relationName]: related });
+      return related || [];
     }
+
+    const { Self, Other, selfAttribute, otherAttribute } = this;
 
     const relatedById = groupBy(related, record =>
       Other.identifyBy(otherAttribute, record)
@@ -49,8 +49,7 @@ export default class HasMany {
 
     return records.map(record => {
       const id = Self.identifyBy(selfAttribute, record);
-      const related = relatedById[id] || [];
-      return Self.setRelated(record, { [relationName]: related });
+      return relatedById[id] || [];
     });
   }
 

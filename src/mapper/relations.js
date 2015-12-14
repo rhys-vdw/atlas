@@ -1,8 +1,10 @@
 import Promise from 'bluebird';
-import { reduce } from 'lodash/collection';
-import { first } from 'lodash/array';
-import { keys, mapValues } from 'lodash/object';
-import { isEmpty, isFunction, isString } from 'lodash/lang';
+import { first, zipObject } from 'lodash/array';
+import {
+  values as objectValues, keys as objectKeys, mapValues
+} from 'lodash/object';
+import { map, pluck } from 'lodash/collection';
+import { isArray, isEmpty, isFunction, isString } from 'lodash/lang';
 import RelationTree, { compile, mergeTrees, normalize } from '../relation-tree';
 
 const options = {
@@ -19,7 +21,7 @@ const methods = {
   },
 
   getRelationNames() {
-    return keys(this.state.relations);
+    return objectKeys(this.state.relations);
   },
 
   getRelation(relationName) {
@@ -66,7 +68,7 @@ const methods = {
   },
 
   related(relationName, ...targetIds) {
-    return this.getRelation(relationName).toMapper(...targetIds);
+    return this.getRelation(relationName).target(...targetIds);
   },
 
   loadInto(records, relationTree) {
@@ -79,18 +81,24 @@ const methods = {
     const tree = normalize(relationTree);
     const atlas = this.requireState('atlas');
 
-    return Promise.props(mapValues(tree, ({ initializer, nested }, name) =>
-      atlas(this.getRelation(name).toMapper(records))
-      .withMutations({
-        withMutations: initializer,
-        withRelated: nested
-      }).fetch()
-    )).then(relatedByName =>
-      reduce(relatedByName, (acc, related, relationName) =>
-        this.getRelation(relationName)
-          .assignRelated(acc, relationName, related)
-      , records)
-    );
+    return Promise.props(mapValues(tree, ({ initializer, nested }, name) => {
+      const relation = this.getRelation(name);
+      return atlas(relation.target(records)).withMutations({
+        withMutations: initializer, withRelated: nested
+      }).fetch().then(related => relation.mapRelated(records, related));
+    })).then(relatedByName => {
+
+      if (!isArray(records)) {
+        return this.setRelated(records, relatedByName);
+      }
+
+      const names = objectKeys(relatedByName);
+      const mapped = objectValues(relatedByName);
+
+      return map(records, (record, index) =>
+        this.setRelated(record, zipObject(names, pluck(mapped, index)))
+      );
+    });
   }
 
 };

@@ -20,7 +20,7 @@ export default class BelongsTo {
     this.otherAttribute = otherAttribute;
   }
 
-  toMapper(...targetIds) {
+  target(...targetIds) {
     const { Self, Other, selfAttribute, otherAttribute } = this;
 
     const id = Self.identifyBy(selfAttribute, ...targetIds);
@@ -36,12 +36,12 @@ export default class BelongsTo {
     });
   }
 
-  assignRelated(records, relationName, related) {
-    const { Self, Other, selfAttribute, otherAttribute } = this;
-
+  mapRelated(records, related) {
     if (!isArray(records)) {
-      return Self.setRelated(records, { [relationName]: related });
+      return related || null;
     }
+
+    const { Self, Other, selfAttribute, otherAttribute } = this;
 
     const relatedById = indexBy(related, record =>
       Other.identifyBy(otherAttribute, record)
@@ -49,8 +49,7 @@ export default class BelongsTo {
 
     return records.map(record => {
       const id = Self.identifyBy(selfAttribute, record);
-      const related = relatedById[id] || null;
-      return Self.setRelated(record, { [relationName]: related });
+      return relatedById[id] || null;
     });
   }
 

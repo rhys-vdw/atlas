@@ -24,7 +24,7 @@ export default class HasOne {
     this.otherRef = otherRef;
   }
 
-  toMapper(...targetIds) {
+  target(...targetIds) {
     const { Self, Other, selfKey, otherRef } = this;
 
     const id = Self.identifyBy(selfKey, ...targetIds);
@@ -39,12 +39,12 @@ export default class HasOne {
     });
   }
 
-  assignRelated(records, relationName, related) {
-    const { Self, Other, selfKey, otherRef } = this;
-
+  mapRelated(records, related) {
     if (!isArray(records)) {
-      return Self.setRelated(records, { [relationName]: related });
+      return related || null;
     }
+
+    const { Self, Other, selfKey, otherRef } = this;
 
     const relatedById = indexBy(related, record =>
       Other.identifyBy(otherRef, record)
@@ -52,8 +52,7 @@ export default class HasOne {
 
     return records.map(record => {
       const id = Self.identifyBy(selfKey, record);
-      const related = relatedById[id] || null;
-      return Self.setRelated(record, { [relationName]: related });
+      return relatedById[id] || null;
     });
   }
 
