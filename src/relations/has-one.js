@@ -43,7 +43,7 @@ export default class HasOne {
     const { Self, Other, selfKey, otherRef } = this;
 
     if (!isArray(records)) {
-      return Self.setRelated(records, relationName, related);
+      return Self.setRelated(records, { [relationName]: related });
     }
 
     const relatedById = indexBy(related, record =>
@@ -53,7 +53,7 @@ export default class HasOne {
     return records.map(record => {
       const id = Self.identifyBy(selfKey, record);
       const related = relatedById[id] || null;
-      return Self.setRelated(record, relationName, related);
+      return Self.setRelated(record, { [relationName]: related });
     });
   }
 

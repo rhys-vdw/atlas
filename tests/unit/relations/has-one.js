@@ -175,23 +175,29 @@ test('== HasOne ==', t => {
       { index: 1, self_id_a: 1, self_id_b: 2 },
     ];
 
-    hasOne.assignRelated(selves, 'other', others);
+    const assigned = hasOne.assignRelated(selves, 'other', others);
 
+    t.deepEqual(selves[0], { id_a: 1, id_b: 2 },
+      `original record is unchanged`
+    );
     t.equal(
-      selves[0].other, others[1], `assigns related to record[0] correctly`
+      assigned[0].other, others[1],
+      `assigns related to record[0] correctly`
     );
     t.deepEqual(
-      selves[0].other,
-      { index: 1, self_id_a: 1, self_id_b: 2 },
+      assigned[0].other, { index: 1, self_id_a: 1, self_id_b: 2 },
       `record[0] related is correct`
     );
 
+    t.deepEqual(selves[1], { id_a: 3, id_b: 2 },
+      `original record is unchanged`
+    );
     t.equal(
-      selves[1].other, others[0], `assigns related to record[1] correctly`
+      assigned[1].other, others[0],
+      `assigns related to record[1] correctly`
     );
     t.deepEqual(
-      selves[1].other,
-      { index: 0, self_id_a: 3, self_id_b: 2 },
+      assigned[1].other, { index: 0, self_id_a: 3, self_id_b: 2 },
       `record[1] related is correct`
     );
 

@@ -83,9 +83,8 @@ const methods = {
     return omit(allAttributes, attributes);
   },
 
-  setRelated(record, relationName, related) {
-    record[relationName] = related;
-    return record;
+  setRelated(record, related) {
+    return { ...record, ...related };
   },
 
   getRelated(record, relationName) {

@@ -40,7 +40,7 @@ export default class HasMany {
     const { Self, Other, selfAttribute, otherAttribute } = this;
 
     if (!isArray(records)) {
-      return Self.setRelated(records, relationName, related);
+      return Self.setRelated(records, { [relationName]: related });
     }
 
     const relatedById = groupBy(related, record =>
@@ -50,7 +50,7 @@ export default class HasMany {
     return records.map(record => {
       const id = Self.identifyBy(selfAttribute, record);
       const related = relatedById[id] || [];
-      return Self.setRelated(record, relationName, related);
+      return Self.setRelated(record, { [relationName]: related });
     });
   }
 

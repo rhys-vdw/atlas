@@ -40,7 +40,7 @@ export default class BelongsTo {
     const { Self, Other, selfAttribute, otherAttribute } = this;
 
     if (!isArray(records)) {
-      return Self.setRelated(records, relationName, related);
+      return Self.setRelated(records, { [relationName]: related });
     }
 
     const relatedById = indexBy(related, record =>
@@ -50,7 +50,7 @@ export default class BelongsTo {
     return records.map(record => {
       const id = Self.identifyBy(selfAttribute, record);
       const related = relatedById[id] || null;
-      return Self.setRelated(record, relationName, related);
+      return Self.setRelated(record, { [relationName]: related });
     });
   }
 

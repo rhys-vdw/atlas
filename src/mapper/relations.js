@@ -78,20 +78,17 @@ const methods = {
 
     const tree = normalize(relationTree);
     const atlas = this.requireState('atlas');
-    const relatedPromise = Promise.props(mapValues(tree, (
-      { initializer, nested }, name
-    ) =>
+
+    return Promise.props(mapValues(tree, ({ initializer, nested }, name) =>
       atlas(this.getRelation(name).toMapper(records))
       .withMutations({
         withMutations: initializer,
         withRelated: nested
       }).fetch()
-    ));
-    return relatedPromise.then(relatedByName =>
+    )).then(relatedByName =>
       reduce(relatedByName, (acc, related, relationName) =>
-        this
-          .getRelation(relationName)
-          .assignRelated(records, relationName, related)
+        this.getRelation(relationName)
+          .assignRelated(acc, relationName, related)
       , records)
     );
   }
