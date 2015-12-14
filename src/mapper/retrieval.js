@@ -75,9 +75,9 @@ const methods = {
   },
 
   fetch() {
-    if (this.isNoop()) return Promise.resolve(
-      this.state.isSingle ? null : []
-    );
+    if (this.isNoop()) {
+      return Promise.resolve(this.state.isSingle ? null : []);
+    }
 
     const mapper = this.prepareFetch();
     const queryBuilder = mapper.toQueryBuilder();
