@@ -21,7 +21,7 @@ const methods = {
     const pivotAttributes = uniq([
       ...this.state.pivotAttributes,
       ...flatten(attributes)
-    ])
+    ]);
     return this.setState({ pivotAttributes });
   },
 

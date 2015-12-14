@@ -86,7 +86,7 @@ export default function(atlas) {
               director: { id: 2, name: 'Roland Emmerich' }
             },
           ]},
-          'eager loads single `belongsToMany`, specifying `pivotAttributes`'
+          'eager loads nested relation'
         ),
 
         st.resolvesToDeep(
