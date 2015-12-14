@@ -218,4 +218,65 @@ test('ImmutableBase', t => {
 
     t.end();
   });
+
+  t.test('ImmutableBase#withMutations() - multiple initializers', t => {
+
+    const original = new ImmutableBase();
+
+    const mutated = original.withMutations(
+      b => b.setState({ a: 'a' }),
+      { setState: { b: 'b' } }
+    );
+
+    t.notEqual(
+      mutated, original, 'mutated instance is not original'
+    );
+
+    t.deepEqual(
+      mutated.state, { a: 'a', b: 'b', isMutable: false },
+      'mutated instance has expected state'
+    );
+
+    t.end();
+  });
+
+  t.test('ImmutableBase#withMutations() - string initializers', t => {
+
+    const original = new ImmutableBase().extend({
+      a() { return this.setState({ a: true }); },
+      b() { return this.setState({ b: true }); }
+    });
+
+    const mutated = original.withMutations('a', 'b', { setState: { c: true } });
+
+    t.notEqual(original, mutated, 'mutated instance is copy');
+
+    t.deepEqual(
+      mutated.state, { a: true, b: true, c: true, isMutable: false },
+      'state is as expected'
+    );
+
+    t.end();
+  });
+
+  t.test('ImmutableBase#withMutations() - array of initializers', t => {
+
+    const original = new ImmutableBase().extend({
+      a() { return this.setState({ a: true }); },
+      b() { return this.setState({ b: true }); }
+    });
+
+    const mutated = original.withMutations(
+      [['a', 'b', { setState: { c: true } }]]
+    );
+
+    t.notEqual(original, mutated, 'mutated instance is copy');
+
+    t.deepEqual(
+      mutated.state, { a: true, b: true, c: true, isMutable: false },
+      'state is as expected'
+    );
+
+    t.end();
+  });
 });

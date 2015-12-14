@@ -1,10 +1,8 @@
-import _ from 'lodash';
-import { isEmpty, isFunction, isObject } from 'lodash/lang';
-import { each, every } from 'lodash/collection';
+import { isArray, isEmpty, isFunction, isObject, isString } from 'lodash/lang';
+import { every, reduce } from 'lodash/collection';
 import { assign } from 'lodash/object';
 import objectToString from 'object-to-string';
 
-import { assertType } from './assertions';
 import { UnsetStateError } from './errors';
 
 export default class ImmutableBase {
@@ -65,7 +63,8 @@ export default class ImmutableBase {
       return this;
     }
 
-    // Otherwise duplicate the nextState object and pass it on in a new instance.
+    // Otherwise duplicate the `nextState` object and pass it on in a new
+    // instance.
     return new this.constructor({ ...this.state, ...nextState });
   }
 
@@ -78,8 +77,8 @@ export default class ImmutableBase {
    *
    * @description
    *
-   * Creates an inheriting `ImmutableBase` class with supplied `methods`. Returns an
-   * instance of this class.
+   * Creates an inheriting `ImmutableBase` class with supplied `methods`.
+   * Returns an instance of this class.
    *
    * @param {Object} methods
    *
@@ -170,7 +169,7 @@ export default class ImmutableBase {
    *
    * @example <caption>Using a callback initializer</caption>
    *
-   * AustralianWomen = People.withMutations((People) => {
+   * AustralianWomen = People.withMutations(People => {
    *  People
    *    .where({ country: 'Australia', gender: 'female' });
    *    .withRelated('spouse', 'children', 'jobs')
@@ -192,7 +191,7 @@ export default class ImmutableBase {
    *   }
    * });
    *
-   * @param {?(Object|function)} initializer
+   * @param {...(Array|string|Object|function)} initializer
    *  An initializer callback, taking the ImmutableBase instance as its first
    *  argument. Alternatively an object of {[method]: argument} pairs to be
    *  invoked.
@@ -200,41 +199,60 @@ export default class ImmutableBase {
    * @returns {ImmutableBase}
    *   Mutated copy of this instance.
    */
-  withMutations(initializer) {
-    if (!isFunction(initializer) && isEmpty(initializer)) return this;
+  withMutations(...initializers) {
 
-    assertType({ initializer }, { function: isFunction, Object: isObject });
+    if (every(initializers, initializer =>
+      isEmpty(initializer) && !isFunction(initializer))
+    ) return this;
 
     const wasMutable = this.isMutable();
 
-    const instance = this.asMutable()._applyInitializer(initializer);
+    const instance = this.asMutable().applyInitializers(initializers);
 
     return wasMutable ? instance : instance.asImmutable();
   }
 
-  _applyInitializer(initializer) {
+  /** @private */
+  applyInitializers(initializers) {
+    return reduce(initializers, (self, initializer) =>
+      self.applyInitializer(initializer)
+    , this);
+  }
 
-    if (_.isFunction(initializer)) {
-      return this._applyInitializerCallback(initializer);
+  /** @private */
+  applyInitializer(initializer) {
+
+    if (initializer == null) {
+      return this;
     }
 
-    return this._applyInitializerObject(initializer);
+    if (isArray(initializer)) {
+      return this.applyInitializers(initializer);
+    }
+
+    if (isString(initializer)) {
+      return this.invoke(initializer);
+    }
+
+    if (isFunction(initializer)) {
+      initializer.call(this, this);
+      return this;
+    }
+
+    if (isObject(initializer)) {
+      return reduce(initializer, (self, argument, method) =>
+        self.invoke(method, argument)
+      , this);
+    }
+
+    throw new TypeError(`Unexpected initializer: ${initializer}`);
   }
 
-  _applyInitializerCallback(callback) {
-    callback.bind(this)(this);
-    return this;
-  }
-
-  _applyInitializerObject(object) {
-
-    each(object, (argument, method) => {
-      if (!isFunction(this[method])) throw new TypeError(
-        `Could not find method '${method}' on Mapper.`
-      );
-      this[method](argument);
-    });
-
-    return this;
+  /** @private */
+  invoke(method, ...args) {
+    if (!isFunction(this[method])) throw new TypeError(
+      `Could not find method '${method}' on Mapper.`
+    );
+    return this[method](...args);
   }
 }
