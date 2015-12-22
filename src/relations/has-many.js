@@ -19,7 +19,7 @@ export default class HasMany {
     this.otherAttribute = otherAttribute;
   }
 
-  target(...targetIds) {
+  of(...targetIds) {
     const { Self, Other, selfAttribute, otherAttribute } = this;
 
     const id = Self.identifyBy(selfAttribute, ...targetIds);

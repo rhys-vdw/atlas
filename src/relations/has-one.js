@@ -24,7 +24,7 @@ export default class HasOne {
     this.otherRef = otherRef;
   }
 
-  target(...targetIds) {
+  of(...targetIds) {
     const { Self, Other, selfKey, otherRef } = this;
 
     const id = Self.identifyBy(selfKey, ...targetIds);

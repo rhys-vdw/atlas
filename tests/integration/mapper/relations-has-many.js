@@ -20,7 +20,7 @@ export default function(atlas) {
 
   test('Mapper - relations - HasMany', t => {
 
-    t.databaseTest('`Mapper#related()`', knex, { posts: postsTable }, st => {
+    t.databaseTest('`Mapper#getRelation()`', knex, { posts: postsTable }, st => {
 
       const Posts = Mapper.table('posts');
 
@@ -38,42 +38,42 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.related('posts', 1).fetch(), [
+            Users.getRelation('posts').of(1).fetch(), [
               { id: 10, author_id: 1, message: `Dean's first post` },
               { id: 13, author_id: 1, message: `Dean again` },
             ],
-            `Mapper#related(relation, id) resolves correctly`
+            `Mapper#getRelation(relation).of(id) resolves correctly`
           ),
           st.resolvesToDeep(
-            Users.related('posts', { id: 2, name: 'Sarah' }).fetch(), [
+            Users.getRelation('posts').of({ id: 2, name: 'Sarah' }).fetch(), [
               { id: 12, author_id: 2, message: `Hello I'm Sarah` },
-            ], `Mapper#related(relation, {id}) resolves correctly`
+            ], `Mapper#getRelation(relation).of({id}) resolves correctly`
           ),
           st.resolvesToDeep(
-            Users.related('posts', 1, 3).fetch(), [
+            Users.getRelation('posts').of(1, 3).fetch(), [
               { id: 10, author_id: 1, message: `Dean's first post` },
               { id: 11, author_id: 3, message: `Barry's first post` },
               { id: 13, author_id: 1, message: `Dean again` },
               { id: 14, author_id: 3, message: `Bazza again` },
-            ], `Mapper#related(relation, id, id) resolves correctly`
+            ], `Mapper#getRelation(relation).of(id, id) resolves correctly`
           ),
           st.resolvesToDeep(
-            Users.related('posts', [1, 3]).fetch(), [
+            Users.getRelation('posts').of([1, 3]).fetch(), [
               { id: 10, author_id: 1, message: `Dean's first post` },
               { id: 11, author_id: 3, message: `Barry's first post` },
               { id: 13, author_id: 1, message: `Dean again` },
               { id: 14, author_id: 3, message: `Bazza again` },
-            ], `Mapper#related(relation, [id, id]) resolves correctly`
+            ], `Mapper#getRelation(relation).of([id, id]) resolves correctly`
           ),
           st.resolvesToDeep(
-            Users.related('posts', { id: 4 }).fetch(),
+            Users.getRelation('posts').of({ id: 4 }).fetch(),
             [],
-            `Mapper#related(relation, {id}) resolves to [] if none found`
+            `Mapper#getRelation(relation).of({id}) resolves to [] if none found`
           ),
           st.resolvesToDeep(
-            Users.related('posts', [{ id: 4 }, { id: 6 }]).fetch(),
+            Users.getRelation('posts').of([{ id: 4 }, { id: 6 }]).fetch(),
             [],
-            `Mapper#related(relation, [{id}, {id}]) resolves to [] if none ` +
+            `Mapper#getRelation(relation).of([{id}, {id}]) resolves to [] if none ` +
             `found`
           )
         );

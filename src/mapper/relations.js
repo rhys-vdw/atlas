@@ -67,10 +67,6 @@ const methods = {
     });
   },
 
-  related(relationName, ...targetIds) {
-    return this.getRelation(relationName).target(...targetIds);
-  },
-
   loadInto(records, relationTree) {
 
     // This is a no-op if no relations are specified.
@@ -82,10 +78,14 @@ const methods = {
     const atlas = this.requireState('atlas');
 
     return Promise.props(mapValues(tree, ({ initializer, nested }, name) => {
+
       const relation = this.getRelation(name);
-      return atlas(relation.target(records)).withMutations({
-        withMutations: initializer, withRelated: nested
+
+      return atlas(relation.of(records)).withMutations({
+        withMutations: initializer,
+        withRelated: nested
       }).fetch().then(related => relation.mapRelated(records, related));
+
     })).then(relatedByName => {
 
       if (!isArray(records)) {

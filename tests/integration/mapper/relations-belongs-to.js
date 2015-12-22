@@ -20,7 +20,7 @@ export default function(atlas) {
 
   test('Mapper - relations - belongsTo', t => {
 
-    t.databaseTest('`Mapper#related()`', knex, {
+    t.databaseTest('`Mapper#getRelation()`', knex, {
       users: usersTable
     }, st => {
 
@@ -36,36 +36,36 @@ export default function(atlas) {
         { id: 3, name: 'Baz' }
       ]).then(() => Promise.join(
         st.resolvesToDeep(
-          Posts.related('author', 1).fetch(),
+          Posts.getRelation('author').of(1).fetch(),
           { id: 1, name: 'Dean' },
-          `Mapper#related(relation, id) resolves correctly`
+          `Mapper#getRelation(relation).of(id) resolves correctly`
         ),
         st.resolvesToDeep(
-          Posts.related('author', { author_id: 2 }).fetch(),
+          Posts.getRelation('author').of({ author_id: 2 }).fetch(),
           { id: 2, name: 'Sarah' },
-          `Mapper#related(relation, {id}) resolves correctly`
+          `Mapper#getRelation(relation).of({id}) resolves correctly`
         ),
         st.resolvesToDeep(
-          Posts.related('author', 1, 3).fetch(), [
+          Posts.getRelation('author').of(1, 3).fetch(), [
             { id: 1, name: 'Dean' },
             { id: 3, name: 'Baz' }
-          ], `Mapper#related(relation, id, id) resolves correctly`
+          ], `Mapper#getRelation(relation).of(id, id) resolves correctly`
         ),
         st.resolvesToDeep(
-          Posts.related('author', [1, 3]).fetch(), [
+          Posts.getRelation('author').of([1, 3]).fetch(), [
             { id: 1, name: 'Dean' },
             { id: 3, name: 'Baz' }
-          ], `Mapper#related(relation, [id, id]) resolves correctly`
+          ], `Mapper#getRelation(relation).of([id, id]) resolves correctly`
         ),
         st.resolvesTo(
-          Posts.related('author', { author_id: 4 }).fetch(),
+          Posts.getRelation('author').of({ author_id: 4 }).fetch(),
           null,
-          `Mapper#related(relation, {id}) resolves to null if none found`
+          `Mapper#getRelation(relation).of({id}) resolves to null if none found`
         ),
         st.resolvesToDeep(
-          Posts.related('author', [{ author_id: 4 }, { author_id: 6 }]).fetch(),
+          Posts.getRelation('author').of([{ author_id: 4 }, { author_id: 6 }]).fetch(),
           [],
-          `Mapper#related(relation, [{id}, {id}]) resolves to [] if none found`
+          `Mapper#getRelation(relation).of([{id}, {id}]) resolves to [] if none found`
         ))
       );
 

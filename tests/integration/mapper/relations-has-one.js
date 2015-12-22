@@ -19,7 +19,7 @@ export default function(atlas) {
 
   test('Mapper - relations - HasOne', t => {
 
-    t.databaseTest('`Mapper#related()`', knex, {
+    t.databaseTest('`Mapper#getRelation()`', knex, {
       users: usersTable, avatars: avatarsTable
     }, st => {
 
@@ -44,36 +44,36 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.related('avatar', 1).fetch(),
+            Users.getRelation('avatar').of(1).fetch(),
             { id: 10, user_id: 1, image_path: './dean.jpg' },
-            `Mapper#related(relation, id) resolves correctly`
+            `Mapper#getRelation(relation).of(id) resolves correctly`
           ),
           st.resolvesToDeep(
-            Users.related('avatar', { id: 2, name: 'Sarah' }).fetch(),
+            Users.getRelation('avatar').of({ id: 2, name: 'Sarah' }).fetch(),
             { id: 12, user_id: 2, image_path: './sarah.jpg' },
-            `Mapper#related(relation, {id}) resolves correctly`
+            `Mapper#getRelation(relation).of({id}) resolves correctly`
           ),
           st.resolvesToDeep(
-            Users.related('avatar', 1, 3).fetch(), [
+            Users.getRelation('avatar').of(1, 3).fetch(), [
               { id: 10, user_id: 1, image_path: './dean.jpg' },
               { id: 11, user_id: 3, image_path: './bazza.jpg' },
-            ], `Mapper#related(relation, id, id) resolves correctly`
+            ], `Mapper#getRelation(relation).of(id, id) resolves correctly`
           ),
           st.resolvesToDeep(
-            Users.related('avatar', [1, 3]).fetch(), [
+            Users.getRelation('avatar').of([1, 3]).fetch(), [
               { id: 10, user_id: 1, image_path: './dean.jpg' },
               { id: 11, user_id: 3, image_path: './bazza.jpg' },
-            ], `Mapper#related(relation, [id, id]) resolves correctly`
+            ], `Mapper#getRelation(relation).of([id, id]) resolves correctly`
           ),
           st.resolvesTo(
-            Users.related('avatar', { id: 4 }).fetch(),
+            Users.getRelation('avatar').of({ id: 4 }).fetch(),
             null,
-            `Mapper#related(relation, {id}) resolves to null if none found`
+            `Mapper#getRelation(relation).of({id}) resolves to null if none found`
           ),
           st.resolvesToDeep(
-            Users.related('avatar', [{ id: 4 }, { id: 6 }]).fetch(),
+            Users.getRelation('avatar').of([{ id: 4 }, { id: 6 }]).fetch(),
             [],
-            `Mapper#related(relation, [{id}, {id}]) resolves to [] if none ` +
+            `Mapper#getRelation(relation).of([{id}, {id}]) resolves to [] if none ` +
             `found`
           )
         );

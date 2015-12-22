@@ -39,7 +39,7 @@ test('== HasOne ==', t => {
     t.end();
   });
 
-  t.test('HasOne#target() - bad config', t => {
+  t.test('HasOne#constructor - bad config', t => {
     const As = Mapper.table('as');
     const Bs = Mapper.table('bs');
 
@@ -52,12 +52,12 @@ test('== HasOne ==', t => {
     t.end();
   });
 
-  t.test('HasOne#target() - single target', t => {
+  t.test('HasOne#of() - single target', t => {
     const LoginRecords = Mapper.table('login_records');
     const User = Mapper.table('users').idAttribute('id_code');
 
     const user = { id_code: 6 };
-    const Login = new HasOne(User, LoginRecords).target(user);
+    const Login = new HasOne(User, LoginRecords).of(user);
 
     t.equal(Login.requireState('isSingle'), true, 'isSingle');
 
@@ -79,12 +79,12 @@ test('== HasOne ==', t => {
     t.end();
   });
 
-  t.test('HasOne#target() - multiple targets', t => {
+  t.test('HasOne#of() - multiple targets', t => {
     const LoginRecords = Mapper.table('login_records');
     const User = Mapper.table('users').idAttribute('id_code');
 
     const users = [{ id_code: 6 }, { id_code: 4 }];
-    const Login = new HasOne(User, LoginRecords).target(users);
+    const Login = new HasOne(User, LoginRecords).of(users);
 
     t.equal(Login.requireState('isSingle'), false, '!isSingle');
 
@@ -106,12 +106,12 @@ test('== HasOne ==', t => {
   });
 
 
-  t.test('HasOne#target() - single target with composite key', t => {
+  t.test('HasOne#of() - single target with composite key', t => {
     const Foos = Mapper.table('foos').idAttribute(['pk_a', 'pk_b']);
     const Bars = Mapper.table('bars');
 
     const foo = { pk_a: 1, pk_b: 2 };
-    const Bar = new HasOne(Foos, Bars).target(foo);
+    const Bar = new HasOne(Foos, Bars).of(foo);
 
     t.equal(Bar.requireState('isSingle'), true, 'isSingle');
 
@@ -133,12 +133,12 @@ test('== HasOne ==', t => {
     t.end();
   });
 
-  t.test('HasOne#target() - multiple targets with composite key', t => {
+  t.test('HasOne#of() - multiple targets with composite key', t => {
     const Foos = Mapper.table('foos').idAttribute(['pk_a', 'pk_b']);
     const Bars = Mapper.table('bars');
 
     const foo = [{ pk_a: 1, pk_b: 2 }, { pk_a: 4, pk_b: 5 }];
-    const Bar = new HasOne(Foos, Bars).target(foo);
+    const Bar = new HasOne(Foos, Bars).of(foo);
 
     t.equal(Bar.requireState('isSingle'), false, 'isSingle');
 
@@ -176,8 +176,6 @@ test('== HasOne ==', t => {
     ];
 
     const related = hasOne.mapRelated(selves, others);
-
-    console.log('related', related);
 
     t.deepEqual(selves[0], { id_a: 1, id_b: 2 },
       `original record is unchanged`

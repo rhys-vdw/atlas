@@ -77,7 +77,7 @@ export default class BelongsToMany {
     });
   }
 
-  target(...targetIds) {
+  of(...targetIds) {
     const {
       Self, Other, selfAttribute, otherAttribute, pivotSelfTableColumn
     } = this;
