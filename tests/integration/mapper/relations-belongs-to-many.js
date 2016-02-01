@@ -22,7 +22,7 @@ const tables = {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex } = atlas;
+  const { knex, related } = atlas;
   const { belongsToMany } = atlas.relations;
 
   test('Mapper - relations - BelongsToMany', t => {
@@ -117,7 +117,7 @@ export default function(atlas) {
       });
     });
 
-    t.databaseTest('`Mapper#loadInto()`', knex, tables, st => {
+    t.databaseTest('`Mapper#load()`', knex, tables, st => {
 
       const Groups = Mapper.table('groups');
 
@@ -147,7 +147,7 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.loadInto({ id: 1, name: 'dean' }, 'groups'),
+            Users.load(related('groups')).into({ id: 1, name: 'dean' }),
             { id: 1, name: 'dean', groups: [
               { _pivot_user_id: 1, id: 10, name: `General` },
               { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
@@ -155,7 +155,7 @@ export default function(atlas) {
             'loads into single record'
           ),
           st.resolvesToDeep(
-            Users.loadInto([sarah, baz], 'groups'), [
+            Users.load(related('groups')).into(sarah, baz), [
               { id: 2, name: 'Sarah', groups: [
                 { _pivot_user_id: 2, id: 10, name: `General` },
                 { _pivot_user_id: 2, id: 12, name: `Off topic` }
@@ -168,7 +168,7 @@ export default function(atlas) {
 
           ),
           st.resolvesToDeep(
-            Users.loadInto([dean, other], 'groups'), [
+            Users.load(related('groups')).into(dean, other), [
               { id: 1, name: 'dean', groups: [
                 { _pivot_user_id: 1, id: 10, name: `General` },
                 { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
@@ -180,7 +180,7 @@ export default function(atlas) {
       });
     });
 
-    t.databaseTest('`Mapper#withRelated()`', knex, tables, st => {
+    t.databaseTest('`Mapper#with()`', knex, tables, st => {
 
       const Groups = Mapper.table('groups');
 
@@ -209,7 +209,7 @@ export default function(atlas) {
       ])).then(() => {
 
         return st.resolvesToDeep(
-          Users.query('orderBy', 'id').withRelated('groups').fetch(), [
+          Users.query('orderBy', 'id').with(related('groups')).fetch(), [
             { id: 1, name: 'Dean', groups: [
               { _pivot_user_id: 1, id: 10, name: `General` },
               { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }

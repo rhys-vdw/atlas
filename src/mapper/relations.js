@@ -1,16 +1,10 @@
-import Promise from 'bluebird';
-import { first, zipObject } from 'lodash/array';
-import {
-  values as objectValues, keys as objectKeys, mapValues
-} from 'lodash/object';
-import { map, pluck } from 'lodash/collection';
-import { isArray, isEmpty, isFunction, isString } from 'lodash/lang';
-import RelationTree, { compile, mergeTrees, normalize } from '../relation-tree';
-
-const options = {
-  relations: {},
-  withRelated: new RelationTree(),
-};
+import { flatten } from 'lodash/array';
+import { keys as objectKeys } from 'lodash/object';
+import { reject } from 'lodash/collection';
+import { isEmpty, isFunction, isString } from 'lodash/lang';
+import { isRelated } from '../related';
+import EagerLoader from '../eager-loader';
+import { inspect } from 'util';
 
 const methods = {
 
@@ -44,63 +38,29 @@ const methods = {
     return createRelation(this);
   },
 
-  withRelated(...relations) {
+  with(...related) {
+    const flattened = flatten(related);
 
-    // Special case for `withRelated()`, `withRelated(true)` and
-    // `withRelated(false)`.
-    const allFlag = first(relations);
-
-    // Include all relations defined on model.
-    if (isEmpty(relations) || allFlag === true) {
-      const relationNames = this.getRelationNames();
-      return this.setState({ withRelated: compile(...relationNames) });
+    if (isEmpty(flattened)) {
+      return this;
     }
 
-    // Include no relations.
-    if (allFlag === false) {
-      return this.setState({ withRelated: new RelationTree() });
-    }
+    const invalid = reject(flattened, isRelated);
+    if (!isEmpty(invalid)) throw new TypeError(
+      `Expected instance(s) of Related, got: ${inspect(invalid)}`
+    );
 
-    // Otherwise merge in tree.
+    const previous = this.state.related || [];
+
     return this.setState({
-      withRelated: mergeTrees(this.state.withRelated, compile(...relations))
+      related: [ ...previous, ...flattened ]
     });
   },
 
-  loadInto(records, relationTree) {
-
-    // This is a no-op if no relations are specified.
-    if (isEmpty(relationTree)) {
-      return Promise.resolve(records);
-    }
-
-    const tree = normalize(relationTree);
-    const atlas = this.requireState('atlas');
-
-    return Promise.props(mapValues(tree, ({ initializer, nested }, name) => {
-
-      const relation = this.getRelation(name);
-
-      return atlas(relation.of(records)).withMutations({
-        withMutations: initializer,
-        withRelated: nested
-      }).fetch().then(related => relation.mapRelated(records, related));
-
-    })).then(relatedByName => {
-
-      if (!isArray(records)) {
-        return this.setRelated(records, relatedByName);
-      }
-
-      const names = objectKeys(relatedByName);
-      const mapped = objectValues(relatedByName);
-
-      return map(records, (record, index) =>
-        this.setRelated(record, zipObject(names, pluck(mapped, index)))
-      );
-    });
+  load(...related) {
+    return new EagerLoader(this, flatten(related));
   }
 
 };
 
-export default { methods, options };
+export default { methods };

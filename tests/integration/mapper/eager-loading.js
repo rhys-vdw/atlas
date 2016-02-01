@@ -4,7 +4,7 @@ import test from 'tape';
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex, register, relations } = atlas;
+  const { knex, register, related, relations } = atlas;
   const { hasMany, belongsTo, belongsToMany } = relations;
 
   test('Mapper - eager loading', t => {
@@ -65,9 +65,9 @@ export default function(atlas) {
       ])).then(() => Promise.join(
 
         st.resolvesToDeep(
-          atlas('Actors').withRelated({
-            movies: { pivotAttributes: ['character_name'] }
-          }).find(1),
+          atlas('Actors').with(
+            related('movies').mapper({pivotAttributes: 'character_name'})
+          ).find(1),
           { id: 1, name: 'Kurt Russel', movies: [
             { _pivot_actor_id: 1, _pivot_character_name: 'MacReady',
               id: 1, title: 'The Thing', director_id: 1 },
@@ -80,7 +80,7 @@ export default function(atlas) {
         ),
 
         st.resolvesToDeep(
-          atlas('Actors').withRelated('movies.director').find(2),
+          atlas('Actors').with(related('movies').with(related('director'))).find(2),
           { id: 2, name: 'James Spader', movies: [
             { _pivot_actor_id: 2, id: 3, title: 'Stargate', director_id: 2,
               director: { id: 2, name: 'Roland Emmerich' }
@@ -91,7 +91,7 @@ export default function(atlas) {
 
         st.resolvesToDeep(
           atlas('Directors')
-          .withRelated('movies.cast', 'movies.director')
+          .with(related('movies').with(related('cast', 'director')))
           .fetch(),
           [ { id: 1,
               name: 'John Carpenter',
@@ -119,7 +119,7 @@ export default function(atlas) {
                  director: { id: 2, name: 'Roland Emmerich' }
                } ]
           }]
-        , 'eager loads two subchildren')
+        , 'eager loads two nested beneath')
 
       ));
     });
@@ -151,35 +151,38 @@ export default function(atlas) {
           { id: 8, value: 's', next_id: null }
       ]).then(() => Promise.join(
 
-          st.resolvesToDeep(
-            atlas('Nodes').withRelated('next.next.next').find(2),
-            { id: 2, value: 't', next_id: 3, next:
-            { id: 3, value: 'l', next_id: 4, next:
-            { id: 4, value: 'a', next_id: 5, next:
-            { id: 5, value: 's', next_id: 6 } } } },
-            'resolves `next.next.next`'
-          ),
+        st.resolvesToDeep(
+          atlas('Nodes').with(
+            related('next').with(
+              related('next').with(
+                related('next')))).find(2),
+          { id: 2, value: 't', next_id: 3, next:
+          { id: 3, value: 'l', next_id: 4, next:
+          { id: 4, value: 'a', next_id: 5, next:
+          { id: 5, value: 's', next_id: 6 } } } },
+          'resolves explicit nested recursions'
+        ),
 
-          st.resolvesToDeep(
-            atlas('Nodes').withRelated('next^2').find(2),
-            { id: 2, value: 't', next_id: 3, next:
-            { id: 3, value: 'l', next_id: 4, next:
-            { id: 4, value: 'a', next_id: 5, next:
-            { id: 5, value: 's', next_id: 6 } } } },
-            'resolves `next^3`'
-          ),
+        st.resolvesToDeep(
+          atlas('Nodes').with(related('next').recursions(2)).find(2),
+          { id: 2, value: 't', next_id: 3, next:
+          { id: 3, value: 'l', next_id: 4, next:
+          { id: 4, value: 'a', next_id: 5, next:
+          { id: 5, value: 's', next_id: 6 } } } },
+          'resolves the same recursion using `recursions(count)`'
+        ),
 
-          st.resolvesToDeep(
-            atlas('Nodes').withRelated('next^Infinity').find(2),
-            { id: 2, value: 't', next_id: 3, next:
-            { id: 3, value: 'l', next_id: 4, next:
-            { id: 4, value: 'a', next_id: 5, next:
-            { id: 5, value: 's', next_id: 6, next:
-            { id: 6, value: '.', next_id: 7, next:
-            { id: 7, value: 'j', next_id: 8, next:
-            { id: 8, value: 's', next_id: null, next: null} } } } } } },
-            'resolves `next^Infinity`'
-          )
+        st.resolvesToDeep(
+          atlas('Nodes').with(related('next').recursions(Infinity)).find(2),
+          { id: 2, value: 't', next_id: 3, next:
+          { id: 3, value: 'l', next_id: 4, next:
+          { id: 4, value: 'a', next_id: 5, next:
+          { id: 5, value: 's', next_id: 6, next:
+          { id: 6, value: '.', next_id: 7, next:
+          { id: 7, value: 'j', next_id: 8, next:
+          { id: 8, value: 's', next_id: null, next: null} } } } } } },
+          'resolves an infinite recursion'
+        )
 
       ));
     });
