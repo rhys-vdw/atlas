@@ -10,7 +10,7 @@ export const initialize = (toMapper = identity) => ({
   belongsTo: (Other, options) => (Self) =>
     new BelongsTo(Self, toMapper(Other), options),
 
-  belongsToMany: (Other, { Pivot, ...options}) => (Self) =>
+  belongsToMany: (Other, { Pivot, ...options }) => (Self) =>
     new BelongsToMany(Self, toMapper(Other), toMapper(Pivot), options),
 
   hasMany: (Other, options) => (Self) =>

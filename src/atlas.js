@@ -2,6 +2,7 @@ import 'babel-polyfill';
 import Registry from './registry';
 import Mapper from './mapper';
 import { initialize as initializeRelations } from './relations';
+import { related } from './related';
 import { isObject, isString } from 'lodash/lang';
 import { each } from 'lodash/collection';
 
@@ -46,12 +47,17 @@ export default function Atlas(knex, registry = createRegistry()) {
     return atlas;
   };
 
-  atlas.transaction = (callback) => knex.transaction(trx =>
+  // Create transaction method.
+  atlas.transaction = callback => knex.transaction(trx =>
     callback(createAtlas(trx, registry))
   );
 
+  // Initialize and assign relation builders.
   const toMapper = createToMapper(registry);
   atlas.relations = initializeRelations(toMapper);
+
+  // Assign `related` helper for eager loading definitions.
+  atlas.related = related;
 
   return atlas;
 }

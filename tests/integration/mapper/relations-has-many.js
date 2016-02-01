@@ -15,7 +15,7 @@ function postsTable(posts) {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex } = atlas;
+  const { knex, related } = atlas;
   const { hasMany } = atlas.relations;
 
   test('Mapper - relations - HasMany', t => {
@@ -80,7 +80,7 @@ export default function(atlas) {
       });
     });
 
-    t.databaseTest('`Mapper#loadInto()`', knex, { posts: postsTable }, st => {
+    t.databaseTest('`Mapper#load()`', knex, { posts: postsTable }, st => {
 
       const Posts = Mapper.table('posts');
 
@@ -103,7 +103,7 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.loadInto(dean, 'posts'),
+            Users.load(related('posts')).into(dean),
             { id: 1, name: 'dean', posts: [
                 { id: 10, author_id: 1, message: `Dean's first post` },
                 { id: 13, author_id: 1, message: `Dean again` },
@@ -111,7 +111,7 @@ export default function(atlas) {
             'loads into single record'
           ),
           st.resolvesToDeep(
-            Users.loadInto([sarah, baz], 'posts'), [
+            Users.load(related('posts')).into(sarah, baz), [
               { id: 2, name: 'Sarah', posts: [
                 { id: 12, author_id: 2, message: `Hello I'm Sarah` },
               ] },
@@ -122,7 +122,7 @@ export default function(atlas) {
             ], 'loads into multiple records'
           ),
           st.resolvesToDeep(
-            Users.loadInto([dean, other], 'posts'), [
+            Users.load(related('posts')).into(dean, other), [
               { id: 1, name: 'dean', posts: [
                 { id: 10, author_id: 1, message: `Dean's first post` },
                 { id: 13, author_id: 1, message: `Dean again` },
@@ -134,7 +134,7 @@ export default function(atlas) {
       });
     });
 
-    t.databaseTest('`Mapper#withRelated()`', knex, {
+    t.databaseTest('`Mapper#with()`', knex, {
       users: usersTable, posts: postsTable
     }, st => {
 
@@ -158,7 +158,7 @@ export default function(atlas) {
       ])).then(() => {
 
         return st.resolvesToDeep(
-          Users.query('orderBy', 'id').withRelated('posts').fetch(), [
+          Users.query('orderBy', 'id').with(related('posts')).fetch(), [
             { id: 1, name: 'Dean', posts: [
                 { id: 10, author_id: 1, message: `Dean's first post` },
                 { id: 13, author_id: 1, message: `Dean again` },

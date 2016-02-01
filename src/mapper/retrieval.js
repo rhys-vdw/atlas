@@ -84,8 +84,8 @@ const methods = {
     return queryBuilder.then(response =>
       mapper.handleFetchResponse({ queryBuilder, response })
     ).then(records => {
-      const { withRelated } = this.state;
-      return this.loadInto(records, withRelated);
+      const { related } = this.state;
+      return related == null ? records : this.load(related).into(records);
     });
   },
 

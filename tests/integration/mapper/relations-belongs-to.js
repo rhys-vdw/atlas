@@ -15,7 +15,7 @@ function postsTable(posts) {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex } = atlas;
+  const { knex, related } = atlas;
   const { belongsTo } = atlas.relations;
 
   test('Mapper - relations - belongsTo', t => {
@@ -71,7 +71,7 @@ export default function(atlas) {
 
     });
 
-    t.databaseTest('`Mapper#loadInto()`', knex, { users: usersTable }, st => {
+    t.databaseTest('`Mapper#load()`', knex, { users: usersTable }, st => {
 
       const Users = Mapper.table('users');
 
@@ -94,14 +94,14 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Posts.loadInto(deanA, 'author'),
+            Posts.load(related('author')).into(deanA),
             { id: 10, author_id: 1, message: `Dean's first post`, author:
               { id: 1, name: 'Dean' }
             },
             'loads into single record'
           ),
           st.resolvesToDeep(
-            Posts.loadInto([sarahA, barryA], 'author'), [
+            Posts.load(related('author')).into(sarahA, barryA), [
               { id: 12, author_id: 2, message: `Hello I'm Sarah`, author:
                 { id: 2, name: 'Sarah' }
               },
@@ -111,7 +111,7 @@ export default function(atlas) {
             ], 'loads into multiple records'
           ),
           st.resolvesToDeep(
-            Posts.loadInto([deanA, deanB], 'author'), [
+            Posts.load(related('author')).into(deanA, deanB), [
               { id: 10, author_id: 1, message: `Dean's first post`, author:
                 { id: 1, name: 'Dean' }
               },
@@ -121,7 +121,7 @@ export default function(atlas) {
             ], 'loads the same author into two records'
           ),
           st.resolvesToDeep(
-            Posts.loadInto([deanB, deletedAuthor], 'author'), [
+            Posts.load(related('author')).into(deanB, deletedAuthor), [
               { id: 13, author_id: 1, message: `Dean again`, author:
                 { id: 1, name: 'Dean' }
               },
@@ -129,7 +129,7 @@ export default function(atlas) {
             ], 'loads related into one record and null into another'
           ),
           st.resolvesToDeep(
-            Posts.loadInto(noAuthor, 'author'),
+            Posts.load(related('author')).into(noAuthor),
             { id: 15, author_id: null, message: `anonymous`, author: null },
             'loads relation as null when foreign key is null'
           )
@@ -137,7 +137,7 @@ export default function(atlas) {
       });
     });
 
-    t.databaseTest('`Mapper#withRelated()`', knex, {
+    t.databaseTest('`Mapper#with()`', knex, {
       users: usersTable, posts: postsTable
     }, st => {
 
@@ -162,7 +162,7 @@ export default function(atlas) {
       ])).then(() => {
 
         return st.resolvesToDeep(
-          Posts.withRelated('author').fetch(), [
+          Posts.with(related('author')).fetch(), [
             { id: 10, author_id: 1, message: `Dean's first post` , author:
               { id: 1, name: 'Dean' }
             },

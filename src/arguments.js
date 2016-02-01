@@ -36,8 +36,7 @@ export function isSingleRecord(...records) {
 export function normalizeRecords(...records) {
   if (isEmpty(records)) {
     throw new TypeError(
-      `Excepted 'records' to contain one or more records or an arrays of ` +
-      `records`
+      `Expected 'records' to contain one or more records or arrays of records`
     );
   }
 

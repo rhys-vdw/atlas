@@ -15,7 +15,7 @@ function avatarsTable(avatars) {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex, relations: { hasOne } } = atlas;
+  const { knex, related, relations: { hasOne } } = atlas;
 
   test('Mapper - relations - HasOne', t => {
 
@@ -80,7 +80,7 @@ export default function(atlas) {
       });
     });
 
-    t.databaseTest('`Mapper#loadInto()`', knex, {
+    t.databaseTest('`Mapper#load()`', knex, {
       avatars: avatarsTable
     }, st => {
 
@@ -103,14 +103,14 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.loadInto(dean, 'avatar'),
+            Users.load(related('avatar')).into(dean),
             { id: 1, name: 'dean', avatar:
               { id: 10, user_id: 1, image_path: './dean.jpg' }
             },
             'loads into single record'
           ),
           st.resolvesToDeep(
-            Users.loadInto([sarah, baz], 'avatar'), [
+            Users.load(related('avatar')).into(sarah, baz), [
               { id: 2, name: 'Sarah', avatar:
                 { id: 12, user_id: 2, image_path: './sarah.jpg' }
               }, { id: 3, name: 'Baz', avatar:
@@ -119,17 +119,17 @@ export default function(atlas) {
             ], 'loads into multiple records'
           ),
           st.resolvesToDeep(
-            Users.loadInto([dean, other], 'avatar'), [
+            Users.load(related('avatar')).into(dean, other), [
               { id: 1, name: 'dean', avatar:
                 { id: 10, user_id: 1, image_path: './dean.jpg' }
               }, { id: 4, name: 'Other', avatar: null }
             ], 'loads null into one record and null into another'
           )
-        );
+        )
       });
     });
 
-    t.databaseTest('`Mapper#withRelated()`', knex, {
+    t.databaseTest('`Mapper#with()`', knex, {
       users: usersTable, avatars: avatarsTable
     }, st => {
 
@@ -151,7 +151,7 @@ export default function(atlas) {
       ])).then(() => {
 
         return st.resolvesToDeep(
-          Users.withRelated('avatar').fetch(), [
+          Users.with(related('avatar')).fetch(), [
             { id: 1, name: 'Dean', avatar:
               { id: 10, user_id: 1, image_path: './dean.jpg' }
             },
