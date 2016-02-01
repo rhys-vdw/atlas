@@ -1,7 +1,6 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
 import Atlas from '../../../lib/atlas';
-import { related } from '../../../lib/related';
 
 test('Mapper - relations unit test', t => {
   t.test('Mapper#relations', t => {
