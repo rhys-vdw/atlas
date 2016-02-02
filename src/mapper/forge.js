@@ -18,7 +18,9 @@ const methods = {
 
   _forgeOne(attributes) {
     const { defaultAttributes } = this.state;
-    return this.createRecord(defaultsResolved(attributes, defaultAttributes));
+    return this.createRecord(
+      defaultsResolved(attributes, defaultAttributes, attributes)
+    );
   }
 };
 

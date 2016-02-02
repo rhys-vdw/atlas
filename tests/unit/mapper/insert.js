@@ -157,12 +157,18 @@ test('== Mapper - insert ==', t => {
     );
 
     const FnDefaults = Mapper.table('table').defaultAttributes({
-      default: () => 'default'
+      default: () => 'default',
+      other: attributes => attributes.value
     });
 
     st.queriesEqual(
-      FnDefaults.prepareInsert({}).toQueryBuilder(),
-      `insert into "table" ("default") values ('default')`
+      FnDefaults.prepareInsert({value: 5}).toQueryBuilder(),
+      `
+      insert into "table"
+        ("default", "other", "value")
+      values
+        ('default', 5, 5)
+      `
     );
 
     st.end();

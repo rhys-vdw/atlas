@@ -89,8 +89,12 @@ const methods = {
       .flatten()
       .compact()
       .map(this.getAttributes, this)
-      .map(attributes => defaultsResolved(attributes, defaultAttributes))
-      .map(attributes => assignResolved(attributes, strictAttributes))
+      .map(attributes =>
+        defaultsResolved(attributes, defaultAttributes, attributes)
+      )
+      .map(attributes =>
+        assignResolved(attributes, strictAttributes, attributes)
+      )
       .map(this.attributesToColumns, this)
       .value();
 

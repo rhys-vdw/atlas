@@ -67,6 +67,7 @@ test('Arguments', t => {
   t.test('resolveObject', st => {
     st.deepEqual(resolveObject(), {});
     st.deepEqual(resolveObject({a: 'a', b: () => 'b'}), {a: 'a', b: 'b'});
+    st.deepEqual(resolveObject({a: 'a', b: a => a}, 'b'), {a: 'a', b: 'b'});
 
     st.end();
   });
@@ -92,6 +93,19 @@ test('Arguments', t => {
       {a: 'a', b: 'b'}
     );
 
+    function unnecessaryDefault() {
+      st.fail('defaultsResolved should not evaluate functions unnecessarily');
+    }
+    st.deepEqual(
+      defaultsResolved(
+        { a: 'a' },
+        { a: unnecessaryDefault, b: (v1, v2) => v1 + v2 },
+        'd', 'e'
+      ),
+      {a: 'a', b: 'de'},
+      `passes arguments to resolver function callbacks`
+    );
+
     st.end();
   });
 
@@ -112,6 +126,15 @@ test('Arguments', t => {
     st.deepEqual(assignResolved({b: 'b'}, {a: 'a'}), {a: 'a', b: 'b'});
     st.deepEqual(assignResolved({b: 'b'}, {b: () => 'a'}), {b: 'a'});
 
+    st.deepEqual(
+      assignResolved(
+        { a: 'a' },
+        { a: (v1, v2) => v1 + v2 },
+        'd', 'e'
+      ),
+      {a: 'de'},
+      `passes arguments to resolver function callbacks`
+    );
     st.end();
   });
 
