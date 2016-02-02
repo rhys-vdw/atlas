@@ -85,9 +85,9 @@ export function ensureArray(maybeArray) {
 /**
  * Resolves any key values of the given object into their return values.
  */
-export function resolveObject(object) {
+export function resolveObject(object, ...args) {
   return mapValues(object, (value, key) =>
-    isFunction(value) ? value(object) : value
+    isFunction(value) ? value(...args) : value
   );
 }
 
@@ -98,19 +98,19 @@ export function resolveObject(object) {
  * @returns {Object}
  *   Target object, or copy of target object with defaults applied.
  */
-export function defaultsResolved(target, source) {
-  const required = omit(source, objectKeys(target));
-  if (isEmpty(required)) {
-    return target || {};
+export function defaultsResolved(target = {}, source, ...args) {
+  const defaults = omit(source, objectKeys(target));
+  if (isEmpty(defaults)) {
+    return target;
   }
-  const defaults = resolveObject(required);
-  return { ...defaults, ...target };
+  const resolved = resolveObject(defaults, ...args);
+  return { ...resolved, ...target };
 }
 
-export function assignResolved(target, source) {
+export function assignResolved(target = {}, source, ...args) {
   return isEmpty(source)
-    ? target || {}
-    : { ...target, ...resolveObject(source) };
+    ? target
+    : { ...target, ...resolveObject(source, ...args) };
 }
 
 export function keyValueToObject(key, value) {

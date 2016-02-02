@@ -1,6 +1,6 @@
 import { isArray, isEmpty } from 'lodash/lang';
 import { map, size } from 'lodash/collection';
-import { values as objectValues } from 'lodash/object';
+import { values as objectValues, omit } from 'lodash/object';
 import { first } from 'lodash/array';
 import Promise from 'bluebird';
 
@@ -95,9 +95,12 @@ const methods = {
 
   getUpdateAttributes(record) {
     const idAttribute = this.requireState('idAttribute');
+    const attributes = this.getAttributes(record);
     const { strictAttributes } = this.state;
     return assignResolved(
-      this.omitAttributes(record, idAttribute), strictAttributes
+      omit(attributes, idAttribute),
+      strictAttributes,
+      attributes
     );
   },
 

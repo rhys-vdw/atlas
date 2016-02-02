@@ -190,7 +190,7 @@ test('== Mapper - update ==', t => {
     st.queriesEqual(
       Defaults.prepareUpdate({ id: 1, value: 'value' }).toQueryBuilder(),
       `update "table" set "value" = 'value' where "id" = 1`,
-      'do not affect update query'
+      'does not affect update query'
     );
 
     st.end();
@@ -199,12 +199,13 @@ test('== Mapper - update ==', t => {
   t.test('Mapper.strictAttributes().prepareUpdate()', st => {
 
     const Strict = Mapper.table('table').strictAttributes({
-      strict: 'strict'
+      strict: 'strict',
+      other: attributes => attributes.id
     });
 
     st.queriesEqual(
       Strict.prepareUpdate({ id: 1, strict: 'overridden' }).toQueryBuilder(),
-      `update "table" set "strict" = 'strict' where "id" = 1`
+      `update "table" set "other" = 1, "strict" = 'strict' where "id" = 1`
     );
 
     const FnStrict = Mapper.table('table').strictAttributes({
