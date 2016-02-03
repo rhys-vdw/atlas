@@ -4,18 +4,25 @@ import { NotFoundError } from '../../../lib/errors';
 
 test('Mapper', t => {
 
-  t.test('Mapper#destroy() - no arguments', t => {
-    const TABLE = 'TABLE';
-
-    const destroyMapper = mapper.table(TABLE).prepareDestroy();
+  t.test('Mapper#destroyAll() - no arguments', t => {
+    const destroyMapper = mapper.table('table').prepareDestroyAll();
     const queryBuilder = destroyMapper.toQueryBuilder();
     const result = destroyMapper._handleDestroyResponse({
       queryBuilder, response: 5
     });
 
-    t.queriesEqual(queryBuilder, `delete from "${TABLE}"`);
+    t.queriesEqual(queryBuilder, `delete from "table"`);
     t.equal(result, 5, 'resolves to deleted count');
 
+    t.end();
+  });
+
+  t.test('Mapper#prepareDestroy() - single ID value', t => {
+    t.throws(() =>
+      mapper.table('table').prepareDestroy(),
+      TypeError,
+      `throws TypeError with no arguments`
+    );
     t.end();
   });
 
@@ -23,7 +30,6 @@ test('Mapper', t => {
 
     const destroyMapper = mapper
       .table('table')
-      .require()
       .prepareDestroy(5);
 
     const queryBuilder = destroyMapper.toQueryBuilder();
@@ -37,13 +43,18 @@ test('Mapper', t => {
     );
     t.equal(result, 1, 'resolves to deleted count');
 
+    t.doesNotThrow(
+      () => destroyMapper._handleDestroyResponse({
+        queryBuilder, response: 0
+      }),
+      'does not throw when not required and no rows changed'
+    );
+
     t.throws(
-      () => destroyMapper
-        .require()
-        ._handleDestroyResponse({
-          queryBuilder, response: 0
-        })
-      , NotFoundError,
+      () => destroyMapper.require()._handleDestroyResponse({
+        queryBuilder, response: 0
+      }),
+      NotFoundError,
       'throws `NotFoundError` when required and no rows changed'
     );
     t.end();

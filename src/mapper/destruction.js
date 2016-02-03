@@ -1,5 +1,6 @@
 import { isEmpty } from 'lodash/lang';
 import { NotFoundError, NoRowsFoundError } from '../errors';
+import { inspect } from 'util';
 
 const methods = {
 
@@ -12,9 +13,9 @@ const methods = {
    *
    * @description
    *
-   * Delete all rows matching the current query, or specify specific rows to be
-   * deleted. Rows can be specified by supplying one or more record objects with
-   * IDs, or ID values.
+   * Delete all rows matching the current query, or specify rows to be deleted.
+   * Rows can be specified by supplying one or more record objects with IDs, or
+   * ID values.
    *
    * @example
    *
@@ -49,42 +50,53 @@ const methods = {
    *   Promise resolving to the number of rows deleted.
    */
   destroy(...ids) {
-    const mapper = mapper.prepareDestroy(...ids);
+    const mapper = this.prepareDestroy(...ids);
     const queryBuilder = mapper.toQueryBuilder();
     queryBuilder.then(response =>
-      this._handleDestroyResponse({ response, queryBuilder })
+      mapper._handleDestroyResponse({ response, queryBuilder })
+    );
+  },
+
+  destroyAll() {
+    const mapper = this.prepareDestroyAll();
+    const queryBuilder = mapper.toQueryBuilder();
+    queryBuilder.then(response =>
+      mapper._handleDestroyResponse({ response, queryBuilder })
     );
   },
 
   /**
    * @method Mapper#prepareDestroy
-   * @belongsTo module:mapper/destruction
    * @summary
    *
    * Prepare a delete query.
    *
    * @description
    *
-   * Prepares internal `QueryBuilder` object to deletes rows from the table
-   * assigned to this `Mapper`.
+   * Prepares internal `QueryBuilder` to delete one or more records from the
+   * database.
    *
    * @returns {Mapper}
    *   Mapper with `DELETE` query.
    */
   prepareDestroy(...ids) {
+    if (isEmpty(ids)) throw new TypeError(
+      `'destroy' expects one or more IDs or records, got ${inspect(ids)}. ` +
+      `Did you mean to call 'destroyAll()'?`
+    );
     return this.withMutations(mapper => {
-      if (!isEmpty(ids)) {
-        mapper.target(...ids);
-      }
-      mapper.query('delete');
+      mapper.target(...ids).prepareDestroyAll();
     });
+  },
+
+  prepareDestroyAll() {
+    return this.query('delete');
   },
 
   /** @private **/
   _handleDestroyResponse({ response, queryBuilder }) {
-    if (response === 0) {
-      const { isSingle } = this.state;
-      throw isSingle
+    if (this.state.isRequired && response === 0) {
+      throw this.state.isSingle
         ? new NotFoundError(this, queryBuilder, 'destroy')
         : new NoRowsFoundError(this, queryBuilder, 'destroy');
     }
