@@ -1,5 +1,4 @@
 import Promise from 'bluebird';
-import _ from 'lodash';
 import { isEmpty } from 'lodash/lang';
 import { map } from 'lodash/collection';
 import { NotFoundError, NoRowsFoundError } from '../errors';
@@ -130,11 +129,8 @@ const methods = {
       return isSingle ? null : [];
     }
 
-    const attributes = _(response)
-      .map(this.columnsToAttributes, this)
-      .map(this.createRecord, this);
-
-    return isSingle ? attributes.first() : attributes.value();
+    const records = response.map(row => this.columnsToRecord(row));
+    return isSingle ? records[0] : records;
   }
 };
 
