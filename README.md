@@ -400,7 +400,7 @@ Accounts.find('username@domain.com').then(user =>
 ```js
 const Groups = Mapper
   .table('memberships')
-  .idAttribute(['user_id'], ['group_id']);
+  .idAttribute(['user_id', 'group_id']);
 ```
 
 #### `Mapper.forge()`
