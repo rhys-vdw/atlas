@@ -426,8 +426,8 @@ const Messages = Mapper.tables('messages').defaultAttributes({
 });
 
 const messages = Messages.forge(
-  { message: 'How's it goin?' },
-  { message: 'Out of beer!', urgency: 'critical' }
+  { message: `How's it goin?` },
+  { message: `Out of beer!`, urgency: `critical` }
 );
 // [
 //   { message: 'How's it goin?', created_at: '2015-11-28', urgency: 'low' },
