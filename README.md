@@ -820,3 +820,79 @@ Posts.with(related('author')).fetch().then(postsWithAuthor => /* ... */);
 ```
 
 *See `Mapper.relations()` for example of how to set up this schema.*
+
+#### `Mapper.getRelation().of()`
+
+```
+Mapper.getRelation(relationName:string) -> Relation
+Relation.of(...records:Object|Object[]) -> Mapper
+```
+
+Get a named `Relation` instance from a `Mapper`.
+
+The relation can be converted into a Mapper matching records in that relation.
+Each `Relation` type (`BelongsTo`, `BelongsToMany`, `HasOne` and `HasMany`)
+provides an `of()` method that accepts one or more records.
+
+```js
+atlas.register({
+
+  Projects: Mapper.table('projects').relations({
+    owner: belongsTo('People', { selfRef: 'owner_id' })
+  }),
+
+  People: Mapper.table('people').relations({
+    projects: hasMany('Projects', { otherRef: 'owner_id' })
+  })
+
+});
+
+// Assuming `req.user` is added by auth middleware (eg. Passport.js).
+
+// Simple `GET` route, scoped by user.
+express.route('/projects').get((req, res) =>
+  atlas('People').getRelation('projects').of(req.user).then(projects =>
+    res.json(projects)
+  )
+);
+```
+
+```js
+// Alternative to above - share relation `Mapper` between between `GET` and
+// `POST`.
+express.route('/projects').all((req, res) => {
+  req.Projects = atlas('People').getRelation('projects').of(req.user)
+  next();
+}).get((req, res) =>
+  req.Projects.fetch().then(res.json)
+).post((req, res) =>
+  req.Projects.save(req.body).then(res.json)
+);
+
+express.route('/projects/:projectId').all((req, res) => {
+  req.Project = atlas('People').getRelation('projects').of(req.user).target(
+    req.params.projectId
+  ).require();
+  next();
+}).get((req, res) =>
+  req.Project.fetch().then(res.json)
+).put((req, res) =>
+  // Automatically overrides `owner_id` before insert, regardless of `req.body`.
+  req.Projects.save(req.body).then(res.json)
+);
+```
+
+This also allows querying on a relation of multiple parents.
+
+```js
+const bob = { id: 1, name: 'Bob' };
+const sue = { id: 2, name: 'Sue' };
+
+// select * from projects where owner_id in (1, 2)
+Users.getRelation('projects').of(bob, sue).then(projects => {
+  console.log(
+    'Projects belonging to either Bob or Sue:\n' +
+    projects.map(p => p.name)
+  );
+});
+```
