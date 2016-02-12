@@ -795,8 +795,8 @@ Mapper.load(...related:Related|Related[]) -> EagerLoader
 EagerLoader.into(...records) -> Promise<Object|Object[]>
 ```
 
-Attach related records to records that already exist. Essentially `with()`
-for use when records already exist.
+Attach related records to records that already exist. Much like `with()`, but to
+be used when records already exist.
 
 `load()` returns an instance of `EagerLoader`. `EagerLoader` exposes a
 single method, `into()`. eg:
@@ -896,3 +896,189 @@ Users.getRelation('projects').of(bob, sue).then(projects => {
   );
 });
 ```
+
+### `Related`
+
+`Related` is a helper user to describe relation trees. Instances are passed to
+`Mapper.with` and `Mapper.load` for eager loading.
+
+For brevity, a convenience function `atlas.related` is provided:
+
+```
+related(relationName:string) -> Related
+related(...relationName:string[]) -> Related[]
+```
+
+```js
+Book.where({ author: 'Frank Herbert' })
+  .with(related('coverImage'))
+  .fetch()
+  .then(books => books.map(renderThumbnail));
+
+Book.with(
+  related('chapters', 'coverImage').map(r => r.require())
+).findBy('isbn', '9780575035409').then(book =>
+  renderBook(book)
+);
+```
+
+`Related`, like `Mapper`, inherits from `ImmutableBase`. Subsequent method
+invocations return a copy, rather than mutating the `Related` instance.
+
+Reusing a `Related` instance for paginated relation:
+
+```js
+const { related } = atlas;
+const pageSize = 20;
+const postsPage = related('inboxEmails')
+  .mapper(m => m.orderBy('created_at').limit(pageSize))
+  .require();
+
+express.get('/board/:boardName', (req, res) =>
+  const page = req.query.page || 0;
+  const posts = postsPage.mapper({ offset: pageSize });
+  Board.with(posts).findBy('name', req.params.boardName).then(board => {
+    res.html(renderBoard(board));
+  }).catch(NoRowFoundError, error =>
+    res.status(404).html(render404())
+  );
+});
+```
+
+#### `Related.as`
+
+```
+Related.as() -> Related
+```
+
+Alias a relation.
+
+Changes the key by which related records are attached to their parents.
+
+```js
+Player.with(
+  related('inventory').mapper({ where: { type: 'weapon' } }).as('weapons'),
+  related('inventory').mapper({ where: { type: 'armor' } }).as('armor')
+).findBy('username', username).then(player => {
+  game.addPlayer(player);
+});
+```
+
+#### `Related.mapper`
+
+```
+Related.mapper(...initializers:string|Object|function) -> Related
+```
+
+Queue up initializers for the `Mapper` instance used to query the relation.
+Accepts the same arguments as `Mapper.withMutations`.
+
+```js
+Account.with(related('inboxMessages').mapper(m =>
+  m.where({ unread: true })
+)).fetch().then(account => // ...
+
+Account.with(
+  related('inboxMessages').mapper({ where: { unread: true } })
+).fetch().then(account => // ...
+```
+
+#### `Related.require`
+
+```
+Related.require() -> Related
+```
+
+Return a new `Related` instance that will throw if no records are returned.
+Currently this is just a passthrough to `Mapper.require()`
+
+#### `Related.with`
+
+```
+Related.with(...related) -> Related
+```
+
+Fetch relations of relations.
+
+```js
+atlas('Actors').with(
+  related('movies').with(related('director'))
+).findBy('name', 'James Spader').then(actor =>
+  assert.deepEqual(
+    actor,
+    { id: 2, name: 'James Spader', movies: [
+      { _pivot_actor_id: 2, id: 3, title: 'Stargate', director_id: 2,
+        director: { id: 2, name: 'Roland Emmerich' }
+      },
+      // ...
+    ]},
+  )
+);
+```
+
+#### `Related.recursions()`
+
+```
+Related.recursions(recursionCount) -> Related
+```
+
+Fetch a relation recursively.
+
+```js
+Person.with(
+  related('father').recursions(3)
+).findBy('name', 'Kim Jong-un').then(person => {
+ assert.deepEqual(person, {
+   id: 4,
+   name: 'Kim Jong-un',
+   father_id: 3,
+   father: {
+     id: 3,
+     name: 'Kim Jong-il',
+     father_id: 2,
+     father: {
+       id: 2,
+       name: 'Kim Il-sung',
+       father_id: 1,
+       father: {
+         id: 1,
+         name: 'Kim Hyong-jik',
+         father_id: null
+       }
+     }
+   }
+ });
+})
+```
+
+```js
+knex('nodes').insert([
+    { id: 1, value: 'a', next_id: 2 },
+    { id: 2, value: 't', next_id: 3 },
+    { id: 3, value: 'l', next_id: 4 },
+    { id: 4, value: 'a', next_id: 5 },
+    { id: 5, value: 's', next_id: 6 },
+    { id: 6, value: '.', next_id: 7 },
+    { id: 7, value: 'j', next_id: 8 },
+    { id: 8, value: 's', next_id: null }
+])
+
+atlas.register({
+  Nodes: Mapper.table('nodes').relations({
+    next: belongsTo('Nodes', { selfRef: 'next_id' })
+  })
+});
+
+// Fetch nodes recursively.
+atlas('Nodes').with(
+  related('next').recursions(Infinity)).find(1)
+).then(node =>
+  const values = [];
+  while (node.next != null) {
+    letters.push(node.value);
+    node = node.next;
+  }
+  console.log(values.join('')); // "atlas.js"
+);
+```
+
