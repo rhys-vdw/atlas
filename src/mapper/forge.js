@@ -1,5 +1,5 @@
 import { isArray, isObject } from 'lodash/lang';
-import { defaultsResolved } from '../arguments';
+import { assignResolved, defaultsResolved } from '../arguments';
 
 const methods = {
 
@@ -9,18 +9,27 @@ const methods = {
       return attributes.map(this._forgeOne, this);
     }
 
-    if (isObject(attributes)) {
-      return this._forgeOne(attributes);
-    }
-
-    throw new TypeError('`attributes` must be instance of Object or Array');
+    return this._forgeOne(attributes);
   },
 
   _forgeOne(attributes) {
-    const { defaultAttributes } = this.state;
-    return this.createRecord(
-      defaultsResolved(attributes, defaultAttributes, attributes)
+
+    if (attributes == null) {
+      attributes = {};
+    } else if (!isObject(attributes)) throw new TypeError(
+      `expected 'attributes' to be an object, got: ${attributes}`
     );
+
+    const { defaultAttributes, strictAttributes } = this.state;
+
+    const defaulted = defaultsResolved(
+      attributes, defaultAttributes, attributes
+    );
+    const overridden = assignResolved(
+      defaulted, strictAttributes, defaulted
+    );
+
+    return this.createRecord(overridden);
   }
 };
 

@@ -18,8 +18,8 @@ test('Mapper', t => {
   });
 
   t.test('Mapper#prepareDestroy() - single ID value', t => {
-    t.throws(() =>
-      mapper.table('table').prepareDestroy(),
+    t.throws(
+      () => mapper.table('table').prepareDestroy(),
       TypeError,
       `throws TypeError with no arguments`
     );
