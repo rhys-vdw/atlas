@@ -1,5 +1,6 @@
 import './defaults';
 import './destruction';
+import './forge';
 import './identification';
 import './query';
 import './update';
