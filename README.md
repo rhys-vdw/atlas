@@ -998,17 +998,21 @@ Currently this is just a passthrough to `Mapper.require()`
 Related.with(...related) -> Related
 ```
 
-Fetch relations of relations.
+Fetch nested relations.
 
 ```js
 atlas('Actors').with(
-  related('movies').with(related('director'))
+  related('movies').with(related('director', 'cast'))
 ).findBy('name', 'James Spader').then(actor =>
   assert.deepEqual(
     actor,
     { id: 2, name: 'James Spader', movies: [
       { _pivot_actor_id: 2, id: 3, title: 'Stargate', director_id: 2,
-        director: { id: 2, name: 'Roland Emmerich' }
+        director: { id: 2, name: 'Roland Emmerich' },
+        cast: [
+          { id: 2, name: 'James Spader' },
+          // ...
+        ]
       },
       // ...
     ]},
