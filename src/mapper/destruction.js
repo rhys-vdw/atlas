@@ -52,7 +52,7 @@ const methods = {
   destroy(...ids) {
     const mapper = this.prepareDestroy(...ids);
     const queryBuilder = mapper.toQueryBuilder();
-    queryBuilder.then(response =>
+    return queryBuilder.then(response =>
       mapper._handleDestroyResponse({ response, queryBuilder })
     );
   },
@@ -60,7 +60,7 @@ const methods = {
   destroyAll() {
     const mapper = this.prepareDestroyAll();
     const queryBuilder = mapper.toQueryBuilder();
-    queryBuilder.then(response =>
+    return queryBuilder.then(response =>
       mapper._handleDestroyResponse({ response, queryBuilder })
     );
   },
