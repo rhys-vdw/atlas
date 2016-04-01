@@ -2,7 +2,7 @@ import test from 'tape';
 import Mapper from '../../../lib/mapper';
 import { UnidentifiableRecordError } from '../../../lib/errors';
 
-test('Mapper', t => {
+test('Mapper - target', t => {
 
   t.test('Mapper#target() - one record with single primary key', t => {
 
