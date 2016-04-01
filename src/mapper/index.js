@@ -2,6 +2,7 @@ import _, { assign } from 'lodash';
 
 import ImmutableBase from '../immutable-base';
 
+import Count from './count';
 import Defaults from './defaults';
 import Destruction from './destruction';
 import Forge from './forge';
@@ -25,6 +26,7 @@ class Mapper extends ImmutableBase {
 }
 
 const mixins = [
+  Count,
   Defaults,
   Destruction,
   Forge,

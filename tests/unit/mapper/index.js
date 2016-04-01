@@ -1,3 +1,4 @@
+import './count';
 import './defaults';
 import './destruction';
 import './forge';
