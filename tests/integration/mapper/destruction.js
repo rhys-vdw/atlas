@@ -132,13 +132,13 @@ export default function(atlas) {
       knex, { people: peopleTable }, st => Promise.join(
 
       st.resolvesTo(
-        People.where({ name: 'William' }.destroyAll(),
+        People.where({ name: 'William' }).destroyAll(),
         0,
         'returns 0 for non-existant record'
       ),
 
       st.rejects(
-        People.require().where({ name: 'William' }.destroyAll(),
+        People.require().where({ name: 'William' }).destroyAll(),
         NoRowsFoundError,
         'rejects with `NoRowsFoundError` with `.require()`'
       )
