@@ -5,6 +5,12 @@ import objectToString from 'object-to-string';
 
 import { UnsetStateError } from './errors';
 
+function createSuper(prototype) {
+  return function callSuper(self, methodName, ...args) {
+    return prototype[methodName].apply(self, args);
+  }
+}
+
 export default class ImmutableBase {
 
   /** @private */
@@ -80,30 +86,33 @@ export default class ImmutableBase {
    * Creates an inheriting `ImmutableBase` class with supplied `methods`.
    * Returns an instance of this class.
    *
-   * @param {Object} methods
-   *
+   * @param {Object|function} methodsOrFn
+   *   Object of methods to be mixed into the class. Or a function that returns
+   *   such an object. The function is invoked with a `callSuper` helper
+   *   function.
    */
-  extend(methods) {
+  extend(methodsOrFn) {
 
     // It's not possible to extend an instance in place.
     if (this.isMutable()) throw new Error(
       'cannot call `extend` when mutable'
     );
 
-    // Create a clone of self.
-    class Extended extends this.constructor {}
+    const functions = isFunction(methodsOrFn)
+      ? methodsOrFn(createSuper(this))
+      : methodsOrFn;
 
     // `initialize` is a special case.
-    const initializer = methods.initialize;
-    if (initializer) {
-      delete methods.initialize;
-    }
+    const { initialize, ...methods } = functions;
+
+    // Create a clone of self.
+    class Extended extends this.constructor {}
 
     // Don't allow assigning values directly to the prototype. This can cause
     // problems when reassigning values (eg. `this.x` is shared between all
     // instances).
     if (!every(methods, isFunction)) throw new Error(
-      '`methods` must all be functions'
+      'methods must all be functions'
     );
 
     // Mix in the new methods.
@@ -111,7 +120,7 @@ export default class ImmutableBase {
 
     // Instantiate the new instance.
     return new Extended(this.state)
-      .withMutations(initializer)
+      .withMutations(initialize)
       .asImmutable();
   }
 

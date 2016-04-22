@@ -6,11 +6,9 @@ import ImmutableBase from '../../lib/immutable-base';
 test('ImmutableBase', t => {
 
   t.test('ImmutableBase#setState()', t => {
-    const KEY = 'testKey';
-    const VALUE = 'testValue';
 
     const before = new ImmutableBase();
-    const after = before.setState({ [KEY]: VALUE });
+    const after = before.setState({ testKey: 'testValue' });
 
     t.notEqual(
       before, after,
@@ -23,17 +21,17 @@ test('ImmutableBase', t => {
     );
 
     t.equal(
-      after, after.setState({ [KEY]: VALUE }),
+      after, after.setState({ testKey: 'testValue' }),
       'should not copy when reassigning the same value'
     );
 
     t.equal(
-      after.state[KEY], VALUE,
+      after.state['testKey'], 'testValue',
       'has correct state'
     );
 
     t.throws(
-      () => before.requireState(KEY),
+      () => before.requireState('testKey'),
       'should leave original unchanged (throws on `requireState`)'
     );
 
@@ -42,9 +40,6 @@ test('ImmutableBase', t => {
 
   t.test('ImmutableBase#extend()', t => {
 
-    const KEY = 'testKey';
-    const VALUE = 'testValue';
-
     const methods = {
       a: function() {},
       b: function() {},
@@ -52,7 +47,7 @@ test('ImmutableBase', t => {
     };
 
     const parent = new ImmutableBase()
-      .setState({ [KEY]: VALUE });
+      .setState({ testKey: 'testValue' });
 
     const child = parent.extend(methods);
 
@@ -74,8 +69,35 @@ test('ImmutableBase', t => {
     );
 
     t.equal(
-      child.requireState(KEY), VALUE,
+      child.requireState('testKey'), 'testValue',
       'child has parent options'
+    );
+
+    t.end();
+  });
+
+  t.test('ImmutableBase#callSuper()', t => {
+
+    const parent = new ImmutableBase().extend({
+      lineage() { return `Parent`; }
+    });
+
+    const child = parent.extend(callSuper => ({
+      lineage() {
+        return `Child <- ${callSuper(this, 'lineage')}`;
+      }
+    }));
+
+    const grandchild = child.extend(callSuper => ({
+      lineage() {
+        return `Grandchild <- ${callSuper(this, 'lineage')}`;
+      }
+    }));
+
+    t.equal(parent.lineage(), `Parent`);
+    t.equal(child.lineage(), `Child <- Parent`);
+    t.equal(grandchild.lineage(),
+      `Grandchild <- Child <- Parent`
     );
 
     t.end();
