@@ -137,8 +137,10 @@ test('== Mapper - update ==', t => {
       'result is correct when response is row data array'
     );
 
-    st.equal(result, record,
-      'record is mutated in place when response is row data array'
+    st.deepEqual(
+      record,
+      { id: 5, name: 'Bob' },
+      'original record is unchanged'
     );
 
     st.end();

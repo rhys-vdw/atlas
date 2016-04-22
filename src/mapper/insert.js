@@ -156,7 +156,7 @@ const methods = {
     //
     const idAttribute = this.requireState('idAttribute');
     if (!isArray(idAttribute)) {
-      return this.setAttribute(record, idAttribute, returned);
+      return this.setAttributes(record, { [idAttribute]: returned });
     }
   },
 

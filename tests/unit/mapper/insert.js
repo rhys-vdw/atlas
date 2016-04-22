@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import test from 'tape';
 import Knex from 'knex';
 
@@ -124,17 +123,16 @@ test('== Mapper - insert ==', t => {
 
     const result = Oranges.handleInsertManyResponse(response, oranges);
 
-    _(oranges).zip(result).each(([inserted, returned], index) => {
-      t.equal(inserted, returned, `record ${index} is mutated`);
-    }).value();
+    t.deepEqual(oranges[0], { name: 'valencia' }, 'record 0 is unchanged');
+    t.deepEqual(oranges[1], { name: 'navel' }, 'record 1 is unchanged');
 
     t.deepEqual(
-      response,
+      result,
       [
         { id: 1, name: 'valencia', created_at: 'some_date' },
         { id: 2, name: 'navel', created_at: 'some_time' }
       ],
-      'assigns ID attribute to first record only'
+      'returns updates records'
     );
 
     t.end();

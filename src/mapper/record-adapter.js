@@ -16,20 +16,12 @@ const methods = {
     return record[attribute];
   },
 
-  /** @protected */
-  setAttribute(record, attribute, value) {
-    record[attribute] = value;
-    return record;
-  },
-
   /**
    * Optionally override this with `getAttribute`. Will work either way.
    * @protected
    */
   setAttributes(record, attributes) {
-    return reduce(attributes, (accumulator, value, attribute) =>
-      this.setAttribute(accumulator, attribute, value)
-    , record);
+    return { ...record, ...attributes };
   },
 
   /** @protected */
