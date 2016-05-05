@@ -1,8 +1,10 @@
 import Promise from 'bluebird';
 import { isEmpty } from 'lodash/lang';
 import { map } from 'lodash/collection';
+import { flatten } from 'lodash/array';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 import { PIVOT_PREFIX } from '../constants';
+import { isQueryBuilderSpecifyingColumns } from './helpers/knex';
 
 const options = {
   isRequired: false,
@@ -10,6 +12,11 @@ const options = {
 };
 
 const methods = {
+
+  pick(...attributes) {
+    const columns = flatten(attributes).map(this.attributeToTableColumn, this);
+    return this.query('select', columns);
+  },
 
   require() {
     return this.setState({ isRequired: true });
@@ -97,23 +104,28 @@ const methods = {
         queryBuilder.limit(1);
       }
 
-      if (!omitPivot) {
-        const { pivotAttributes } = this.state;
+      // Nothing more to do if columns are already specified.
+      if (!isQueryBuilderSpecifyingColumns(queryBuilder)) {
 
-        if (!isEmpty(pivotAttributes)) {
-          const { pivotRelationName, pivotAlias } = this.state;
-          const Pivot = this.getRelation(pivotRelationName).Other;
+        // Always omit pivot if client has specified columns.
+        if (!omitPivot) {
+          const { pivotAttributes } = this.state;
 
-          const pivotColumns = map(pivotAttributes, attribute => {
-            const column = Pivot.attributeToColumn(attribute);
-            return `${pivotAlias}.${column} as ${PIVOT_PREFIX}${column}`;
-          });
+          if (!isEmpty(pivotAttributes)) {
+            const { pivotRelationName, pivotAlias } = this.state;
+            const Pivot = this.getRelation(pivotRelationName).Other;
 
-          queryBuilder.select(pivotColumns);
+            const pivotColumns = map(pivotAttributes, attribute => {
+              const column = Pivot.attributeToColumn(attribute);
+              return `${pivotAlias}.${column} as ${PIVOT_PREFIX}${column}`;
+            });
+
+            queryBuilder.select(pivotColumns);
+          }
         }
-      }
 
-      queryBuilder.select(this.columnToTableColumn('*'));
+        queryBuilder.select(this.columnToTableColumn('*'));
+      }
     });
   },
 

@@ -17,6 +17,26 @@ test('Mapper', t => {
     t.end();
   });
 
+  t.test('Mapper().destroyAll() - with join', t => {
+    const Selves = mapper.table('selves')
+      .idAttribute('s_id')
+      .query(query => {
+        query.join('others', 'selves.other_id', 'others.o_id');
+      }).prepareDestroyAll();
+
+    const queryBuilder = Selves.toQueryBuilder();
+
+    t.queriesEqual(queryBuilder, `
+      delete from "selves" where "selves"."s_id" in (
+        select "selves"."s_id"
+        from "selves"
+        inner join "others" on "selves"."other_id" = "others"."o_id"
+      )
+    `);
+
+    t.end();
+  });
+
   t.test('Mapper#prepareDestroy() - single ID value', t => {
     t.throws(
       () => mapper.table('table').prepareDestroy(),

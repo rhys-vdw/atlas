@@ -11,3 +11,4 @@ import './update-all';
 import './retrieval';
 import './target';
 import './relations';
+import './helpers/knex';

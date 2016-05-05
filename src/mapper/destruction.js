@@ -1,6 +1,7 @@
 import { isEmpty } from 'lodash/lang';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 import { inspect } from 'util';
+import { isQueryBuilderJoined } from './helpers/knex';
 
 const methods = {
 
@@ -90,6 +91,13 @@ const methods = {
   },
 
   prepareDestroyAll() {
+    if (isQueryBuilderJoined(this)) {
+      const idAttribute = this.requireState('idAttribute');
+      const inner = this.pick(idAttribute).prepareFetch().toQueryBuilder();
+      return this.withMutations(mapper => {
+        mapper.whereIn(idAttribute, inner).query('delete');
+      });
+    }
     return this.query('delete');
   },
 
