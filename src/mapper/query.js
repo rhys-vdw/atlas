@@ -110,6 +110,9 @@ const methods = {
     if (isFunction(method)) {
       method.call(queryBuilder, queryBuilder);
     } else if (isString(method)) {
+      if (!isFunction(queryBuilder[method])) throw new TypeError(
+        `Unknown method 'QueryBuilder#${method}'`
+      );
       queryBuilder[method](...args);
     }
 
