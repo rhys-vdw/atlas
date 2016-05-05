@@ -26,19 +26,7 @@ const methods = {
   },
 
   whereInMapper(attribute, Other) {
-
     if (!isQueryBuilderSpecifyingColumns(Other)) {
-      const selfTable = this.requireState('table');
-      const otherTable = Other.requireState('table')
-
-      // The `Mapper` must have some columns in its `select` statement.
-      if (selfTable !== otherTable) throw new TypeError(
-        `Cannot 'whereIn' "${selfTable}"."${attribute}" and "${otherTable}". ` +
-        `The supplied mapper must specify a column!`
-      );
-
-      // If this is the same table then it makes sense to default it to the
-      // supplied attribute.
       Other = Other.attributes(attribute);
     }
     const inner = Other.prepareFetch().toQueryBuilder();
