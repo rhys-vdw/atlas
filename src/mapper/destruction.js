@@ -92,13 +92,14 @@ const methods = {
 
   prepareDestroyAll() {
     return this.withMutations(mapper => {
+
+      // Delete statements do not support joins, so filter by ID.
       if (isQueryBuilderJoined(this)) {
-        // Delete statements do not support joins, so filter by ID.
         const idAttribute = this.requireState('idAttribute');
         mapper.whereIn(idAttribute, this);
       }
 
-      return mapper.query('delete');
+      mapper.query('delete');
     });
   },
 

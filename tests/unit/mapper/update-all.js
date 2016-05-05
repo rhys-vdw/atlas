@@ -40,6 +40,30 @@ test('== Mapper - update all ==', t => {
     t.end();
   });
 
+  t.test('Mapper().prepareUpdateAll() - with join', t => {
+
+    const Selves = Mapper.table('selves')
+      .idAttribute('s_id')
+      .query(query => {
+        query.join('others', 'selves.other_id', 'others.o_id');
+      }).prepareUpdateAll({ target: 'new_value' });
+
+    const queryBuilder = Selves.toQueryBuilder();
+
+    t.queriesEqual(queryBuilder, `
+      update "selves"
+      set "target" = 'new_value'
+      where "selves"."s_id" in (
+        select "selves"."s_id"
+        from "selves"
+        inner join "others" on "selves"."other_id" = "others"."o_id"
+      )
+    `);
+
+    t.end();
+  });
+
+
   t.test('Mapper.handleUpdateAllResponse() - receiving row data', t => {
 
     const SomeUsers = Pg.table('users').target(0, 1, 2).require();

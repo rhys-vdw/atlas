@@ -1,6 +1,7 @@
 import { isArray } from 'lodash/lang';
 import { map } from 'lodash/collection';
 import { NoRowsFoundError } from '../errors';
+import { isQueryBuilderJoined } from './helpers/knex';
 
 const methods = {
 
@@ -25,8 +26,17 @@ const methods = {
    *   Attributes to be set on all matched rows.
    */
   prepareUpdateAll(attributes) {
-    const columns = this.attributesToColumns(attributes);
-    return this.query('update', columns, '*');
+    return this.withMutations(mapper => {
+
+      // Update statements do not support joins, so filter by ID.
+      if (isQueryBuilderJoined(this)) {
+        const idAttribute = this.requireState('idAttribute');
+        mapper.whereIn(idAttribute, this);
+      }
+
+      const columns = this.attributesToColumns(attributes);
+      mapper.query('update', columns, '*');
+    });
   },
 
   /**
