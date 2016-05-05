@@ -84,7 +84,7 @@ test('Mapper - retrieval', t => {
     t.throws(
       () => Things.require().handleFetchResponse({ response: [] }),
       NoRowsFoundError,
-      'fires `NoRowsFoundError` when nothing is returned.'
+      'throws `NoRowsFoundError` when nothing is returned.'
     );
 
     const Thing = Things.one();
@@ -92,10 +92,23 @@ test('Mapper - retrieval', t => {
     t.throws(
       () => Thing.require().handleFetchResponse({ response: [] }),
       NotFoundError,
-      'fires `NotFoundError` when single record is not returned.'
+      'throws `NotFoundError` when single record is not returned.'
     );
 
     t.end();
   });
 
+  t.test('Mapper.attributes(...attributes)', st => {
+
+    const Things = Mapper.table('things');
+    const Others = Mapper.table('other');
+
+    st.queriesEqual(
+      Things.attributes('this', 'that').prepareFetch().toQueryBuilder(),
+      `select "things"."this", "things"."that" from "things"`
+    );
+
+    st.end();
+
+  });
 });

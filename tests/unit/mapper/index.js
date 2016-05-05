@@ -1,14 +1,16 @@
+import './helpers/knex';
+
 import './count';
 import './defaults';
 import './destruction';
 import './forge';
 import './identification';
-import './query';
-import './update';
 import './insert';
 import './joins';
-import './update-all';
+import './query';
+import './relations';
 import './retrieval';
 import './target';
-import './relations';
-import './helpers/knex';
+import './update';
+import './update-all';
+import './where';

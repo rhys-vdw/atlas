@@ -1,5 +1,7 @@
 import { isArray, isObject, isString } from 'lodash/lang';
 import { map } from 'lodash/collection';
+import { isMapper } from './index';
+import { isQueryBuilderSpecifyingColumns } from './helpers/knex';
 
 const methods = {
 
@@ -23,7 +25,33 @@ const methods = {
     return this.query('where', column, ...args);
   },
 
+  whereInMapper(attribute, Other) {
+
+    if (!isQueryBuilderSpecifyingColumns(Other)) {
+      const selfTable = this.requireState('table');
+      const otherTable = Other.requireState('table')
+
+      // The `Mapper` must have some columns in its `select` statement.
+      if (selfTable !== otherTable) throw new TypeError(
+        `Cannot 'whereIn' "${selfTable}"."${attribute}" and "${otherTable}". ` +
+        `The supplied mapper must specify a column!`
+      );
+
+      // If this is the same table then it makes sense to default it to the
+      // supplied attribute.
+      Other = Other.attributes(attribute);
+    }
+    const inner = Other.prepareFetch().toQueryBuilder();
+    return this._whereIn(attribute, inner);
+  },
+
   whereIn(attribute, values) {
+    return isMapper(values)
+      ? this.whereInMapper(...arguments)
+      : this._whereIn(...arguments);
+  },
+
+  _whereIn(attribute, values) {
 
     const columns = isArray(attribute)
       ? map(attribute, this.attributeToTableColumn, this)

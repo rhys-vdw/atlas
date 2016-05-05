@@ -13,7 +13,7 @@ const options = {
 
 const methods = {
 
-  pick(...attributes) {
+  attributes(...attributes) {
     const columns = flatten(attributes).map(this.attributeToTableColumn, this);
     return this.query('select', columns);
   },

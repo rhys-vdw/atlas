@@ -8,7 +8,7 @@
     "lint-q": "eslint --quiet src/** || true",
     "lint-tests": "eslint tests/**",
     "lint-tests-q": "eslint --quiet tests/** || true",
-    "test": "export BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && tape compiled-tests | tap-dot",
+    "test": "export BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && tape compiled-tests",
     "test-debug": "export BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && node-debug compiled-tests | tap-dot",
     "test-plain": "export BLUEBIRD_DEBUG=1 && npm run babel && npm run babel-tests && tape compiled-tests",
     "cover": "npm run babel && npm run babel-tests && istanbul cover compiled-tests | tap-dot",
