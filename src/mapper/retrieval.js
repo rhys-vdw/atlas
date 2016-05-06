@@ -60,7 +60,7 @@ const methods = {
     return this.setState({ isSingle: false });
   },
 
-  fetchOne() {
+  first() {
     return this.one().fetch();
   },
 

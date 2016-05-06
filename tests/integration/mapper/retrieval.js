@@ -35,7 +35,7 @@ export default function(atlas) {
         );
 
         t.resolvesToDeep(
-          People.query('orderBy', 'person_id').fetchOne(),
+          People.query('orderBy', 'person_id').first(),
           { person_id: 1, name: 'Tom' },
           'returns one'
         );

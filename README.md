@@ -109,23 +109,25 @@ Admins.save(david, { name: 'Elinor' }).tap(([david, elinor]) => {
   return Admins.save(david, { name: 'Heath' });
   // update users set name = 'David J Smith', is_admin = true where id = 4;
   // insert into users (name, is_admin) values (('Heath', true));
-}).then(records =>
-  Users.destroy(records);
-  // delete from users where id in (4, 6)
-).then(() =>
+}).then(records => {
 
-  Users.where({ name: 'Annie' }).with(
+  return Users.destroy(records);
+  // delete from users where id in (4, 6)
+
+}).then(() => {
+
+  // Load up Annie and eager load relations.
+  return Users.where({ name: 'Annie' }).with(
     related('groups', 'lastLogin'),
     related('posts').query(query =>
       query.orderBy('created_at', 'desc').limit(2)
     ).as('recentPosts')
-  ).fetchOne()
-
-  // Load up Annie and eager load relations.
+  ).first();
 
 ).then(annie => {
 
-  annie === {
+  // annie:
+  {
     id: 1,
     name: 'Annie',
     lastLogin: { user_id: 1, created_at: '2015-11-26' },
@@ -138,7 +140,7 @@ Admins.save(david, { name: 'Elinor' }).tap(([david, elinor]) => {
       { id: 110, author_id: 1, created_at: '2015-10-30',
         title: 'Re: Greeting', message: 'Yo', }
     ]
-  };
+  }
 
 });
 ```
