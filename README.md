@@ -351,7 +351,7 @@ const Mapper = atlas('Mapper');
 const Users = Mapper.table('users').idAttribute('user_id');
 
 // Create one from `Users` that represents administrators.
-const Admins = Users.where('id_admin', true);
+const Admins = Users.where('is_admin', true);
 
 // select * from users where is_admin = true;
 Admins.fetch().then(admins => {
