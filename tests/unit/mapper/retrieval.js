@@ -30,6 +30,12 @@ test('Mapper - retrieval', t => {
       `correct query when fetching all`
     );
 
+    t.queriesEqual(
+      Things.attributes('stuff', 'blah').prepareFetch().toQueryBuilder(),
+      `select "things"."stuff", "things"."blah" from "things"`,
+      `correct query when specifying attributes`
+    );
+
     const Thing = Things.one();
 
     t.queriesEqual(

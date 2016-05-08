@@ -517,6 +517,27 @@ People.fetch().then(people =>
 );
 ```
 
+#### `Mapper.attributes()`
+
+```js
+Mapper.attributes(...string|string[]) -> Mapper
+```
+
+Set attributes to be retrieved by `fetch`.
+
+```js
+// Exclude 'password_hash' and 'salt'.
+const userWhitelist = ['name', 'avatar_url', 'created_at', 'last_seen'];
+
+router.get('/user/:userId', (req, res, next) => {
+  Users
+    .attributes(userWhitelist)
+    .find(req.params.userId)
+    .then(res.json)
+    .catch(next);
+});
+```
+
 #### `Mapper.one()`
 
 Limit the result of a `fetch` to a single record. Causes `fetch()` to resolve to
