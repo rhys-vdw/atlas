@@ -1,4 +1,5 @@
 import test from 'tape';
+import CamelCase from './helpers/camel-case';
 
 import Mapper from '../../../lib/mapper';
 import { NoRowsFoundError, NotFoundError } from '../../../lib/errors';
@@ -107,11 +108,48 @@ test('Mapper - retrieval', t => {
   t.test('Mapper.attributes(...attributes)', st => {
 
     const Things = Mapper.table('things');
-    const Others = Mapper.table('other');
 
     st.queriesEqual(
       Things.attributes('this', 'that').prepareFetch().toQueryBuilder(),
       `select "things"."this", "things"."that" from "things"`
+    );
+
+    st.end();
+
+  });
+
+  t.test('Mapper.attributes(...attributes) - respects `attributeToColumn`', st => {
+
+    const Things = Mapper.table('things').extend(CamelCase());
+
+    st.queriesEqual(
+      Things.attributes('someThing', 'anotherThing').prepareFetch().toQueryBuilder(),
+      `select "things"."some_thing", "things"."another_thing" from "things"`
+    );
+
+    st.end();
+
+  });
+
+
+  t.test('Mapper.handleFetchResponse() - respects `columnToAttribute`', st => {
+
+    const People = Mapper.table('people').extend(CamelCase());
+
+    const people = [
+      { id: 1, first_name: 'Tom',  last_name: 'Smith' },
+      { id: 1, first_name: 'Jane', last_name: 'Doe' },
+      { id: 1, first_name: 'John', last_name: 'Doe' }
+    ];
+
+    const result = People.handleFetchResponse({ response: people });
+
+    st.deepEqual(result, [
+        { id: 1, firstName: 'Tom',  lastName: 'Smith' },
+        { id: 1, firstName: 'Jane', lastName: 'Doe' },
+        { id: 1, firstName: 'John', lastName: 'Doe' }
+      ],
+      `select "things"."some_thing", "things"."another_thing" from "things"`
     );
 
     st.end();

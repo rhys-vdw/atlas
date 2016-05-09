@@ -10,10 +10,18 @@ const methods = {
   attributeToColumn: identity,
 
   /** @protected */
-  columnsToAttributes: identity,
+  columnsToAttributes(columns) {
+    return this.columnToAttribute !== identity
+      ? mapKeys(columns, (value, column) => this.columnToAttribute(column))
+      : columns;
+  },
 
   /** @protected */
-  attributesToColumns: identity,
+  attributesToColumns(attributes) {
+    return this.attributeToColumn !== identity
+      ? mapKeys(attributes, (value, attribute) => this.attributeToColumn(attribute))
+      : attributes;
+  },
 
   /** @private */
   columnToTableColumn(column) {
