@@ -94,6 +94,28 @@ test('== Mapper - insert ==', t => {
     t.end();
   });
 
+  t.test(
+    'Mapper.handleInsertOneResponse() - respects `columnToAttribute`'
+  , st => {
+
+    const Records = Mapper.extend(CamelCase()).idAttribute('recordId');
+
+    st.deepEqual(
+      Records.handleInsertOneResponse([5], { someValue: 'a' }),
+      { recordId: 5, someValue: 'a' },
+      'ID array response'
+    );
+
+    const objectResponse = [{ record_id: 5, some_value: 'a' }];
+    st.deepEqual(
+      Records.handleInsertOneResponse(objectResponse, { someValue: 'a' }),
+      { recordId: 5, someValue: 'a' },
+      'ID array response'
+    );
+
+    st.end();
+  });
+
 
   t.test('Mapper.handleInsertManyResponse() - single ID response', t => {
 
@@ -138,6 +160,66 @@ test('== Mapper - insert ==', t => {
 
     t.end();
   });
+
+  t.test(
+    'Mapper.handleInsertManyResponse() - object response - ' +
+    'respects `attributeToColumn`',
+  t => {
+
+    const Oranges = Mapper.extend(CamelCase())
+      .table('oranges').idAttribute('orangeId');
+
+    const oranges = [{ orangeType: 'valencia' }, { orangeType: 'navel'}];
+
+    const response = [
+      { orange_id: 1, orange_type: 'valencia', created_at: 'some_date' },
+      { orange_id: 2, orange_type: 'navel', created_at: 'some_time' }
+    ];
+
+    t.deepEqual(
+      Oranges.handleInsertManyResponse(response, oranges),
+      [
+        { orangeId: 1, orangeType: 'valencia', createdAt: 'some_date' },
+        { orangeId: 2, orangeType: 'navel', createdAt: 'some_time' }
+      ],
+      'returns updated records'
+    );
+
+    t.end();
+  });
+
+
+  t.test(
+    'Mapper.handleInsertManyResponse() - idResponse - ' +
+    'respects `attributeToColumn`',
+  st => {
+
+    const Oranges = Mapper.extend(CamelCase())
+      .table('oranges').idAttribute('orangeId');
+
+    const oranges = [{ orangeType: 'valencia' }, { orangeType: 'navel'}];
+
+    st.deepEqual(
+      Oranges.handleInsertManyResponse([1], oranges),
+      [
+        { orangeId: 1, orangeType: 'valencia' },
+        { orangeType: 'navel' }
+      ],
+      'returns records with one updated (single ID response)'
+    );
+
+    st.deepEqual(
+      Oranges.handleInsertManyResponse([1, 2], oranges),
+      [
+        { orangeId: 1, orangeType: 'valencia' },
+        { orangeId: 2, orangeType: 'navel' }
+      ],
+      'returns updated records (multi ID response)'
+    );
+
+    st.end();
+  });
+
 
   t.test('Mapper.defaultAttributes().prepareInsert()', st => {
 
@@ -201,7 +283,9 @@ test('== Mapper - insert ==', t => {
     st.end();
   });
 
-  t.test('Mapper.extend(CamelCase()).prepareInsert()', st => {
+  t.test(
+    'Mapper.extend(CamelCase()).prepareInsert() - respects `attributeToColumn`',
+  st => {
 
     const Shapes = Mapper.table('shapes').extend(CamelCase());
 
