@@ -1,6 +1,7 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
 import { hasMany, belongsTo } from '../../../lib/relations';
+import CamelCase from './helpers/camel-case';
 
 test('== Mapper - joins ==', t => {
 
@@ -76,15 +77,34 @@ test('== Mapper - joins ==', t => {
       `, 'pivot attributes can be omitted with `.omitPivot()`'
     );
 
+    t.end();
+  });
+
+  t.test('Mapper#joinRelation - respects `attributeToColumn`', t => {
+
+    const CamelMapper = Mapper.extend(CamelCase());
+    const Other = CamelMapper.table('others').idAttribute('otherId');
+    const Self = CamelMapper.table('selves').idAttribute('selfId');
+
+    const Joined = Self.relations({
+      others: hasMany(Other)
+    }).joinRelation('others').pivotAttributes('someValue');
+
     t.queriesEqual(
-      WithPivot.omitPivot().prepareFetch().toQueryBuilder(), `
-        select "selves".* from "selves"
-        inner join "others" on "selves"."s_id" = "others"."self_s_id"
-      `, 'pivot attributes can be omitted with `.omitPivot()`'
+      Joined.prepareFetch().toQueryBuilder(), `
+        select
+          "others"."some_value" as "_pivot_some_value",
+          "selves".*
+        from
+          "selves"
+        inner join
+          "others" on "selves"."self_id" = "others"."self_self_id"
+      `, 'selects pivot attributes'
     );
 
     t.end();
   });
+
 
   t.test('Mapper#joinRelation - simple join with composite keys', st => {
 
