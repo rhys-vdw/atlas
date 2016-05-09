@@ -1,5 +1,6 @@
 import test from 'tape';
 import Knex from 'knex';
+import CamelCase from './helpers/camel-case';
 
 import Mapper from '../../../lib/mapper';
 
@@ -175,26 +176,45 @@ test('== Mapper - insert ==', t => {
   t.test('Mapper.strictAttributes().prepareInsert()', st => {
 
     const Strict = Mapper.table('table').strictAttributes({
-      strict: 'strict'
+      strict: 'strict_value'
     });
 
     st.queriesEqual(
       Strict.prepareInsert({ strict: 'overridden' }).toQueryBuilder(),
-      `insert into "table" ("strict") values ('strict')`
+      `insert into "table" ("strict") values ('strict_value')`
     );
 
     st.queriesEqual(
       Strict.prepareInsert({}).toQueryBuilder(),
-      `insert into "table" ("strict") values ('strict')`
+      `insert into "table" ("strict") values ('strict_value')`
     );
 
     const FnStrict = Mapper.table('table').strictAttributes({
-      strict: () => 'strict'
+      strict: () => 'strict_value'
     });
 
     st.queriesEqual(
       FnStrict.prepareInsert({ strict: 'overridden' }).toQueryBuilder(),
-      `insert into "table" ("strict") values ('strict')`
+      `insert into "table" ("strict") values ('strict_value')`
+    );
+
+    st.end();
+  });
+
+  t.test('Mapper.extend(CamelCase()).prepareInsert()', st => {
+
+    const Shapes = Mapper.table('shapes').extend(CamelCase());
+
+    const records = [
+      { shapeType: 'square', sideCount: 4 },
+      { shapeType: 'triangle', sideCount: 3 }
+    ];
+
+    st.queriesEqual(
+      Shapes.prepareInsert(records).toQueryBuilder(), `
+        insert into "shapes" ("shape_type", "side_count")
+        values ('square', 4), ('triangle', 3)
+      `
     );
 
     st.end();
