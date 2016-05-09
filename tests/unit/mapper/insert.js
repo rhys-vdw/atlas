@@ -1,5 +1,6 @@
 import test from 'tape';
 import Knex from 'knex';
+import CamelCase from './helpers/camel-case';
 
 import Mapper from '../../../lib/mapper';
 
@@ -93,6 +94,28 @@ test('== Mapper - insert ==', t => {
     t.end();
   });
 
+  t.test(
+    'Mapper.handleInsertOneResponse() - respects `columnToAttribute`'
+  , st => {
+
+    const Records = Mapper.extend(CamelCase()).idAttribute('recordId');
+
+    st.deepEqual(
+      Records.handleInsertOneResponse([5], { someValue: 'a' }),
+      { recordId: 5, someValue: 'a' },
+      'ID array response'
+    );
+
+    const objectResponse = [{ record_id: 5, some_value: 'a' }];
+    st.deepEqual(
+      Records.handleInsertOneResponse(objectResponse, { someValue: 'a' }),
+      { recordId: 5, someValue: 'a' },
+      'ID array response'
+    );
+
+    st.end();
+  });
+
 
   t.test('Mapper.handleInsertManyResponse() - single ID response', t => {
 
@@ -138,6 +161,66 @@ test('== Mapper - insert ==', t => {
     t.end();
   });
 
+  t.test(
+    'Mapper.handleInsertManyResponse() - object response - ' +
+    'respects `attributeToColumn`',
+  t => {
+
+    const Oranges = Mapper.extend(CamelCase())
+      .table('oranges').idAttribute('orangeId');
+
+    const oranges = [{ orangeType: 'valencia' }, { orangeType: 'navel'}];
+
+    const response = [
+      { orange_id: 1, orange_type: 'valencia', created_at: 'some_date' },
+      { orange_id: 2, orange_type: 'navel', created_at: 'some_time' }
+    ];
+
+    t.deepEqual(
+      Oranges.handleInsertManyResponse(response, oranges),
+      [
+        { orangeId: 1, orangeType: 'valencia', createdAt: 'some_date' },
+        { orangeId: 2, orangeType: 'navel', createdAt: 'some_time' }
+      ],
+      'returns updated records'
+    );
+
+    t.end();
+  });
+
+
+  t.test(
+    'Mapper.handleInsertManyResponse() - idResponse - ' +
+    'respects `attributeToColumn`',
+  st => {
+
+    const Oranges = Mapper.extend(CamelCase())
+      .table('oranges').idAttribute('orangeId');
+
+    const oranges = [{ orangeType: 'valencia' }, { orangeType: 'navel'}];
+
+    st.deepEqual(
+      Oranges.handleInsertManyResponse([1], oranges),
+      [
+        { orangeId: 1, orangeType: 'valencia' },
+        { orangeType: 'navel' }
+      ],
+      'returns records with one updated (single ID response)'
+    );
+
+    st.deepEqual(
+      Oranges.handleInsertManyResponse([1, 2], oranges),
+      [
+        { orangeId: 1, orangeType: 'valencia' },
+        { orangeId: 2, orangeType: 'navel' }
+      ],
+      'returns updated records (multi ID response)'
+    );
+
+    st.end();
+  });
+
+
   t.test('Mapper.defaultAttributes().prepareInsert()', st => {
 
     const Defaults = Mapper.table('table').defaultAttributes({
@@ -175,26 +258,47 @@ test('== Mapper - insert ==', t => {
   t.test('Mapper.strictAttributes().prepareInsert()', st => {
 
     const Strict = Mapper.table('table').strictAttributes({
-      strict: 'strict'
+      strict: 'strict_value'
     });
 
     st.queriesEqual(
       Strict.prepareInsert({ strict: 'overridden' }).toQueryBuilder(),
-      `insert into "table" ("strict") values ('strict')`
+      `insert into "table" ("strict") values ('strict_value')`
     );
 
     st.queriesEqual(
       Strict.prepareInsert({}).toQueryBuilder(),
-      `insert into "table" ("strict") values ('strict')`
+      `insert into "table" ("strict") values ('strict_value')`
     );
 
     const FnStrict = Mapper.table('table').strictAttributes({
-      strict: () => 'strict'
+      strict: () => 'strict_value'
     });
 
     st.queriesEqual(
       FnStrict.prepareInsert({ strict: 'overridden' }).toQueryBuilder(),
-      `insert into "table" ("strict") values ('strict')`
+      `insert into "table" ("strict") values ('strict_value')`
+    );
+
+    st.end();
+  });
+
+  t.test(
+    'Mapper.extend(CamelCase()).prepareInsert() - respects `attributeToColumn`',
+  st => {
+
+    const Shapes = Mapper.table('shapes').extend(CamelCase());
+
+    const records = [
+      { shapeType: 'square', sideCount: 4 },
+      { shapeType: 'triangle', sideCount: 3 }
+    ];
+
+    st.queriesEqual(
+      Shapes.prepareInsert(records).toQueryBuilder(), `
+        insert into "shapes" ("shape_type", "side_count")
+        values ('square', 4), ('triangle', 3)
+      `
     );
 
     st.end();

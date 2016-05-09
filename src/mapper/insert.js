@@ -146,13 +146,13 @@ const methods = {
     // of the columns in the updated row.
     //
     if (isObject(returned)) {
-      const attributes = this.columnsToAttributes(response);
+      const attributes = this.columnsToAttributes(returned);
       return this.setAttributes(record, attributes);
     }
 
     // We can't update a composite key. As I understand, any DBMS other than
-    // PostgreSQL can only return auto-incremented keys (and only one of them),
-    // so this shouldn't be a problem.
+    // PostgreSQL can only return auto-incremented keys (and only one of them).
+    // Typically composite primary keys are not auto-incremented.
     //
     const idAttribute = this.requireState('idAttribute');
     if (!isArray(idAttribute)) {
