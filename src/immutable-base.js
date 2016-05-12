@@ -5,7 +5,7 @@ import objectToString from 'object-to-string';
 
 import { UnsetStateError } from './errors';
 
-function createSuper(prototype) {
+function createCallSuper(prototype) {
   return function callSuper(self, methodName, ...args) {
     return prototype[methodName].apply(self, args);
   }
@@ -86,41 +86,53 @@ export default class ImmutableBase {
    * Creates an inheriting `ImmutableBase` class with supplied `methods`.
    * Returns an instance of this class.
    *
-   * @param {Object|function} methodsOrFn
+   * @param {Object|function} methodHashesOrFns
    *   Object of methods to be mixed into the class. Or a function that returns
    *   such an object. The function is invoked with a `callSuper` helper
    *   function.
    */
-  extend(methodsOrFn) {
+  extend(...methodHashesOrFns) {
 
     // It's not possible to extend an instance in place.
     if (this.isMutable()) throw new Error(
       'cannot call `extend` when mutable'
     );
 
-    const functions = isFunction(methodsOrFn)
-      ? methodsOrFn(createSuper(this))
-      : methodsOrFn;
-
-    // `initialize` is a special case.
-    const { initialize, ...methods } = functions;
-
     // Create a clone of self.
     class Extended extends this.constructor {}
 
-    // Don't allow assigning values directly to the prototype. This can cause
-    // problems when reassigning values (eg. `this.x` is shared between all
-    // instances).
-    if (!every(methods, isFunction)) throw new Error(
-      'methods must all be functions'
-    );
+    // Mix in each set of methods and build an array of initializers.
+    const initializers = reduce(methodHashesOrFns, (result, methodsOrFn) => {
 
-    // Mix in the new methods.
-    assign(Extended.prototype, methods);
+      // Support supplying a function that is resolved with a `callSuper`
+      // helper.
+      const properties = isFunction(methodsOrFn)
+        ? methodsOrFn(createCallSuper(this))
+        : methodsOrFn;
+
+      // `initialize` is a special case.
+      const { initialize, ...methods } = properties;
+
+      // Don't allow assigning values directly to the prototype. This can cause
+      // problems when reassigning values (eg. `this.x` is shared between all
+      // instances).
+      if (!every(methods, isFunction)) throw new Error(
+        'methods must all be functions'
+      );
+
+      // Mix in the new methods.
+      assign(Extended.prototype, methods);
+
+      if (initialize != null) {
+        result.push(initialize);
+      }
+      return result;
+    }, []);
+
 
     // Instantiate the new instance.
     return new Extended(this.state)
-      .withMutations(initialize)
+      .withMutations(initializers)
       .asImmutable();
   }
 
