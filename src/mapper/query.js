@@ -6,12 +6,14 @@ import { NoopError } from '../errors';
 
 const knex = Knex({});
 
-const options = {
-  noop: false,
-  queryBuilder: knex.queryBuilder(),
-};
+export default {
 
-const methods = {
+  initialize() {
+    this.setState({
+      noop: false,
+      queryBuilder: knex.queryBuilder(),
+    });
+  },
 
   // -- No-op --
 
@@ -119,5 +121,3 @@ const methods = {
     return this.setState({ queryBuilder });
   },
 };
-
-export default { methods, options };

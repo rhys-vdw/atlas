@@ -4,11 +4,11 @@ import { first, flatten } from 'lodash/array';
 import { ensureArray, isComposite } from '../arguments';
 import { UnidentifiableRecordError } from '../errors';
 
-const options = {
-  idAttribute: 'id'
-};
+export default {
 
-const methods = {
+  initialize() {
+    this.idAttribute('id');
+  },
 
   /**
    * @method isNew
@@ -176,5 +176,3 @@ const methods = {
     return this.pickAttributes(record, idAttribute);
   }
 };
-
-export default { options, methods };

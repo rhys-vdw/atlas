@@ -4,7 +4,7 @@ import { omit } from 'lodash/object';
 import { identity } from 'lodash/utility';
 import { reduce } from 'lodash/collection';
 
-const methods = {
+export default {
 
   // Overridable interface.
 
@@ -84,5 +84,3 @@ const methods = {
   }
 
 };
-
-export default { methods };

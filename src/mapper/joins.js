@@ -5,14 +5,17 @@ import { map } from 'lodash/collection';
 import { isQueryBuilderEmpty } from './helpers/knex';
 import { PIVOT_ALIAS } from '../constants';
 
-const options = {
-  omitPivot: false,
-  pivotAlias: null,
-  pivotAttributes: [],
-  pivotRelationName: null,
-};
+export default {
 
-const methods = {
+  initialize() {
+    this.setState({
+      omitPivot: false,
+      pivotAlias: null,
+      pivotAttributes: [],
+      pivotRelationName: null,
+    });
+  },
+
   omitPivot() {
     return this.setState({ omitPivot: true });
   },
@@ -77,5 +80,3 @@ const methods = {
   },
 
 };
-
-export default { methods, options };

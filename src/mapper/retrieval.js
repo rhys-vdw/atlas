@@ -6,12 +6,14 @@ import { NotFoundError, NoRowsFoundError } from '../errors';
 import { PIVOT_PREFIX } from '../constants';
 import { isQueryBuilderSpecifyingColumns } from './helpers/knex';
 
-const options = {
-  isRequired: false,
-  isSingle: false
-};
+export default {
 
-const methods = {
+  initialize() {
+    this.setState({
+      isRequired: false,
+      isSingle: false
+    });
+  },
 
   attributes(...attributes) {
     const columns = flatten(attributes).map(this.attributeToTableColumn, this);
@@ -145,5 +147,3 @@ const methods = {
     return isSingle ? records[0] : records;
   }
 };
-
-export default { options, methods };

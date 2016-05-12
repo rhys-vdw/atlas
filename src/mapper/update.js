@@ -9,7 +9,7 @@ import {
   assignResolved, isValidId, keyCardinality, normalizeRecords
 } from '../arguments';
 
-const methods = {
+export default {
 
   /**
    * @method update
@@ -142,5 +142,3 @@ const methods = {
     );
   },
 };
-
-export default { methods };

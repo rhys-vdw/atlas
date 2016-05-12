@@ -1,4 +1,4 @@
-const methods = {
+export default {
 
   prepareCount(attribute = null) {
     const column = attribute == null
@@ -11,5 +11,3 @@ const methods = {
     return this.prepareCount(attribute).toQueryBuilder();
   }
 };
-
-export default { methods };
