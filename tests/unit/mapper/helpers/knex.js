@@ -37,10 +37,6 @@ test('Knex helpers', t => {
       query.select('some_column', 'another');
     });
 
-    console.log('!!!!!columns');
-    console.dir(ColumnsMapper.toQueryBuilder()._statements);
-    console.log('!!!!!all');
-    console.dir(AllMapper.toQueryBuilder()._statements);
     st.true(isQueryBuilderSpecifyingColumns(ColumnsMapper));
     st.false(isQueryBuilderSpecifyingColumns(AllMapper));
     st.true(isQueryBuilderSpecifyingColumns(ColumnsMapper.toQueryBuilder()));
