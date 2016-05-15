@@ -1,7 +1,7 @@
 import { isArray, isObject } from 'lodash/lang';
 import { assignResolved, defaultsResolved } from '../arguments';
 
-const methods = {
+export default {
 
   forge(attributes = {}) {
 
@@ -32,5 +32,3 @@ const methods = {
     return this.createRecord(overridden);
   }
 };
-
-export default { methods };

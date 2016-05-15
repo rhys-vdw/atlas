@@ -6,7 +6,7 @@ import Promise from 'bluebird';
 
 import { normalizeRecords } from '../arguments';
 
-const methods = {
+export default {
 
   /**
    * @method save
@@ -52,5 +52,3 @@ const methods = {
     return flatten([insert, update]);
   },
 };
-
-export default { methods };

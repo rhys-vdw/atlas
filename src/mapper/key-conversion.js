@@ -1,7 +1,7 @@
 import { identity } from 'lodash/utility';
 import { mapKeys } from 'lodash/object';
 
-const methods = {
+export default {
 
   /** @protected */
   columnToAttribute: identity,
@@ -44,5 +44,3 @@ const methods = {
   }
 
 };
-
-export default { methods };

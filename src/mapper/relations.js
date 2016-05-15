@@ -6,7 +6,7 @@ import { isRelated } from '../related';
 import EagerLoader from '../eager-loader';
 import { inspect } from 'util';
 
-const methods = {
+export default {
 
   relations(relations) {
     return this.setState({ relations:
@@ -62,5 +62,3 @@ const methods = {
   }
 
 };
-
-export default { methods };

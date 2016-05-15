@@ -3,7 +3,7 @@ import { map } from 'lodash/collection';
 import { NoRowsFoundError } from '../errors';
 import { isQueryBuilderJoined } from './helpers/knex';
 
-const methods = {
+export default {
 
   /**
    * @param {Object} attributes
@@ -82,5 +82,3 @@ const methods = {
   }
 
 };
-
-export default { methods };

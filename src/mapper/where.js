@@ -3,7 +3,7 @@ import { map } from 'lodash/collection';
 import { isMapper } from './index';
 import { isQueryBuilderSpecifyingColumns } from './helpers/knex';
 
-const methods = {
+export default {
 
   where(attribute, ...args) {
 
@@ -48,5 +48,3 @@ const methods = {
     return this.query('whereIn', columns, values);
   }
 };
-
-export default { methods };

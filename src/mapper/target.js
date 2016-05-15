@@ -3,7 +3,7 @@ import { head, zipObject } from 'lodash/array';
 import { reject } from 'lodash/collection';
 import { isComposite as isCompositeKey } from '../arguments';
 
-const methods = {
+export default {
 
   /**
    * @method target
@@ -52,5 +52,3 @@ const methods = {
     });
   }
 };
-
-export default { methods };

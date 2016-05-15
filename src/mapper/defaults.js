@@ -1,11 +1,6 @@
 import { keyValueToObject } from '../arguments';
 
-const options = {
-  defaultAttributes: {},
-  strictAttributes: {}
-};
-
-const methods = {
+export default {
 
   defaultAttribute(attribute, value) {
     return this.defaultAttributes(keyValueToObject(attribute, value));
@@ -13,7 +8,7 @@ const methods = {
 
   defaultAttributes(attributes) {
     return this.setState({ defaultAttributes:
-      { ...this.state.defaultAttributes, ...attributes }
+      { ...(this.state.defaultAttributes || {}), ...attributes }
     });
   },
 
@@ -23,10 +18,8 @@ const methods = {
 
   strictAttributes(attributes) {
     return this.setState({ strictAttributes:
-      { ...this.state.strictAttributes, ...attributes }
+      { ...(this.state.strictAttributes || {}), ...attributes }
     });
   },
 
 };
-
-export default { options, methods };

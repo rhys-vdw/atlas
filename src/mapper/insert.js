@@ -7,7 +7,7 @@ import {
   assignResolved, defaultsResolved, normalizeRecords
 } from '../arguments';
 
-const methods = {
+export default {
 
   /**
    * @method insert
@@ -181,5 +181,3 @@ const methods = {
     return zipWith(response, records, this.handleInsertOneResponse, this);
   }
 };
-
-export default { methods };

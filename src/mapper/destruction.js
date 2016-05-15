@@ -3,7 +3,7 @@ import { NotFoundError, NoRowsFoundError } from '../errors';
 import { inspect } from 'util';
 import { isQueryBuilderJoined } from './helpers/knex';
 
-const methods = {
+export default {
 
   /**
    * @method Mapper.destroy
@@ -113,10 +113,3 @@ const methods = {
     return response;
   }
 };
-
-/**
- * Methods pertaining to removing records from the database.
- *
- * @exports module:mapper/destruction
- */
-export default { methods };

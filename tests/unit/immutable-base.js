@@ -76,7 +76,7 @@ test('ImmutableBase', t => {
     t.end();
   });
 
-  t.test('ImmutableBase#callSuper()', t => {
+  t.test('ImmutableBase#extend(callback)', t => {
 
     const parent = new ImmutableBase().extend({
       lineage() { return `Parent`; }
@@ -102,6 +102,44 @@ test('ImmutableBase', t => {
 
     t.end();
   });
+
+  t.test('ImmutableBase#extend(...args) - multiple arguments', st => {
+
+    function a() {}
+    function b() {}
+    function c() {}
+
+    const parent = new ImmutableBase()
+      .setState({ testKey: 'testValue' });
+
+    const child = parent.extend({ a }, { b }, callSuper => ({ c }));
+
+    t.notEqual(
+      child.constructor, parent.constructor,
+      'child and parent have different classes'
+    );
+
+    t.equal(
+      Object.getPrototypeOf(Object.getPrototypeOf(child)),
+      parent.constructor.prototype,
+      'child type directly inherits from parent type'
+    );
+
+    t.ok(
+      child.a === a &&
+      child.b === b &&
+      child.c === c,
+      'child has assigned methods'
+    );
+
+    t.equal(
+      child.requireState('testKey'), 'testValue',
+      'child has parent options'
+    );
+
+    t.end();
+  });
+
 
   t.test('ImmutableBase#asMutable(), ImmutableBase#asImmutable()', t => {
 

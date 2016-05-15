@@ -1,5 +1,3 @@
-import _, { assign } from 'lodash';
-
 import ImmutableBase from '../immutable-base';
 
 import Count from './count';
@@ -22,10 +20,7 @@ import Where from './where';
 
 import { MAPPER_SENTINEL } from '../constants';
 
-class Mapper extends ImmutableBase {
-}
-
-const mixins = [
+const Mapper = new ImmutableBase().extend(
   Count,
   Defaults,
   Destruction,
@@ -42,22 +37,13 @@ const mixins = [
   Target,
   Update,
   UpdateAll,
-  Where,
-];
+  Where
+);
 
-const combine = (mixins, property) =>
-  _(mixins).pluck(property).reduce(assign, {});
-
-const methods = combine(mixins, 'methods');
-const options = combine(mixins, 'options');
-
-assign(Mapper.prototype, methods);
-
-Mapper.prototype[MAPPER_SENTINEL] = true;
+Mapper.constructor.prototype[MAPPER_SENTINEL] = true;
 
 export function isMapper(maybeMapper) {
   return !!(maybeMapper && maybeMapper[MAPPER_SENTINEL]);
 }
-export default new Mapper(options);
 
-export { Mapper as constructor, options };
+export default Mapper;
