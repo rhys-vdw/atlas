@@ -1,7 +1,7 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
 import { hasMany, belongsTo } from '../../../lib/relations';
-import CamelCase from './helpers/camel-case';
+import CamelCase from '../../../lib/plugins/CamelCase';
 
 test('== Mapper - joins ==', t => {
 

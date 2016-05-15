@@ -1,7 +1,7 @@
 import test from 'tape';
-import CamelCase from './helpers/camel-case';
 
 import Mapper from '../../../lib/mapper';
+import CamelCase from '../../../lib/plugins/CamelCase';
 import { NoRowsFoundError, NotFoundError } from '../../../lib/errors';
 
 test('Mapper - retrieval', t => {

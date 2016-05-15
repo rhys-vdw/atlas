@@ -1,7 +1,7 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
 import Knex from 'knex';
-import CamelCase from './helpers/camel-case';
+import CamelCase from '../../../lib/plugins/CamelCase';
 import { NoRowsFoundError } from '../../../lib/errors';
 
 const pg = Knex({ client: 'pg' });

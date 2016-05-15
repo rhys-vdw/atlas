@@ -1,8 +1,8 @@
 import test from 'tape';
 import Knex from 'knex';
-import CamelCase from './helpers/camel-case';
 
 import Mapper from '../../../lib/mapper';
+import CamelCase from '../../../lib/plugins/CamelCase';
 
 const Pg = Mapper.knex(Knex({ client: 'pg' }));
 

@@ -1,9 +1,10 @@
 import 'babel-polyfill';
+import { isObject, isString, each } from 'lodash';
 import Registry from './registry';
 import Mapper from './mapper';
 import { initialize as initializeRelations } from './relations';
 import { related } from './related';
-import { isObject, isString, each } from 'lodash';
+import plugins from './plugins';
 
 const createRegistry = () => new Registry({ Mapper });
 
@@ -60,3 +61,6 @@ export default function Atlas(knex, registry = createRegistry()) {
 
   return atlas;
 }
+
+// Assign plugins.
+Atlas.plugins = plugins;
