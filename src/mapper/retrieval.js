@@ -1,7 +1,7 @@
 import Promise from 'bluebird';
-import { isEmpty } from 'lodash/lang';
-import { map } from 'lodash/collection';
-import { flatten } from 'lodash/array';
+import isEmpty from 'lodash/isEmpty';
+import map from 'lodash/map';
+import flatten from 'lodash/flatten';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 import { PIVOT_PREFIX } from '../constants';
 import { isQueryBuilderSpecifyingColumns } from './helpers/knex';
@@ -16,7 +16,9 @@ export default {
   },
 
   attributes(...attributes) {
-    const columns = flatten(attributes).map(this.attributeToTableColumn, this);
+    const columns = flatten(attributes).map(attribute =>
+      this.attributeToTableColumn(attribute)
+    );
     return this.query('select', columns);
   },
 

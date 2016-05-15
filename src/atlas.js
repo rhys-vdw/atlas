@@ -3,8 +3,7 @@ import Registry from './registry';
 import Mapper from './mapper';
 import { initialize as initializeRelations } from './relations';
 import { related } from './related';
-import { isObject, isString } from 'lodash/lang';
-import { each } from 'lodash/collection';
+import { isObject, isString, each } from 'lodash';
 
 const createRegistry = () => new Registry({ Mapper });
 

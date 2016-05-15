@@ -1,5 +1,4 @@
-import { isArray, isObject, isString } from 'lodash/lang';
-import { map } from 'lodash/collection';
+import { isArray, isObject, isString, map } from 'lodash';
 import { isMapper } from './index';
 import { isQueryBuilderSpecifyingColumns } from './helpers/knex';
 
@@ -13,7 +12,7 @@ export default {
       column = this.attributeToTableColumn(attribute);
     } else if (isArray(attribute)) {
       // (string[], mixed[])
-      column = map(attribute, this.attributeToTableColumn, this);
+      column = map(attribute, attr => this.attributeToTableColumn(attr));
     } else if (isObject(attribute)) {
       // ({ [string]: mixed })
       column = this.attributesToTableColumns(attribute);
@@ -42,7 +41,7 @@ export default {
   _whereIn(attribute, values) {
 
     const columns = isArray(attribute)
-      ? map(attribute, this.attributeToTableColumn, this)
+      ? map(attribute, attr => this.attributeToTableColumn(attr))
       : this.attributeToTableColumn(attribute);
 
     return this.query('whereIn', columns, values);

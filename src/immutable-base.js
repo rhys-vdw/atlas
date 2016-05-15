@@ -1,14 +1,15 @@
-import { isArray, isEmpty, isFunction, isObject, isString } from 'lodash/lang';
-import { every, reduce } from 'lodash/collection';
-import { assign } from 'lodash/object';
+import {
+  isArray, isEmpty, isFunction, isObject, isString, every, reduce, assign, pick
+} from 'lodash';
 import objectToString from 'object-to-string';
+import { inspect } from 'util';
 
 import { UnsetStateError } from './errors';
 
 function createCallSuper(prototype) {
   return function callSuper(self, methodName, ...args) {
     return prototype[methodName].apply(self, args);
-  }
+  };
 }
 
 export default class ImmutableBase {
@@ -116,8 +117,9 @@ export default class ImmutableBase {
       // Don't allow assigning values directly to the prototype. This can cause
       // problems when reassigning values (eg. `this.x` is shared between all
       // instances).
-      if (!every(methods, isFunction)) throw new Error(
-        'methods must all be functions'
+      const invalid = pick(methods, isFunction);
+      if (!isEmpty(invalid.length)) throw new TypeError(
+        `methods must all be functions, invalid properties: ${inspect(invalid)}`
       );
 
       // Mix in the new methods.

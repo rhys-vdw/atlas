@@ -1,5 +1,4 @@
-import { isArray } from 'lodash/lang';
-import { map } from 'lodash/collection';
+import { isArray, map } from 'lodash';
 import { NoRowsFoundError } from '../errors';
 import { isQueryBuilderJoined } from './helpers/knex';
 
@@ -74,7 +73,7 @@ export default {
 
     // If we have a full response (as is enabled by PostgreSQL), then
     if (rows) {
-      return map(response, this.columnsToRecord, this);
+      return map(response, row => this.columnsToRecord(row));
     }
 
     // Otherwise just return a count.

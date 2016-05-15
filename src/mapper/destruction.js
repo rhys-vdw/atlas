@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash/lang';
+import { isEmpty } from 'lodash';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 import { inspect } from 'util';
 import { isQueryBuilderJoined } from './helpers/knex';

@@ -1,4 +1,4 @@
-import { map } from 'lodash/collection';
+import { map } from 'lodash';
 import { isMapper } from '../mapper';
 
 function formatPivot(...tables) {

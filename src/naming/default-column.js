@@ -1,7 +1,5 @@
-import inflection from 'inflection';
-import { map } from 'lodash/collection';
-import { isArray } from 'lodash/lang';
-const { singularize } = inflection;
+import { singularize } from 'inflection';
+import { map, isArray } from 'lodash';
 
 function singleTableColumnRef(table, column) {
   return `${singularize(table)}_${column}`;

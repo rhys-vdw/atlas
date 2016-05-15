@@ -1,6 +1,4 @@
-import { isArray } from 'lodash/lang';
-import { indexBy } from 'lodash/collection';
-import { first } from 'lodash/array';
+import { isArray, keyBy, head } from 'lodash';
 import { mapperAttributeRef } from '../naming/default-column';
 import { isComposite, assertKeysCompatible } from '../arguments';
 
@@ -26,7 +24,7 @@ export default class BelongsTo {
     const id = Self.identifyBy(selfAttribute, ...targetIds);
 
     const isSingle = !isArray(id) ||
-      isComposite(selfAttribute) && !isComposite(first(id));
+      isComposite(selfAttribute) && !isComposite(head(id));
 
     return Other.withMutations(mapper => {
       mapper.targetBy(otherAttribute, id);
@@ -43,7 +41,7 @@ export default class BelongsTo {
 
     const { Self, Other, selfAttribute, otherAttribute } = this;
 
-    const relatedById = indexBy(related, record =>
+    const relatedById = keyBy(related, record =>
       Other.identifyBy(otherAttribute, record)
     );
 

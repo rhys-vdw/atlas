@@ -1,5 +1,4 @@
-import { assign } from 'lodash/object';
-import { isFunction, isEmpty, isString } from 'lodash/lang';
+import { isFunction, isEmpty, isString, assign } from 'lodash';
 import Knex from 'knex';
 
 import { NoopError } from '../errors';

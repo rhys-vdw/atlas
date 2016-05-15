@@ -1,9 +1,9 @@
 import test from 'tape';
+import Knex from 'knex';
+import { omit } from 'lodash';
+
 import Atlas from '../../lib/atlas';
 import Mapper from '../../lib/mapper';
-import Knex from 'knex';
-
-import { omit } from 'lodash';
 
 test('Atlas', t => {
 

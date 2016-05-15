@@ -1,6 +1,4 @@
-import _ from 'lodash';
-import { isArray, isEmpty, isObject } from 'lodash/lang';
-import { first, zipWith } from 'lodash/array';
+import _, { isArray, isEmpty, isObject, first, zipWith } from 'lodash';
 import Promise from 'bluebird';
 
 import {
@@ -88,14 +86,14 @@ export default {
     const rows = _(records)
       .flatten()
       .compact()
-      .map(this.getAttributes, this)
+      .map(record => this.getAttributes(record))
       .map(attributes =>
         defaultsResolved(attributes, defaultAttributes, attributes)
       )
       .map(attributes =>
         assignResolved(attributes, strictAttributes, attributes)
       )
-      .map(this.attributesToColumns, this)
+      .map(attributes => this.attributesToColumns(attributes))
       .value();
 
     // Insert record(s) and return all modified rows. DBMSes other than
@@ -178,6 +176,8 @@ export default {
    *   Records updated with response data.
    */
   handleInsertManyResponse(response, records) {
-    return zipWith(response, records, this.handleInsertOneResponse, this);
+    return zipWith(response, records, (response, record) =>
+      this.handleInsertOneResponse(response, record)
+    );
   }
 };

@@ -1,5 +1,5 @@
-import isEmpty from 'lodash/lang/isEmpty';
-import some from 'lodash/collection/some';
+import isEmpty from 'lodash/isEmpty';
+import some from 'lodash/some';
 import { isMapper } from '../index';
 
 const handleMapper = fn => maybeMapper => {

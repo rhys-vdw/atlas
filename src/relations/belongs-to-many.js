@@ -1,7 +1,4 @@
-import { assign } from 'lodash/object';
-import { isArray } from 'lodash/lang';
-import { groupBy } from 'lodash/collection';
-import { first } from 'lodash/array';
+import { assign, isArray, groupBy, first } from 'lodash';
 
 import Mapper from '../mapper';
 import { mapperAttributeRef } from '../naming/default-column';

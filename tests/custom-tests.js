@@ -2,8 +2,7 @@
 /* allow console here because there are some issues below. */
 
 import { Test } from 'tape';
-import _, { isObject, isString } from 'lodash';
-import { map, keys } from 'lodash';
+import _, { isObject, isString, map, keys  } from 'lodash';
 import deepEqual from 'deep-equal';
 import Promise from 'bluebird';
 

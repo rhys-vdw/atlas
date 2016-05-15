@@ -1,6 +1,4 @@
-import { isArray } from 'lodash/lang';
-import { groupBy } from 'lodash/collection';
-import { first } from 'lodash/array';
+import { isArray, groupBy, head } from 'lodash';
 import { mapperAttributeRef } from '../naming/default-column';
 import { isComposite, assertKeysCompatible } from '../arguments';
 
@@ -24,7 +22,7 @@ export default class HasMany {
 
     const id = Self.identifyBy(selfAttribute, ...targetIds);
     const isSingle = !isArray(id) ||
-      isComposite(selfAttribute) && !isComposite(first(id));
+      isComposite(selfAttribute) && !isComposite(head(id));
 
     return Other.withMutations(other => {
       if (isSingle) {

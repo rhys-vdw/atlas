@@ -1,5 +1,5 @@
-import { identity } from 'lodash/utility';
-import { mapKeys } from 'lodash/object';
+import identity from 'lodash/identity';
+import mapKeys from 'lodash/mapKeys';
 
 export default {
 
@@ -19,7 +19,7 @@ export default {
   /** @protected */
   attributesToColumns(attributes) {
     return this.attributeToColumn !== identity
-      ? mapKeys(attributes, (value, attribute) => this.attributeToColumn(attribute))
+      ? mapKeys(attributes, (value, attr) => this.attributeToColumn(attr))
       : attributes;
   },
 

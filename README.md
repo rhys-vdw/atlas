@@ -264,7 +264,7 @@ atlas.override({ [name]: Mapper }) -> atlas
 ```
 
 ```js
-import { snakeCase, camelCase } from 'lodash/string';
+import { snakeCase, camelCase } from 'lodash';
 
 function camelCasePlugin(atlas) {
 

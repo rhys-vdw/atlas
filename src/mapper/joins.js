@@ -1,7 +1,5 @@
 import { assertKeysCompatible, ensureArray } from '../arguments';
-import { flatten, uniq, zipObject } from 'lodash/array';
-import { map } from 'lodash/collection';
-
+import { flatten, uniq, zipObject, map } from 'lodash';
 import { isQueryBuilderEmpty } from './helpers/knex';
 import { PIVOT_ALIAS } from '../constants';
 
@@ -54,13 +52,13 @@ export default {
       joinTable = Other.prepareFetch().toQueryBuilder().as(pivotAlias);
     }
 
-    const otherAttributeToTableColumn = attribute =>
-      `${pivotAlias}.${Other.attributeToColumn(attribute)}`;
-
-    const joinColumns = zipObject(
-      map(selfKeys, this.attributeToTableColumn, this),
-      map(otherKeys, otherAttributeToTableColumn, Other)
+    const selfColumns = map(selfKeys, attribute =>
+      this.attributeToTableColumn(attribute)
     );
+    const otherColumns = map(otherKeys, attribute =>
+      `${pivotAlias}.${Other.attributeToColumn(attribute)}`
+    );
+    const joinColumns = zipObject(selfColumns, otherColumns);
 
     return this.withMutations(mapper => {
       mapper.setState({ pivotAlias });

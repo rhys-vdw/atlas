@@ -1,4 +1,4 @@
-import { isArray, isObject } from 'lodash/lang';
+import { isArray, isObject } from 'lodash';
 import { assignResolved, defaultsResolved } from '../arguments';
 
 export default {

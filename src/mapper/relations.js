@@ -1,10 +1,9 @@
-import { flatten } from 'lodash/array';
-import { keys as objectKeys } from 'lodash/object';
-import { reject } from 'lodash/collection';
-import { isEmpty, isFunction, isString } from 'lodash/lang';
+import { inspect } from 'util';
+import {
+  flatten, keys as objectKeys, reject, isEmpty, isFunction, isString
+} from 'lodash';
 import { isRelated } from '../related';
 import EagerLoader from '../eager-loader';
-import { inspect } from 'util';
 
 export default {
 

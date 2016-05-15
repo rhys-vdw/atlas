@@ -1,5 +1,5 @@
 import Knex from 'knex';
-import { each } from 'lodash/collection';
+import { each } from 'lodash';
 
 import Atlas from '../../lib/atlas';
 

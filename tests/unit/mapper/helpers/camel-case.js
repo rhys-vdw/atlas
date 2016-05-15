@@ -1,5 +1,5 @@
-import camelCase from 'lodash/string/camelCase';
-import snakeCase from 'lodash/string/snakeCase';
+import camelCase from 'lodash/camelCase';
+import snakeCase from 'lodash/snakeCase';
 
 export default function CamelCase() {
   return {

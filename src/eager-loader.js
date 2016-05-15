@@ -1,10 +1,8 @@
 import Promise from 'bluebird';
-import { groupBy, reject, map } from 'lodash/collection';
-import { isArray, isEmpty } from 'lodash/lang';
-import { zipObject } from 'lodash/array';
 import {
+  isArray, isEmpty, groupBy, reject, map, zipObject,
   keys as objectKeys, mapValues, values as objectValues
-} from 'lodash/object';
+} from 'lodash';
 import { normalizeRecords } from './arguments';
 import { isRelated } from './related';
 import { inspect } from 'util';
@@ -35,10 +33,13 @@ export default class EagerLoader {
 
     // Now fetch all related records from each relation and resolve them as a
     // keyed object to be assigned to parent records.
-    return Promise.props(mapValues(relatedByName, ([related, ...duplicates], name) => {
-      if (!isEmpty(duplicates)) console.error(
+    return Promise.props(mapValues(relatedByName, (relatedArray, name) => {
+
+      if (relatedArray.length > 1) console.error(
         `WARNING: Duplicate relation name "${name}" will be ignored`
       );
+
+      const [related] = relatedArray;
 
       return related.toMapperOf(Self, ...records).fetch().then(records =>
         related.mapRelated(Self, targets, records)
@@ -51,12 +52,15 @@ export default class EagerLoader {
       }
 
       // Otherwise assign the value at each index to its corresponding record.
-      const names = objectKeys(recordsByName);
-      const mapped = objectValues(recordsByName);
+      const relationNames = objectKeys(recordsByName);
+      const recordsByIndex = objectValues(recordsByName);
 
-      return map(targets, (target, index) =>
-        Self.setRelated(target, zipObject(names, map(mapped, index)))
-      );
+      // NOTE: `setRelated` returns a copy, so it's important that all relations
+      // are assigned simulataneously (so that only one copy is made).
+      return map(targets, (target, index) => {
+        const records = map(recordsByIndex, index);
+        return Self.setRelated(target, zipObject(relationNames, records));
+      });
     });
   }
 }

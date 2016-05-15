@@ -42,7 +42,7 @@
     "babel-polyfill": "^6.3.14",
     "bluebird": "^2.10.0",
     "inflection": "^1.7.1",
-    "lodash": "^3.10.1",
+    "lodash": "^4.12.0",
     "object-to-string": "^1.0.0"
   }
 }

@@ -1,4 +1,4 @@
-import identity from 'lodash/utility/identity';
+import identity from 'lodash/identity';
 
 import BelongsTo from './belongs-to';
 import BelongsToMany from './belongs-to-many';

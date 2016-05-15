@@ -1,8 +1,4 @@
-import { isUndefined } from 'lodash/lang';
-import { flatten } from 'lodash/array';
-import { omit } from 'lodash/object';
-import { identity } from 'lodash/utility';
-import { reduce } from 'lodash/collection';
+import { isUndefined, flatten, omit, identity, reduce } from 'lodash';
 
 export default {
 

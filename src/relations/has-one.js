@@ -1,6 +1,4 @@
-import { isArray } from 'lodash/lang';
-import { indexBy } from 'lodash/collection';
-import { first } from 'lodash/array';
+import { isArray, keyBy, head } from 'lodash';
 import * as DefaultColumn from '../naming/default-column';
 import { isComposite, keysCompatible } from '../arguments';
 
@@ -29,7 +27,7 @@ export default class HasOne {
 
     const id = Self.identifyBy(selfKey, ...records);
     const isSingle = !isArray(id) ||
-      isComposite(selfKey) && !isComposite(first(id));
+      isComposite(selfKey) && !isComposite(head(id));
 
     return Other.withMutations(mapper => {
       mapper.targetBy(otherRef, id);
@@ -46,7 +44,7 @@ export default class HasOne {
 
     const { Self, Other, selfKey, otherRef } = this;
 
-    const relatedById = indexBy(related, record =>
+    const relatedById = keyBy(related, record =>
       Other.identifyBy(otherRef, record)
     );
 

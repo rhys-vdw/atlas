@@ -1,5 +1,5 @@
 import test from 'tape';
-import { omit } from 'lodash/object';
+import { omit } from 'lodash';
 
 import ImmutableBase from '../../lib/immutable-base';
 

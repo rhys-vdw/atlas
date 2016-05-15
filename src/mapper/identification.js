@@ -1,6 +1,6 @@
-import { each, some } from 'lodash/collection';
-import { isArray, isEmpty, isObject, isUndefined } from 'lodash/lang';
-import { first, flatten } from 'lodash/array';
+import {
+  isArray, isEmpty, isObject, isUndefined, each, some, first, flatten
+} from 'lodash';
 import { ensureArray, isComposite } from '../arguments';
 import { UnidentifiableRecordError } from '../errors';
 

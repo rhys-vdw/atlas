@@ -1,7 +1,6 @@
-import { isArray, isEmpty } from 'lodash/lang';
-import { map, size } from 'lodash/collection';
-import { values as objectValues, omit } from 'lodash/object';
-import { first } from 'lodash/array';
+import {
+  isArray, isEmpty, map, size, values as objectValues, omit, first
+} from 'lodash';
 import Promise from 'bluebird';
 
 import { NotFoundError, UnidentifiableRecordError } from '../errors';
@@ -35,7 +34,7 @@ export default {
       return this.updateRow(toUpdate);
     }
 
-    return Promise.all(map(records, this.updateRow, this));
+    return Promise.all(map(records, record => this.updateRow(record)));
   },
 
   /**

@@ -1,7 +1,4 @@
-import { isArray, isEmpty } from 'lodash/lang';
-import { groupBy } from 'lodash/collection';
-import { flatten } from 'lodash/array';
-import { mapValues } from 'lodash/object';
+import { isArray, isEmpty, groupBy, flatten, mapValues } from 'lodash';
 import Promise from 'bluebird';
 
 import { normalizeRecords } from '../arguments';

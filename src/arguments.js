@@ -1,8 +1,8 @@
-import { compact, first, flatten, zipObject } from 'lodash/array';
-import { every, map } from 'lodash/collection';
-import { flow } from 'lodash/function';
-import { isArray, isEmpty, isFunction, isUndefined } from 'lodash/lang';
-import { keys as objectKeys, mapValues, omit, values } from 'lodash/object';
+import {
+  isArray, isEmpty, isFunction, isUndefined,
+  compact, first, flatten, zipObject, every, map, flow,
+  keys as objectKeys, mapValues, omit, values
+} from 'lodash';
 
 // Functions
 const flatCompact = flow(flatten, compact);

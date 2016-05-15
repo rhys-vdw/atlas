@@ -1,7 +1,5 @@
-import { flatten } from 'lodash/array';
-import { map, reject } from 'lodash/collection';
-import { isEmpty, isString } from 'lodash/lang';
 import { inspect } from 'util';
+import { flatten, map, reject, isEmpty, isString } from 'lodash';
 
 import ImmutableBase from './immutable-base';
 import { RELATED_SENTINEL } from './constants';
