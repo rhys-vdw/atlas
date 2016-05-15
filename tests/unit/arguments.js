@@ -68,6 +68,7 @@ test('Arguments', t => {
     st.deepEqual(resolveObject(), {});
     st.deepEqual(resolveObject({a: 'a', b: () => 'b'}), {a: 'a', b: 'b'});
     st.deepEqual(resolveObject({a: 'a', b: a => a}, 'b'), {a: 'a', b: 'b'});
+    st.deepEqual(resolveObject({a: undefined, b() {}}), {});
 
     st.end();
   });

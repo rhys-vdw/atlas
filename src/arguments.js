@@ -1,7 +1,7 @@
 import {
   isArray, isEmpty, isFunction, isUndefined,
   compact, first, flatten, zipObject, every, map, flow,
-  keys as objectKeys, mapValues, omit, values
+  keys as objectKeys, mapValues, omit, values, reduce
 } from 'lodash';
 
 // Functions
@@ -86,9 +86,13 @@ export function ensureArray(maybeArray) {
  * Resolves any key values of the given object into their return values.
  */
 export function resolveObject(object, ...args) {
-  return mapValues(object, (value, key) =>
-    isFunction(value) ? value(...args) : value
-  );
+  return reduce(object, (result, value, key) => {
+    let resolved = isFunction(value) ? value(...args) : value;
+    if (!isUndefined(resolved)) {
+      result[key] = resolved;
+    }
+    return result;
+  }, {});
 }
 
 /**
