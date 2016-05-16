@@ -1,3 +1,4 @@
 import CamelCase from './CamelCase';
-export { CamelCase };
-export default { CamelCase };
+import Timestamp from './Timestamp';
+export { CamelCase, Timestamp };
+export default { CamelCase, Timestamp };

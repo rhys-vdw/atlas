@@ -87,12 +87,12 @@ export default {
       .flatten()
       .compact()
       .map(record => this.getAttributes(record))
-      .map(attributes =>
-        defaultsResolved(attributes, defaultAttributes, attributes)
-      )
-      .map(attributes =>
-        assignResolved(attributes, strictAttributes, attributes)
-      )
+      .map(attributes => defaultsResolved(
+        attributes, defaultAttributes, attributes, this
+      ))
+      .map(attributes => assignResolved(
+        attributes, strictAttributes, attributes, this
+      ))
       .map(attributes => this.attributesToColumns(attributes))
       .value();
 

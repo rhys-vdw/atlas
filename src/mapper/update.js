@@ -99,7 +99,8 @@ export default {
     return assignResolved(
       omit(attributes, idAttribute),
       strictAttributes,
-      attributes
+      attributes,
+      this
     );
   },
 
