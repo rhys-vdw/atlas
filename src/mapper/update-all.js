@@ -25,7 +25,7 @@ export default {
    * @param {Object} attributes
    *   Attributes to be set on all matched rows.
    */
-  prepareUpdateAll(attributes) {
+  prepareUpdateAll(attributes = {}) {
     return this.withMutations(mapper => {
 
       // Update statements do not support joins, so filter by ID.
