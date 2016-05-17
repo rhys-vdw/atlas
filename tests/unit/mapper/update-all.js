@@ -41,24 +41,21 @@ test('== Mapper - update all ==', t => {
     t.end();
   });
 
-  t.test('Mapper().prepareUpdateAll() - with join', t => {
+  t.test('Mapper().strictAttributes().prepareUpdateAll()', t => {
 
-    const Selves = Mapper.table('selves')
-      .idAttribute('s_id')
-      .query(query => {
-        query.join('others', 'selves.other_id', 'others.o_id');
-      }).prepareUpdateAll({ target: 'new_value' });
+    const Records = Mapper.table('records')
+      .setState({ testState: 'testValue' })
+      .strictAttributes({
+        strict(attributes) {
+          return this.requireState('testState') + '/' + attributes.strict;
+        }
+      }).prepareUpdateAll({ strict: 'overridden' });
 
-    const queryBuilder = Selves.toQueryBuilder();
+    const queryBuilder = Records.toQueryBuilder();
 
     t.queriesEqual(queryBuilder, `
-      update "selves"
-      set "target" = 'new_value'
-      where "selves"."s_id" in (
-        select "selves"."s_id"
-        from "selves"
-        inner join "others" on "selves"."other_id" = "others"."o_id"
-      )
+      update "records"
+      set "strict" = 'testValue/overridden'
     `);
 
     t.end();
