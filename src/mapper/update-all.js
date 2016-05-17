@@ -12,9 +12,6 @@ export default {
    *   Number of attributes
    */
   updateAll(attributes) {
-    if (this.isNoop()) return Promise.resolve(
-      this.state.isSingle ? null : []
-    );
     const queryBuilder = this.prepareUpdateAll(attributes).toQueryBuilder();
     return queryBuilder.then(response =>
       this.handleUpdateAllResponse({ attributes, queryBuilder, response })

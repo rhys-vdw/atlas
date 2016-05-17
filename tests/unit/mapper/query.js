@@ -107,28 +107,19 @@ test('Mapper - query', t => {
     t.end();
   });
 
-  t.test('Mapper#noop()', t => {
+  t.test('Mapper#noop()', st => {
 
-    t.throws(
-      () => Mapper.noop(),
-      TypeError,
-      '`.noop()` rejects without reason'
+    st.queriesEqual(
+      Mapper.table('table').noop().toQueryBuilder(),
+      `select * from "table" where 1 = 0`
     );
 
-    const NoopMapper = Mapper.noop('reason');
+    st.queriesEqual(
+      Mapper.table('table').noop().toQueryBuilder().update('name', 'Bob'),
+      `update "table" set "name" = 'Bob' where 1 = 0`
+    );
 
-    t.equal(Mapper.isNoop(), false, '`isNoop()` is false');
-    t.equal(NoopMapper.isNoop(), true, '`isNoop()` is true');
-
-    try {
-      NoopMapper.toQueryBuilder();
-    } catch (error) {
-      t.true(error instanceof NoopError);
-      t.equal(error.Mapper, NoopMapper);
-      t.equal(error.reason, 'reason');
-    }
-
-    t.end();
+    st.end();
   });
 
 });

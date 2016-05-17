@@ -111,46 +111,39 @@ test('Mapper - target', t => {
       'target({}) throws `UnidentifiableRecordError`'
     );
 
-    t.equal(
-      Items.target().isNoop(), true,
-      `target() is a noop`
-    );
+    function targetIsNoop(...args) {
+      t.queriesEqual(
+        Items.target(...args).toQueryBuilder(),
+        `select * from "items" where 1 = 0`,
+        `target(${args.join()}) is a noop`
+      );
+    }
 
-    t.equal(
-      Items.target().requireState('isSingle'), true,
-      `target() is single`
-    );
+    function targetIsSingle(...args) {
+      t.equal(
+        Items.target(...args).requireState('isSingle'), true,
+        `target() is single`
+      );
+    }
 
-    t.equal(
-      Items.target(null).isNoop(), true,
-      `target(null) is a noop`
-    );
+    function targetIsNotSingle(...args) {
+      t.equal(
+        Items.target(...args).requireState('isSingle'), false,
+        `target() is not single`
+      );
+    }
 
-    t.equal(
-      Items.target(null).requireState('isSingle'), true,
-      `target() is single`
-    );
+    targetIsNoop();
+    targetIsSingle();
 
-    t.equal(
-      Items.target([]).isNoop(), true,
-      `target([]) is a noop`
-    );
+    targetIsNoop(null);
+    targetIsSingle(null);
 
-    t.equal(
-      Items.target([]).requireState('isSingle'), false,
-      `target([]) is not single`
-    );
+    targetIsNoop([]);
+    targetIsNotSingle([]);
 
-    t.equal(
-      Items.target([null]).isNoop(), true,
-      `target([null]) is a noop`
-    );
-
-    t.equal(
-      Items.target([null]).requireState('isSingle'), false,
-      `target([null]) is not single`
-    );
-
+    targetIsNoop([null]);
+    targetIsNotSingle([null]);
 
     t.end();
   });

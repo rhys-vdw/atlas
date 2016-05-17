@@ -20,6 +20,14 @@ export default class EagerLoader {
 
   into(...records) {
 
+    // `mapRelated` expects input to be normalized. eg. it receives either an
+    // array or a single record (no spread).
+    const targets = normalizeRecords(...records);
+
+    if (isEmpty(targets)) {
+      return targets;
+    }
+
     const { Self, relatedList } = this;
 
     // Group relations by name.
@@ -34,10 +42,6 @@ export default class EagerLoader {
       }
       return result;
     }, {});
-
-    // `mapRelated` expects input to be normalized. eg. it receives either an
-    // array or a single record (no spread).
-    const targets = normalizeRecords(...records);
 
     // Now fetch all related records from each relation and resolve them as a
     // keyed object to be assigned to parent records.

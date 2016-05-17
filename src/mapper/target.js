@@ -1,4 +1,4 @@
-import { isArray, isEmpty, head, zipObject, reject } from 'lodash';
+import { isArray, head, zipObject, reject } from 'lodash';
 import { isComposite as isCompositeKey } from '../arguments';
 
 export default {
@@ -32,7 +32,7 @@ export default {
 
       if (isSingle) {
         if (normalized == null) {
-          mapper.noop(`'ids' failed to identify any rows. Got: ${ids}`);
+          mapper.noop();
         } else if (isComposite) {
           mapper.where(zipObject(attribute, normalized));
         } else {
@@ -40,11 +40,7 @@ export default {
         }
       } else {
         const compacted = reject(normalized, id => id == null);
-        if (isEmpty(compacted)) {
-          mapper.noop(`'ids' failed to identify any rows. Got: ${ids}`);
-        } else {
-          mapper.whereIn(attribute, compacted);
-        }
+        mapper.whereIn(attribute, compacted);
       }
 
     });

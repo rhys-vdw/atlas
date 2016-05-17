@@ -1,38 +1,13 @@
 import { isFunction, isEmpty, isString, assign } from 'lodash';
 import Knex from 'knex';
 
-import { NoopError } from '../errors';
-
 const knex = Knex({});
 
 export default {
 
   initialize() {
-    this.setState({
-      noop: false,
-      queryBuilder: knex.queryBuilder(),
-    });
+    this.setState({ queryBuilder: knex.queryBuilder() });
   },
-
-  // -- No-op --
-
-  isNoop() {
-    return this.state.noop !== false;
-  },
-
-  assertNotNoop() {
-    const reason = this.state.noop;
-    if (reason !== false) throw new NoopError(this, reason);
-  },
-
-  noop(reason) {
-    if (!isString(reason)) throw new TypeError(
-      `Expected 'reason' to be a string, got: ${reason}`
-    );
-    return this.setState({ noop: reason });
-  },
-
-  // -- Query --
 
   atlas(atlas) {
     return this.setState({ atlas });
@@ -81,7 +56,6 @@ export default {
    * @returns {QueryBuilder} QueryBuilder instance.
    */
   toQueryBuilder() {
-    this.assertNotNoop();
     return this.state.queryBuilder.clone();
   },
 
@@ -104,7 +78,7 @@ export default {
    */
   query(method, ...args) {
 
-    if (this.isNoop() || !isFunction(method) && isEmpty(method)) return this;
+    if (!isFunction(method) && isEmpty(method)) return this;
 
     const queryBuilder = this.toQueryBuilder();
 
@@ -118,5 +92,13 @@ export default {
     }
 
     return this.setState({ queryBuilder });
+  },
+
+
+  noop() {
+    return this.query(queryBuilder => {
+      // Doesn't matter which string is supplied for the column name.
+      queryBuilder.whereIn('', []);
+    });
   },
 };
