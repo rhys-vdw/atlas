@@ -31,26 +31,38 @@ test('== Mapper - forge ==', t => {
   });
 
   t.test('Mapper.defaultAttributes().forge()', st => {
-    const DefaultMapper = Mapper.defaultAttributes({
-      a: 'a', b: 'a', c: attributes => `${attributes.b}c`
+    const DefaultMapper = Mapper.setState({
+      test_state: 'test_value'
+    }).defaultAttributes({
+      a: 'default',
+      b: 'default',
+      c(attributes) {
+        return this.requireState('test_state') + '/' + attributes.b;
+      }
     });
 
     st.deepEqual(
-      DefaultMapper.forge({ b: 'b' }),
-      { a: 'a', b: 'b', c: 'bc' }
+      DefaultMapper.forge({ b: 'set' }),
+      { a: 'default', b: 'set', c: 'test_value/set' }
     );
 
     st.end();
   });
 
   t.test('Mapper.strictAttributes().forge()', st => {
-    const StrictMapper = Mapper.strictAttributes({
-      a: 'a', b: 'a', c: attributes => `${attributes.b}c`
+    const StrictMapper = Mapper.setState({
+      test_state: 'test_value'
+    }).strictAttributes({
+      a: 'strict',
+      b: 'strict',
+      c(attributes) {
+        return this.requireState('test_state') + '/' + attributes.b;
+      }
     });
 
     st.deepEqual(
-      StrictMapper.forge({ b: 'b' }),
-      { a: 'a', b: 'a', c: 'bc' }
+      StrictMapper.forge({ b: 'set' }),
+      { a: 'strict', b: 'strict', c: 'test_value/set' }
     );
 
     st.end();

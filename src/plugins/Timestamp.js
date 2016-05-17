@@ -1,6 +1,6 @@
 function createSetter(getNow) {
-  return function(attributes, mapper) {
-    if (!mapper.state.omitTimestamps) {
+  return function(attributes) {
+    if (!this.state.omitTimestamps) {
       return getNow();
     }
   };
