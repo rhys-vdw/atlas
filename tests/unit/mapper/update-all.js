@@ -53,10 +53,10 @@ test('== Mapper - update all ==', t => {
 
     const queryBuilder = Records.toQueryBuilder();
 
-    t.queriesEqual(queryBuilder, `
-      update "records"
-      set "strict" = 'testValue/overridden'
-    `);
+    t.queriesEqual(
+      queryBuilder,
+      `update "records" set "strict" = 'testValue/overridden'`
+    );
 
     t.end();
   });
