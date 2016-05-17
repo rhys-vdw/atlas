@@ -237,18 +237,21 @@ test('== Mapper - insert ==', t => {
       `insert into "table" ("default") values ('default')`
     );
 
-    const FnDefaults = Mapper.table('table').defaultAttributes({
-      default: () => 'default',
-      other: attributes => attributes.value
+    const FnDefaults = Mapper.table('table').setState({
+      testState: 'state_value'
+    }).defaultAttributes({
+      default: 'default_value',
+      default_fn(attributes) {
+        return this.requireState('testState') + '/' + attributes.set;
+      }
     });
 
     st.queriesEqual(
-      FnDefaults.prepareInsert({value: 5}).toQueryBuilder(),
-      `
+      FnDefaults.prepareInsert({ set: 'set_value' }).toQueryBuilder(), `
       insert into "table"
-        ("default", "other", "value")
+        ("default", "default_fn", "set")
       values
-        ('default', 5, 5)
+        ('default_value', 'state_value/set_value', 'set_value')
       `
     );
 
@@ -271,13 +274,41 @@ test('== Mapper - insert ==', t => {
       `insert into "table" ("strict") values ('strict_value')`
     );
 
-    const FnStrict = Mapper.table('table').strictAttributes({
-      strict: () => 'strict_value'
+    const FnStrict = Mapper.table('table').setState({
+      testState: 'state_value'
+    }).strictAttributes({
+      strict: 'strict_value',
+      strict_fn(attributes) {
+        return this.requireState('testState') + '/' + attributes.strict;
+      }
     });
 
     st.queriesEqual(
-      FnStrict.prepareInsert({ strict: 'overridden' }).toQueryBuilder(),
-      `insert into "table" ("strict") values ('strict_value')`
+      FnStrict.prepareInsert({ strict: 'set' }).toQueryBuilder(), `
+        insert into "table" ("strict", "strict_fn")
+        values ('strict_value', 'state_value/set')
+      `
+    );
+
+    st.end();
+  });
+
+  t.test('Mapper.defaultAttributes().strictAttributes().prepareInsert()', st => {
+
+    const DefaultStrict = Mapper.table('table').defaultAttributes({
+      default: 'default_value'
+    }).strictAttributes({
+      strict_fn: attributes => attributes.default + '/' + attributes.set
+    });
+
+    st.queriesEqual(
+      DefaultStrict.prepareInsert({
+        strict_fn: 'overridden', set: 'set_value'
+      }).toQueryBuilder(), `
+        insert into "table" ("default", "set", "strict_fn")
+        values ('default_value', 'set_value', 'default_value/set_value')
+      `,
+      'resolves strict with defaulted attributes'
     );
 
     st.end();

@@ -1,7 +1,7 @@
 import {
   isArray, isEmpty, isFunction, isUndefined,
   compact, first, flatten, zipObject, every, map, flow,
-  keys as objectKeys, mapValues, omit, values
+  keys as objectKeys, omit, values, reduce
 } from 'lodash';
 
 // Functions
@@ -18,6 +18,9 @@ const flatCompact = flow(flatten, compact);
  * isSingleRecord()             // false
  * isSingleRecord(null)         // false
  * isSingleRecord([])           // false
+ *
+ * This is typically for for determining whether to return an array or
+ * individual record.
  *
  * @param {...(Object|Object[])} records One or more records
  * @returns {bool}
@@ -86,9 +89,13 @@ export function ensureArray(maybeArray) {
  * Resolves any key values of the given object into their return values.
  */
 export function resolveObject(object, ...args) {
-  return mapValues(object, (value, key) =>
-    isFunction(value) ? value(...args) : value
-  );
+  return reduce(object, (result, value, key) => {
+    const resolved = isFunction(value) ? value.apply(this, args) : value;
+    if (!isUndefined(resolved)) {
+      result[key] = resolved;
+    }
+    return result;
+  }, {});
 }
 
 /**
@@ -103,14 +110,14 @@ export function defaultsResolved(target = {}, source, ...args) {
   if (isEmpty(defaults)) {
     return target;
   }
-  const resolved = resolveObject(defaults, ...args);
+  const resolved = resolveObject.call(this, defaults, ...args);
   return { ...resolved, ...target };
 }
 
 export function assignResolved(target = {}, source, ...args) {
   return isEmpty(source)
     ? target
-    : { ...target, ...resolveObject(source, ...args) };
+    : { ...target, ...resolveObject.call(this, source, ...args) };
 }
 
 export function keyValueToObject(key, value) {

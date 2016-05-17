@@ -210,15 +210,17 @@ test('== Mapper - update ==', t => {
       `update "table" set "other" = 1, "strict" = 'strict' where "id" = 1`
     );
 
-    const FnStrict = Mapper.table('table').strictAttributes({
-      strict: () => 'strict'
+    const FnStrict = Mapper.table('table').setState({
+      testState: 'testValue'
+    }).strictAttributes({
+      strict() { return this.requireState('testState'); }
     });
 
     st.queriesEqual(
       FnStrict
-        .prepareUpdate({ id: 2, other: 'other', strict: 'overridden' })
+        .prepareUpdate({ id: 2, strict: 'overridden' })
         .toQueryBuilder(),
-      `update "table" set "other" = 'other', "strict" = 'strict' where "id" = 2`
+      `update "table" set "strict" = 'testValue' where "id" = 2`
     );
 
     st.end();

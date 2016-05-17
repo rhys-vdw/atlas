@@ -1,8 +1,8 @@
 import test from 'tape';
-import Atlas from '../../lib/atlas';
+import Atlas from '../../../lib/atlas';
 
-const basePath = '../../lib';
-const plugins = ['CamelCase']
+const basePath = '../../../lib';
+const plugins = ['CamelCase', 'Timestamp']
 
 test('Atlas.plugins exposes all plugins', t => {
   for (const plugin of plugins) {
@@ -27,3 +27,5 @@ for (const plugin of plugins) {
     t.end();
   });
 }
+
+import './Timestamp';

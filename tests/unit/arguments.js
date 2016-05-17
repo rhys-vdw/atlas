@@ -68,6 +68,12 @@ test('Arguments', t => {
     st.deepEqual(resolveObject(), {});
     st.deepEqual(resolveObject({a: 'a', b: () => 'b'}), {a: 'a', b: 'b'});
     st.deepEqual(resolveObject({a: 'a', b: a => a}, 'b'), {a: 'a', b: 'b'});
+    st.deepEqual(resolveObject({a: undefined, b() {}}), {});
+
+    const X = {};
+    resolveObject.call(X, { whatever() {
+      st.equal(this, X, 'rebinds bound value to callback');
+    } });
 
     st.end();
   });
@@ -106,6 +112,11 @@ test('Arguments', t => {
       `passes arguments to resolver function callbacks`
     );
 
+    const X = {};
+    defaultsResolved.call(X, undefined, { whatever() {
+      st.equal(this, X, 'rebinds bound value to callback');
+    } });
+
     st.end();
   });
 
@@ -135,6 +146,12 @@ test('Arguments', t => {
       {a: 'de'},
       `passes arguments to resolver function callbacks`
     );
+
+    const X = {};
+    assignResolved.call(X, undefined, { whatever() {
+      st.equal(this, X, 'rebinds bound value to callback');
+    } });
+
     st.end();
   });
 

@@ -96,7 +96,8 @@ export default {
     const idAttribute = this.requireState('idAttribute');
     const attributes = this.getAttributes(record);
     const { strictAttributes } = this.state;
-    return assignResolved(
+    return assignResolved.call(
+      this,
       omit(attributes, idAttribute),
       strictAttributes,
       attributes

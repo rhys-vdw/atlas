@@ -22,11 +22,11 @@ export default {
 
     const { defaultAttributes, strictAttributes } = this.state;
 
-    const defaulted = defaultsResolved(
-      attributes, defaultAttributes, attributes
+    const defaulted = defaultsResolved.call(
+      this, attributes, defaultAttributes, attributes
     );
-    const overridden = assignResolved(
-      defaulted, strictAttributes, defaulted
+    const overridden = assignResolved.call(
+      this, defaulted, strictAttributes, defaulted
     );
 
     return this.createRecord(overridden);
