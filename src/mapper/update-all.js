@@ -1,6 +1,7 @@
 import { isArray, map } from 'lodash';
 import { NoRowsFoundError } from '../errors';
 import { isQueryBuilderJoined } from './helpers/knex';
+import { assignResolved } from '../arguments';
 
 export default {
 
@@ -24,7 +25,7 @@ export default {
    * @param {Object} attributes
    *   Attributes to be set on all matched rows.
    */
-  prepareUpdateAll(attributes) {
+  prepareUpdateAll(attributes = {}) {
     return this.withMutations(mapper => {
 
       // Update statements do not support joins, so filter by ID.
@@ -33,7 +34,16 @@ export default {
         mapper.whereIn(idAttribute, this);
       }
 
-      const columns = this.attributesToColumns(attributes);
+      // Assign any strict attributes.
+      const { strictAttributes } = this.state;
+      const restricted = assignResolved.call(
+        this,
+        attributes,
+        strictAttributes,
+        attributes
+      );
+
+      const columns = this.attributesToColumns(restricted);
       mapper.query('update', columns, '*');
     });
   },

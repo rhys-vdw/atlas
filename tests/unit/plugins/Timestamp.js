@@ -69,7 +69,31 @@ test('Timestamp plugin', t => {
   });
 
 
-  t.test('update()', st => {
+  t.test('updateAll()', st => {
+
+    const TimestampMapper = Mapper.table('records')
+      .extend(Timestamp({ getNow: () => '2016-10-10' }));
+
+    st.queriesEqual(
+      TimestampMapper.prepareUpdateAll().toQueryBuilder(),
+      `update "records" set "updated_at" = '2016-10-10'`,
+      'updates `updated_at`'
+    );
+
+    st.queriesEqual(
+      TimestampMapper
+        .omitTimestamps()
+        .prepareUpdateAll({ column: 'value' })
+        .toQueryBuilder(),
+        `update "records" set "column" = 'value'`
+    , 'updates neither with `omitTimestamps`'
+    );
+
+    st.end();
+  });
+
+
+  t.test('forge()', st => {
 
     const TimestampMapper = Mapper.table('records')
       .extend(Timestamp({ getNow: () => '2016-10-10' }));
