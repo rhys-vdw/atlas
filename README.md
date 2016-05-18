@@ -1,7 +1,8 @@
 # Atlas
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/rhys-vdw/atlas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/rhys-vdw/atlas.svg?branch=master)](https://travis-ci.org/rhys-vdw/atlas)
 [![codecov](https://codecov.io/gh/rhys-vdw/atlas/branch/master/graph/badge.svg)](https://codecov.io/gh/rhys-vdw/atlas)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/rhys-vdw/atlas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Data mapper implementation for JavaScript. Atlas provides a fluent interface for manipulating relational database data.
 
