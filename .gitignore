@@ -2,4 +2,5 @@
 /lib/
 /compiled-tests/
 /coverage/
+/.nyc_output/
 npm-debug.log
