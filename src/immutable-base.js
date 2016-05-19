@@ -108,7 +108,7 @@ export default class ImmutableBase {
       // Support supplying a function that is resolved with a `callSuper`
       // helper.
       const properties = isFunction(methodsOrFn)
-        ? methodsOrFn(createCallSuper(this))
+        ? methodsOrFn(createCallSuper(Object.getPrototypeOf(this)))
         : methodsOrFn;
 
       // `initialize` is a special case.
