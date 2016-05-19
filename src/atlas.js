@@ -1,4 +1,3 @@
-import 'babel-polyfill';
 import { isObject, isString, each } from 'lodash';
 import Registry from './registry';
 import Mapper from './mapper';
