@@ -3,7 +3,7 @@ import { each } from 'lodash';
 
 import Atlas from '../../lib/atlas';
 
-import test from 'tape';
+import test from '../test';
 import testMapper from './mapper';
 import defaultConfig from './knex-config';
 
