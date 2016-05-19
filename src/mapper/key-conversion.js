@@ -10,18 +10,10 @@ export default {
   attributeToColumn: identity,
 
   /** @protected */
-  columnsToAttributes(columns) {
-    return this.columnToAttribute !== identity
-      ? mapKeys(columns, (value, column) => this.columnToAttribute(column))
-      : columns;
-  },
+  columnsToAttributes: identity,
 
   /** @protected */
-  attributesToColumns(attributes) {
-    return this.attributeToColumn !== identity
-      ? mapKeys(attributes, (value, attr) => this.attributeToColumn(attr))
-      : attributes;
-  },
+  attributesToColumns: identity,
 
   /** @private */
   columnToTableColumn(column) {
