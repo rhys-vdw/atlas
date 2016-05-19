@@ -4,7 +4,11 @@ import map from 'lodash/map';
 import flatten from 'lodash/flatten';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 import { PIVOT_PREFIX } from '../constants';
-import { isQueryBuilderSpecifyingColumns } from './helpers/knex';
+import {
+  isQueryBuilderSpecifyingColumns,
+  isQueryBuilderOrdered
+} from './helpers/knex';
+import { isComposite } from '../arguments';
 
 export default {
 
@@ -65,7 +69,17 @@ export default {
   },
 
   first() {
-    return this.one().fetch();
+    return this.withMutations(mapper => {
+
+      // `first` only makes sene if the query is ordered, so check if it has been.
+      if (!isQueryBuilderOrdered(mapper.state.queryBuilder)) {
+
+        // If it hasn't we have to order by ID attribute.
+        const idAttribute = this.requireState('idAttribute');
+        mapper.orderBy(idAttribute, 'asc');
+      }
+      mapper.one();
+    }).fetch();
   },
 
   fetchAll() {

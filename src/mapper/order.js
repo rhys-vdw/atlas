@@ -11,8 +11,8 @@ export default {
    *   console.log(`${message.sender} says "${message.text}"`);
    * });
    *
-   * @param {string} attribute
-   *   The attribute by which to order the response.
+   * @param {string|string[]} attribute
+   *   The attribute(s) by which to order the response.
    * @param {string='asc'} direction
    *   The direction by which to order the records. Either `'asc'` for
    *   ascending, or `'desc'` for descending.
