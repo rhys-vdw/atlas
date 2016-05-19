@@ -8,6 +8,7 @@ import Identification from './identification';
 import Insert from './insert';
 import Joins from './joins';
 import KeyConversion from './key-conversion';
+import Order from './order';
 import Query from './query';
 import RecordAdapter from './record-adapter';
 import Relations from './relations';
@@ -29,6 +30,7 @@ const Mapper = new ImmutableBase().extend(
   Insert,
   Joins,
   KeyConversion,
+  Order,
   Query,
   RecordAdapter,
   Relations,
