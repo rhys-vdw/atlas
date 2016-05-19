@@ -13,7 +13,7 @@
     "cover-html": "nyc --reporter=html node compiled-tests",
     "babel-tests": "rm -rf compiled-tests && babel tests -d compiled-tests",
     "babel": "rm -rf lib && babel src -d lib",
-    "develop": "watch 'npm test' tests/ src/ package.json"
+    "develop": "watch 'npm test' tests/ src/"
   },
   "nyc": {
     "exclude": [
