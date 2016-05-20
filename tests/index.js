@@ -1,3 +1,5 @@
+import 'babel-polyfill';
+
 import SouceMapSupport from 'source-map-support';
 SouceMapSupport.install();
 
