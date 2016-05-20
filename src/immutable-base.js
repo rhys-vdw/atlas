@@ -118,7 +118,7 @@ export default class ImmutableBase {
       // problems when reassigning values (eg. `this.x` is shared between all
       // instances).
       const invalid = pick(methods, isFunction);
-      if (!isEmpty(invalid.length)) throw new TypeError(
+      if (invalid.length > 0) throw new TypeError(
         `methods must all be functions, invalid properties: ${inspect(invalid)}`
       );
 

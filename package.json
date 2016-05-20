@@ -6,14 +6,14 @@
   "scripts": {
     "lint": "eslint src/**",
     "lint-tests": "eslint tests/**",
-    "test": "export BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && tape compiled-tests && npm run cover",
+    "test": "export BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && npm run cover",
     "test-debug": "export BLUEBIRD_DEBUG=1 && npm run lint && npm run lint-tests && npm run babel-tests && npm run babel && node-debug compiled-tests | tap-dot",
     "test-plain": "export BLUEBIRD_DEBUG=1 && npm run babel && npm run babel-tests && tape compiled-tests",
-    "cover": "nyc --reporter=lcov --reported=text node compiled-tests | tap-dot && nyc report",
+    "cover": "nyc --reporter=lcov --reporter=text node compiled-tests && nyc report",
     "cover-html": "nyc --reporter=html node compiled-tests",
     "babel-tests": "rm -rf compiled-tests && babel tests -d compiled-tests",
     "babel": "rm -rf lib && babel src -d lib",
-    "develop": "watch 'npm test' tests/ src/ package.json"
+    "develop": "watch 'npm test' tests/ src/"
   },
   "nyc": {
     "exclude": [

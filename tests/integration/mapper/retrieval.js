@@ -3,17 +3,19 @@ import test from 'tape';
 import {
   UnidentifiableRecordError, NoRowsFoundError
 } from '../../../lib/errors';
+import CamelCase from '../../../lib/plugins/CamelCase';
 
-function peopleTable(people) {
-  people.integer('person_id');
-  people.string('name');
-}
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
   const { knex } = atlas;
 
   test('Mapper - Retrieval', t => {
+
+    function peopleTable(people) {
+      people.integer('person_id');
+      people.string('name');
+    }
 
     t.databaseTest('Mapper.fetch()', knex, { people: peopleTable }, t => {
 
@@ -54,8 +56,6 @@ export default function(atlas) {
     }, t => {
 
       const People = Mapper.table('people').idAttribute('person_id');
-
-      t.plan(8);
 
       return knex('people').insert([
         { person_id: 1, name: 'Jane' },
@@ -113,6 +113,37 @@ export default function(atlas) {
 
       ));
     });
+
+    t.databaseTest('Mapper.first()', knex, {
+      users(table) {
+        table.integer('user_id');
+        table.string('first_name');
+      }
+    }, t => {
+
+      const Users = Mapper.extend(CamelCase()).table('users')
+        .idAttribute('userId');
+
+      return knex('users').insert([
+        { user_id: 3, first_name: 'Abby' },
+        { user_id: 1, first_name: 'Betty' },
+        { user_id: 2, first_name: 'Cindy' }
+      ]).then(() =>
+        t.resolvesToDeep(
+          Users.first(),
+          { userId: 1, firstName: 'Betty' },
+          'defaults to ordering by `idAttribute`'
+        ).then(() =>
+          t.resolvesToDeep(
+            Users.orderBy('firstName', 'desc').first(),
+            { userId: 2, firstName: 'Cindy' },
+            'will use order specified with `orderBy`'
+          )
+        )
+      );
+
+    });
+
   });
 
 }

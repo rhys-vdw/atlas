@@ -18,3 +18,4 @@ export const isQueryBuilderEmpty = handleMapper(queryBuilder =>
 
 export const isQueryBuilderJoined = hasGrouping('join');
 export const isQueryBuilderSpecifyingColumns = hasGrouping('columns');
+export const isQueryBuilderOrdered = hasGrouping('order');

@@ -1,6 +1,3 @@
-/* eslint no-console: 0 */
-/* allow console here because there are some issues below. */
-
 import { Test } from 'tape';
 import _, { isObject, isString, map, keys  } from 'lodash';
 import deepEqual from 'deep-equal';
@@ -156,4 +153,3 @@ Test.prototype.databaseTest = function(name, knex, tables, testCallback) {
 
   });
 };
-

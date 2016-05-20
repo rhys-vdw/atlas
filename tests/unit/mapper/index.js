@@ -7,6 +7,7 @@ import './forge';
 import './identification';
 import './insert';
 import './joins';
+import './order';
 import './query';
 import './relations';
 import './retrieval';
