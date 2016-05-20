@@ -195,14 +195,14 @@ export default class ImmutableBase {
    * AustralianWomen = People.withMutations(People => {
    *  People
    *    .where({ country: 'Australia', gender: 'female' });
-   *    .withRelated('spouse', 'children', 'jobs')
+   *    .with(related('spouse', 'children', 'jobs'))
    * });
    *
    * @example <caption>Using an object initializer</caption>
    *
    * AustralianWomen = People.withMutations({
-   *  where: { country: 'Australia', gender: 'female' },
-   *  withRelated: ['spouse', 'children', 'jobs']
+   *   where: { country: 'Australia', gender: 'female' },
+   *   with: related('spouse', 'children', 'jobs')
    * });
    *
    * @example <caption>Returning an object initializer</caption>
@@ -210,7 +210,7 @@ export default class ImmutableBase {
    * AustralianWomen = People.withMutations(() => {
    *   return {
    *     where: { country: 'Australia', gender: 'female' },
-   *     withRelated: ['spouse', 'children', 'jobs']
+   *     with: related('spouse', 'children', 'jobs')
    *   }
    * });
    *
