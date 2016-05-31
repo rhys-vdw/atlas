@@ -47,9 +47,9 @@ export default function Atlas(knex, registry = createRegistry()) {
   };
 
   // Create transaction method.
-  atlas.transaction = callback => knex.transaction(trx =>
-    callback(createAtlas(trx, registry))
-  );
+  atlas.transaction = function transaction(callback) {
+    return knex.transaction(trx => callback(createAtlas(trx, registry)));
+  };
 
   // Initialize and assign relation builders.
   const toMapper = createToMapper(registry);
