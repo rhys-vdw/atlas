@@ -33,7 +33,7 @@ export default function(atlas) {
 
       const Users = Mapper.table('users').relations({
         groups: belongsToMany(Groups, {
-          otherRef: 'author_id', pivotTable: 'memberships'
+          otherRef: 'user_id', pivotTable: 'memberships'
         })
       });
 
@@ -123,7 +123,7 @@ export default function(atlas) {
 
       const Users = Mapper.table('users').relations({
         groups: belongsToMany(Groups, {
-          otherRef: 'author_id', pivotTable: 'memberships'
+          otherRef: 'user_id', pivotTable: 'memberships'
         })
       });
 
@@ -186,7 +186,7 @@ export default function(atlas) {
 
       const Users = Mapper.table('users').relations({
         groups: belongsToMany(Groups, {
-          otherRef: 'author_id', pivotTable: 'memberships'
+          otherRef: 'user_id', pivotTable: 'memberships'
         })
       });
 
