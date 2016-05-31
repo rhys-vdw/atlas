@@ -10,7 +10,33 @@ AtlasError.prototype.toString = function() {
   return `${this.name}: ${this.message}`;
 };
 
-export class UnidentifiableRecordError extends AtlasError {
+/**
+ * Can be accessed via {@link Atlas.errors} or imported directly.
+ *
+ * ```js
+ * const { NotFoundError } = Atlas.errors;
+ * ```
+ *
+ * ```js
+ * import { NotFoundError } from 'atlas/errors';
+ * ```
+ *
+ * @namespace errors
+ */
+
+/**
+ * @class
+ * @memberof errors
+ * @classdesc
+ *
+ * Record could not be identified.
+ *
+ * ```js
+ * Users.update({ name: 'Bob' })
+ * // ERROR: Expected record to have ID attribute 'id'!
+ * ```
+ */
+class UnidentifiableRecordError extends AtlasError {
   constructor(Mapper, record, idAttribute) {
     super(
       'UnidentifiableRecordError',
@@ -25,7 +51,21 @@ export class UnidentifiableRecordError extends AtlasError {
   }
 }
 
-export class UnsetStateError extends AtlasError {
+/**
+ * @class
+ * @memberof errors
+ * @classdesc
+ *
+ * Unset state was required, but had not been set.
+ *
+ * ```js
+ * Mapper.save({ name: 'Bob' });
+ * // ERROR: Tried to retrieve unset state 'table'~
+ * ```
+ *
+ * @see ImmutableBase#requireState
+ */
+class UnsetStateError extends AtlasError {
   constructor(key, Mapper) {
     super(
       'UnsetStateError',
@@ -38,7 +78,23 @@ export class UnsetStateError extends AtlasError {
   }
 }
 
-export class NotFoundError extends AtlasError {
+/**
+ * @class
+ * @memberof errors
+ * @classdesc
+ *
+ * A specific record was not found.
+ *
+ * ```js
+ * Users.require().find(999).then(...).catch(error => {
+ *   console.log(error);
+ *   // ERROR: No row found!
+ * });
+ * ```
+ *
+ * @see Mapper#require
+ */
+class NotFoundError extends AtlasError {
   constructor(Mapper, queryBuilder, method) {
     super(
       'NotFoundError',
@@ -51,7 +107,23 @@ export class NotFoundError extends AtlasError {
   }
 }
 
-export class NoRowsFoundError extends AtlasError {
+/**
+ * @class
+ * @memberof errors
+ * @classdesc
+ *
+ * No records returned.
+ *
+ * ```js
+ * Mapper.require().fetch().then(...).catch(error => {
+ *   console.log(error);
+ *   // ERROR: No rows found!
+ * });
+ * ```
+ *
+ * @see Mapper#require
+ */
+class NoRowsFoundError extends AtlasError {
   constructor(Mapper, queryBuilder, method) {
     super(
       'NoRowsFoundError',
@@ -64,7 +136,21 @@ export class NoRowsFoundError extends AtlasError {
   }
 }
 
-export class UnregisteredKeyError extends AtlasError {
+/**
+ * @class
+ * @memberof errors
+ * @classdesc
+ *
+ * A {@link Mapper} was not found.
+ *
+ * ```js
+ * atlas.register('Users', Mapper.table('users'));
+ * atlas('Useers').fetch()
+ * // ERROR: Unknown registry key 'Useers'!
+ * ```
+ *
+ */
+class UnregisteredKeyError extends AtlasError {
   constructor(registry, key) {
     super(
       'UnregisteredKeyError',
@@ -76,7 +162,20 @@ export class UnregisteredKeyError extends AtlasError {
   }
 }
 
-export class RegisteredKeyError extends AtlasError {
+/**
+ * @class
+ * @memberof errors
+ * @classdesc
+ *
+ * A {@link Mapper} was found at this registry key.
+ *
+ * ```js
+ * atlas.register('Mapper', Mapper.table('users'));
+ * // ERROR: 'Mapper' already registered!
+ * ```
+ *
+ */
+class RegisteredKeyError extends AtlasError {
   constructor(registry, key) {
     super(
       'RegisteredKeyError',
@@ -88,3 +187,12 @@ export class RegisteredKeyError extends AtlasError {
     this.key = key;
   }
 }
+
+export {
+  UnidentifiableRecordError,
+  UnsetStateError,
+  NotFoundError,
+  NoRowsFoundError,
+  UnregisteredKeyError,
+  RegisteredKeyError
+};

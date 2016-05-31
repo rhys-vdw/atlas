@@ -6,46 +6,33 @@ import { isQueryBuilderJoined } from './helpers/knex';
 export default {
 
   /**
-   * @method Mapper.destroy
-   * @belongsTo module:mapper/destruction
+   * @method Mapper#destroy
    * @summary
    *
-   * Delete rows.
+   * Delete specific rows.
    *
    * @description
    *
-   * Delete all rows matching the current query, or specify rows to be deleted.
-   * Rows can be specified by supplying one or more record objects with IDs, or
-   * ID values.
+   * Specify rows to be deleted. Rows can be specified by supplying one or more
+   * record objects or ID values.
    *
    * @example
    *
    * const Users = atlas('Mapper').table('users');
    *
    * Users.destroy(5).then(count =>
-   *   // delete from users where id = 5
-   *   // count === 1
-   * );
+   * // delete from users where id = 5
    *
    * Users.destroy(1, 2, 3).then(count =>
-   *   // delete from users where id in (1, 2, 3)
-   *   // count === 3
-   * );
+   * // delete from users where id in (1, 2, 3)
    *
    * const sam = { id: 5, name: 'Sam' };
    * const jane = { id: 16, name: 'Jane' };
    *
    * Users.destroy(sam, jane).then(count =>
-   *   // delete from users where id in (5, 16)
-   *   // count === 2
-   * );
+   * // delete from users where id in (5, 16)
    *
-   * Users.where('complaint_count', '>', 10).destroy().then(count =>
-   *   // delete from users where complaint_count > 10;
-   *   // count === 0   :-)
-   * );
-   *
-   * @param {...mixed|mixed[]} [ids]
+   * @param {...mixed|mixed[]} ids
    *   ID(s) or record(s) whose corresponding rows will be destroyed.
    * @returns {Promise<Number>}
    *   Promise resolving to the number of rows deleted.
@@ -58,6 +45,22 @@ export default {
     );
   },
 
+  /**
+   * @method Mapper#destroyAll
+   * @summary
+   *
+   * Delete rows matching query.
+   *
+   * @description
+   *
+   * Delete all rows matching the current query.
+   *
+   * ```
+   * Users.where('complaint_count', '>', 10).destroy().then(count =>
+   * ```
+   *
+   * @returns {Promise<Number>} Count or rows deleted.
+   */
   destroyAll() {
     const mapper = this.prepareDestroyAll();
     const queryBuilder = mapper.toQueryBuilder();
@@ -68,6 +71,7 @@ export default {
 
   /**
    * @method Mapper#prepareDestroy
+   * @private
    * @summary
    *
    * Prepare a delete query.
@@ -90,6 +94,7 @@ export default {
     });
   },
 
+  /** @private */
   prepareDestroyAll() {
     return this.withMutations(mapper => {
 

@@ -9,11 +9,20 @@ export function isRelated(maybeRelated) {
 }
 
 /**
- * `Related` describes relations as passed to eager loader etc.
+ * `Related` is a helper to describe relation trees. Instances are passed to
+ * `Mapper.with` and `Mapper.load` for eager loading.
+ *
+ * @extends ImmutableBase
  */
 class Related extends ImmutableBase {
 
-  /** Raise an error if the relation is not found. */
+  /**
+   * Raise an error if the relation is not found. Currently this is just a
+   * passthrough to `Mapper.require()`.
+   *
+   * @returns {Related} Self, this method is chainable.
+   *   Instance that will throw if no records are returned.
+   */
   require() {
     return this.mapper({ require: true });
   }
@@ -21,7 +30,8 @@ class Related extends ImmutableBase {
   /**
    * Set the relation instance
    *
-   * @param {Relation}
+   * @private
+   * @param {Relation} relation
    *   Relation instance.
    */
   relation(relation) {
@@ -48,7 +58,7 @@ class Related extends ImmutableBase {
    * // Use `name` to provide a relation instance directly.
    *
    * const posts = hasMany('Post');
-   * Users.with(related(posts)).fetch();
+   * Users.with(related(posts).as('posts')).fetch();
    *
    * @param {String} name
    *   The relation name. Used as a key when setting related records.
@@ -59,6 +69,7 @@ class Related extends ImmutableBase {
     return this.setState({ name });
   }
 
+  /** @private */
   name() {
     return this.requireState('name');
   }
@@ -95,12 +106,39 @@ class Related extends ImmutableBase {
    *
    * @example
    *
-   * Soldier.with(
-   *   related('superior').recursions(Infinity)
-   * ).fetchAll().then(soldier => // ...
+   * knex('nodes').insert([
+   *   { id: 1, value: 'a', next_id: 2 },
+   *   { id: 2, value: 't', next_id: 3 },
+   *   { id: 3, value: 'l', next_id: 4 },
+   *   { id: 4, value: 'a', next_id: 5 },
+   *   { id: 5, value: 's', next_id: 6 },
+   *   { id: 6, value: '.', next_id: 7 },
+   *   { id: 7, value: 'j', next_id: 8 },
+   *   { id: 8, value: 's', next_id: null }
+   * ])
+   *
+   * atlas.register({
+   *   Nodes: Mapper.table('nodes').relations({
+   *     next: belongsTo('Nodes', { selfRef: 'next_id' })
+   *   })
+   * });
+   *
+   * // Fetch nodes recursively.
+   * atlas('Nodes').with(
+   *   related('next').recursions(Infinity)).find(1)
+   * ).then(node =>
+   *   const values = [];
+   *   while (node.next != null) {
+   *     letters.push(node.value);
+   *     node = node.next;
+   *   }
+   *   console.log(values.join('')); // "atlas.js"
+   * );
    *
    * @param {Number} recursions
    *   Either an integer or `Infinity`.
+   * @returns {Related}
+   *   Self, this method is chainable.
    */
   recursions(recursions) {
     if (recursions !== Math.round(recursions) || recursions < 0) {
@@ -117,6 +155,7 @@ class Related extends ImmutableBase {
     return this.setState({ recursions });
   }
 
+  /** @private */
   getNextRecursion() {
     const { recursions } = this.state;
     return recursions
@@ -124,6 +163,34 @@ class Related extends ImmutableBase {
       : null;
   }
 
+  /**
+   * Fetch nested relations.
+   *
+   * @example
+   *
+   * atlas('Actors').with(
+   *   related('movies').with(related('director', 'cast'))
+   * ).findBy('name', 'James Spader').then(actor =>
+   *   assert.deepEqual(
+   *     actor,
+   *     { id: 2, name: 'James Spader', movies: [
+   *       { _pivot_actor_id: 2, id: 3, title: 'Stargate', director_id: 2,
+   *         director: { id: 2, name: 'Roland Emmerich' },
+   *         cast: [
+   *           { id: 2, name: 'James Spader' },
+   *           // ...
+   *         ]
+   *       },
+   *       // ...
+   *     ]},
+   *   )
+   * );
+   *
+   * @param {...Related|Related[]} related
+   *   One or more Related instances describing the nested relation tree.
+   * @returns {Related}
+   *   Self, this method is chainable.
+   */
   with(...related) {
     const flattened = flatten(related);
 
@@ -143,12 +210,33 @@ class Related extends ImmutableBase {
     });
   }
 
+  /** @private */
   getRelated() {
     const { related = [] } = this.state;
     const recursion = this.getNextRecursion();
     return recursion == null ? related : [ ...related, recursion ];
   }
 
+  /**
+   * Queue up initializers for the `Mapper` instance used to query the relation.
+   * Accepts the same arguments as `Mapper.withMutations`.
+   *
+   * ```js
+   * Account.with(related('inboxMessages').mapper(m =>
+   *   m.where({ unread: true })
+   * )).fetch().then(account => // ...
+   *
+   * Account.with(
+   *   related('inboxMessages').mapper({ where: { unread: true } })
+   * ).fetch().then(account => // ...
+   * ```
+   *
+   * @param {mixed} initializers
+   *   Accepts the same arguments as
+   *   {@link ImmutableBase#withMutations withMutations}.
+   * @returns {Related}
+   *   Self, this method is chainable.
+   */
   mapper(...initializers) {
     const previous = this.state.initializers || [];
     return this.setState({
@@ -156,16 +244,19 @@ class Related extends ImmutableBase {
     });
   }
 
+  /** @private */
   getRelation(Self) {
     return this.state.relation || Self.getRelation(this.name());
   }
 
+  /** @private */
   mapRelated(Self, ...args) {
     return this.getRelation(Self).mapRelated(...args);
   }
 
   /**
    * Create a {@link Mapper} representing records described by this `Related`.
+   * @private
    */
   toMapperOf(Self, ...ids) {
     const { initializers } = this.state;
@@ -187,6 +278,26 @@ function create(relation) {
     : new Related().relation(relation);
 }
 
+/**
+ * Convenience function to help build {@link Related} instances.
+ *
+ * @example
+ *
+ * Book.where({ author: 'Frank Herbert' })
+ *   .with(related('coverImage'))
+ *   .fetch()
+ *   .then(books => books.map(renderThumbnail));
+ *
+ * Book.with(
+ *   related('chapters', 'coverImage').map(r => r.require())
+ * ).findBy('isbn', '9780575035409').then(book =>
+ *   renderBook(book)
+ * );
+ *
+ * @static
+ * @param {...string|Relation} relationName
+ * @return {Related|Related[]}
+ */
 export function related(...relations) {
   const flattened = flatten(relations);
   return flattened.length === 1

@@ -8,22 +8,24 @@ import {
 export default {
 
   /**
-   * @method insert
-   * @belongsTo Mapper
+   * @method Mapper#insert
    * @summary
    *
    * Insert one or more records.
    *
    * @description
    *
-   * Insert a record or an array of records into the `table` assigned to this
-   * `Mapper`. Returns a promise resolving the the record object (or objects)
-   * with updated attributes.
+   * Insert a record or an array of records into the {@link Mapper#table table}
+   * assigned to this `Mapper`. Returns a promise resolving the the record
+   * object (or objects) with updated attributes.
+   *
+   * This is useful as an alternative to {@link Mapper#save} to force atlas to
+   * insert a record that already has an ID value.
    *
    * Using PostgreSQL every record will be updated to the attributes present in
    * the table after insert. Any other DBMS will only return the primary key
-   * of the first record, which is then assigned to the {@link
-   * Mapper#idAttribute idAttribute}.
+   * of the first record, which is then assigned to the
+   * {@link Mapper#idAttribute idAttribute}.
    *
    * @todo
    *
@@ -57,8 +59,8 @@ export default {
   },
 
   /**
-   * @method toInsertQueryBuilder
-   * @belongsTo Mapper
+   * @method Mapper#toInsertQueryBuilder
+   * @private
    * @summary
    *
    * Generate an insert query.
@@ -104,8 +106,7 @@ export default {
   },
 
   /**
-   * @method handleInsertOneResponse
-   * @belongsTo Mapper
+   * @method Mapper#handleInsertOneResponse
    * @private
    * @summary
    *
@@ -159,8 +160,7 @@ export default {
   },
 
   /**
-   * @method handleInsertManyResponse
-   * @belongsTo Mapper
+   * @method Mapper#handleInsertManyResponse
    * @private
    * @summary
    *

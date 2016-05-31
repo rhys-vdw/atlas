@@ -3,21 +3,38 @@ import {
   isArray, isEmpty, reduce, reject, map, zipObject,
   keys as objectKeys, mapValues, values as objectValues
 } from 'lodash';
-import { normalizeRecords } from './arguments';
+import { ensureArray, normalizeRecords } from './arguments';
 import { isRelated } from './related';
 import { inspect } from 'util';
 
-export default class EagerLoader {
+/**
+ * Eager loads related records into an existing record.
+ * @see Mapper#load
+ */
+class EagerLoader {
+
+  /**
+   * @param {Mapper} Self
+   *   Mapper of target records.
+   * @param {Related|Related[]} related
+   *   One or more Related instances describing the relation tree.
+   */
   constructor(Self, related) {
-    const invalid = reject(related, isRelated);
+    const invalid = reject(ensureArray(related), isRelated);
     if (!isEmpty(invalid)) throw new TypeError(
-      `Expected instance(s) of Related, got ${inspect(related)}`
+      `Expected instance(s) of Related, got ${inspect(invalid)}`
     );
 
     this.Self = Self;
     this.relatedList = related;
   }
 
+  /**
+   * Load relations into one or more records.
+   *
+   * @returns {Promise<Object|Object[]>}
+   *   One or more records with relations.
+   */
   into(...records) {
 
     // `mapRelated` expects input to be normalized. eg. it receives either an
@@ -69,3 +86,5 @@ export default class EagerLoader {
     });
   }
 }
+
+export default EagerLoader;

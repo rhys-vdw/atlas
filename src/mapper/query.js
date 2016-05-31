@@ -27,11 +27,19 @@ export default {
   },
 
   /**
-   * @method table
-   * @belongsTo Mapper
+   * @method Mapper#table
    * @summary
    *
    * Sets the name of the table targeted by this Mapper.
+   *
+   * @example
+   *
+   * ```js
+   * const Mapper = atlas('Mapper');
+   *
+   * const Dogs = Mapper.table('dogs');
+   * const Cats = Mapper.table('cats');
+   * ```
    *
    * @param {string} table
    *   The new name of this table.
@@ -46,8 +54,7 @@ export default {
   },
 
   /**
-   * @method toQueryBuilder
-   * @belongsTo Mapper
+   * @method Mapper#toQueryBuilder
    * @summary
    *
    * Return a copy of the underlying `QueryBuilder` instance.
@@ -60,8 +67,7 @@ export default {
   },
 
   /**
-   * @method query
-   * @belongsTo Mapper
+   * @method Mapper#query
    * @summary
    *
    * Modify the underlying Knex `QueryBuilder` instance directly.
@@ -71,7 +77,7 @@ export default {
    * @param {function|string} method
    *   A callback that modifies the underlying `QueryBuilder` instance, or the
    *   name of a `QueryBuilder` method to invoke.
-   * @param {...mixed} [args]
+   * @param {...mixed} args
    *   Arguments to be passed to the `QueryBuilder` method.
    * @returns {Mapper}
    *   Mapper with a modified underlying `QueryBuilder` instance.
@@ -95,9 +101,11 @@ export default {
   },
 
 
+  /** @private */
   noop() {
     return this.query(queryBuilder => {
-      // Doesn't matter which string is supplied for the column name.
+      // Doesn't matter which string is supplied for the column name. This
+      // function call just causes Knex to generate some generic no-op query.
       queryBuilder.whereIn('', []);
     });
   },

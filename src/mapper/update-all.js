@@ -6,10 +6,16 @@ import { assignResolved } from '../arguments';
 export default {
 
   /**
+   * @method Mapper#updateAll
+   * @summary
+   *
+   * Update all matching rows.
+   *
    * @param {Object} attributes
    *   Attributes to be set on all mathed rows.
-   * @returns
-   *   Number of attributes
+   * @returns {Promise<Object[]|Number>}
+   *   Updated records (if `returning *` is supported), or count of updated
+   *   rows.
    */
   updateAll(attributes) {
     const queryBuilder = this.prepareUpdateAll(attributes).toQueryBuilder();
@@ -18,10 +24,7 @@ export default {
     );
   },
 
-  /**
-   * @param {Object} attributes
-   *   Attributes to be set on all matched rows.
-   */
+  /** @private */
   prepareUpdateAll(attributes = {}) {
     return this.withMutations(mapper => {
 

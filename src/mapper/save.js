@@ -6,11 +6,16 @@ import { normalizeRecords } from '../arguments';
 export default {
 
   /**
-   * @method save
-   * @belongsTo Mapper
+   * @method Mapper#save
    * @summary
    *
-   * Insert or update one or more records.
+   * Persist records.
+   *
+   * @description
+   *
+   * Insert or update one or more records. The decision of whether to insert or
+   * update is based on the result of testing each record with
+   * {@link Mapper#isNew}.
    *
    * @param {...Object|Object[]} records
    *   One or more records to be saved.
@@ -45,6 +50,7 @@ export default {
     ).bind(this).then(this.handleSaveManyResponse);
   },
 
+  /** @private */
   handleSaveManyResponse({insert, update}) {
     return flatten([insert, update]);
   },
