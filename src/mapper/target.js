@@ -4,22 +4,34 @@ import { isComposite as isCompositeKey } from '../arguments';
 export default {
 
   /**
-   * @method target
-   * @belongsTo Mapper
+   * @method Mapper#target
    * @summary
    *
    * Limit query to one or more specific rows.
    *
    * @param {...mixed|mixed[]} ids
-   *   ID values, or records with ID values, for target rows.
+   *   ID values for target rows, or records with ID values.
    * @returns {Mapper}
-   *   Mapper targeting a one or more rows.
+   *   Mapper targeting rows with given ID value(s).
    */
   target(...ids) {
     const idAttribute = this.requireState('idAttribute');
     return this.targetBy(idAttribute, ...ids);
   },
 
+  /**
+   * @method Mapper#targetBy
+   * @summary
+   *
+   * Limit query to one or more rows matching a given attribute.
+   *
+   * @param {string|string[]} attribute
+   *   Attribute(s) to identify records by.
+   * @param {...mixed|mixed[]} ids
+   *   Values for target rows, or records with values for given attribute(s).
+   * @returns {Mapper}
+   *   Mapper targeting rows matching the attribute value(s).
+   */
   targetBy(attribute, ...ids) {
     const normalized = this.identifyBy(attribute, ...ids);
 

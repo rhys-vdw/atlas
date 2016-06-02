@@ -1,0 +1,153 @@
+# Atlas
+
+[![Build Status](https://travis-ci.org/rhys-vdw/atlas.svg?branch=master)](https://travis-ci.org/rhys-vdw/atlas)
+[![codecov](https://codecov.io/gh/rhys-vdw/atlas/branch/master/graph/badge.svg)](https://codecov.io/gh/rhys-vdw/atlas)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/rhys-vdw/atlas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+Data mapper implementation for JavaScript. Atlas provides a fluent interface for manipulating a relational database.
+
+Atlas uses [`Knex.js`](http://www.knexjs.org) to build and execute queries.
+
+**Atlas is not yet released**
+
+Atlas is thoroughly tested, but barely used. The API may change (probably not dramatically).  Posting feedback and questions to the issue tracker is encouraged.
+
+Currently Atlas is only tested with PostgreSQL, but Knex's portability means that it should (ultimately) work with any Knex supported DBMS.
+
+
+## Installation
+
+Not yet on npm, install direct from GitHub:
+
+```console
+$ npm install rhys-vdw/atlas --save
+$ npm install knex --save
+```
+
+## Configuration
+
+```js
+// atlas-instance.js
+
+import Knex from 'knex';
+import Atlas from 'atlas';
+
+const knex = Knex({
+  client: 'postgres',
+  connection: {
+    database: 'my_database',
+    user: 'user'
+  }
+});
+
+export default Atlas({ knex });
+```
+
+## Usage
+
+```js
+// example.js
+
+import atlas from './atlas-instance';
+
+const { NotFoundError, related } = atlas;
+const { hasMany, hasOne, belongsToMany } = atlas.relations;
+
+const Mapper = atlas('Mapper');
+
+// Create simple Mappers for logins and posts.
+const Logins = Mapper.table('logins');
+const Posts = Mapper.table('posts');
+const Groups = Mapper.table('groups');
+
+// More complex mapper for `users` table.
+const Users = Mapper.table('users').relations({
+  posts: hasMany(Posts, { otherRef: 'author_id' }),
+  lastLogin: hasOne(Logins.orderBy('created_at', 'desc')),
+  groups: belongsToMany(Groups, { pivotTable: 'memberships' }),
+});
+
+// Calling `.where` duplicates the immutable `Mapper`.
+const Admins = Users.where('is_admin', true);
+
+Users.fetch().then(users =>
+// select * from users;
+
+// returns all users
+users === [
+  { id: 1, name: 'Annie', is_admin: true },
+  { id: 2, name: 'Beth', is_admin: false },
+  { id: 3, name: 'Chris', is_admin: false }
+]
+
+Admins.fetch().then(admins =>
+// select * from users where is_admin = true;
+
+Users.find(1, 2).then(([annie, beth] =>
+// select * from users where id in (1, 2);
+
+Admins.find(3).then(chris => /* ... */).catch(NotFoundError, err => {
+// select * from users where is_admin = true and id in (1, 3);
+  err.toString() === 'Error! No record found.'
+});
+
+// returns only administrators - Chris is not found.
+users === [{ id: 1, name: 'Annie', is_admin: true }];
+
+// Create a new administrator object with defaults.
+const david = Admins.forge({ name: 'David' });
+david === { name: 'David', is_admin: true };
+
+// Also assigns defaults on insertion.
+Admins.save(david, { name: 'Elinor' }).tap(([david, elinor]) => {
+  // insert into users (name, is_admin) values (
+  //   ('David', true), ('Elinor', true)
+  // );
+
+  david === { id: 4, name: 'David', is_admin: true };
+  elinor === { id: 5, name: 'Elinor', is_admin: true };
+}).then(([david, elinor]) => {
+
+  david.name = 'David J Smith';
+
+  // decides to `update` based on presence of `id` attribute.
+  return Admins.save(david, { name: 'Heath' });
+  // update users set name = 'David J Smith', is_admin = true where id = 4;
+  // insert into users (name, is_admin) values (('Heath', true));
+}).then(records => {
+
+  return Users.destroy(records);
+  // delete from users where id in (4, 6)
+
+}).then(() => {
+
+  // Load up Annie and eager load relations.
+  return Users.where({ name: 'Annie' }).with(
+    related('groups', 'lastLogin'),
+    related('posts').query(query =>
+      query.orderBy('created_at', 'desc').limit(2)
+    ).as('recentPosts')
+  ).first();
+
+).then(annie => {
+
+  // annie:
+  {
+    id: 1,
+    name: 'Annie',
+    lastLogin: { user_id: 1, created_at: '2015-11-26' },
+    groups: [
+      { id: 20, name: 'Super Friends', _pivot_user_id: 1 },
+    ],
+    recentPosts: [
+      { id: 120, author_id: 1, created_at: '2015-11-24',
+        title: 'Hi', message: 'Hey there!' },
+      { id: 110, author_id: 1, created_at: '2015-10-30',
+        title: 'Re: Greeting', message: 'Yo', }
+    ]
+  }
+
+});
+```
+
+{{>main}}

@@ -2,6 +2,7 @@ export default {
 
   /**
    * @method Mapper#orderBy
+   * @summary
    *
    * Order the records returned by a query.
    *
@@ -13,7 +14,7 @@ export default {
    *
    * @param {string|string[]} attribute
    *   The attribute(s) by which to order the response.
-   * @param {string='asc'} direction
+   * @param {string} [direction=asc]
    *   The direction by which to order the records. Either `'asc'` for
    *   ascending, or `'desc'` for descending.
    * @returns {Mapper}

@@ -5,22 +5,6 @@ export default {
   // Overridable interface.
 
   /** @protected */
-  getAttributes: identity,
-
-  /** @protected */
-  getAttribute(record, attribute) {
-    return record[attribute];
-  },
-
-  /**
-   * Optionally override this with `getAttribute`. Will work either way.
-   * @protected
-   */
-  setAttributes(record, attributes) {
-    return { ...record, ...attributes };
-  },
-
-  /** @protected */
   createRecord(attributes = {}) {
     return attributes;
   },
@@ -28,6 +12,29 @@ export default {
   /** @protected */
   destroyRecord(record) {
     return null;
+  },
+
+  /** @protected */
+  getAttributes: identity,
+
+  /** @protected */
+  getAttribute(record, attribute) {
+    return record[attribute];
+  },
+
+  /** @protected */
+  setAttributes(record, attributes) {
+    return { ...record, ...attributes };
+  },
+
+  /** @protected */
+  setRelated(record, related) {
+    return { ...record, ...related };
+  },
+
+  /** @protected */
+  getRelated(record, relationName) {
+    record[relationName];
   },
 
   // Private interface implemented in terms of the above.
@@ -70,13 +77,4 @@ export default {
     const allAttributes = this.getAttributes(record);
     return omit(allAttributes, attributes);
   },
-
-  setRelated(record, related) {
-    return { ...record, ...related };
-  },
-
-  getRelated(record, relationName) {
-    record[relationName];
-  }
-
 };

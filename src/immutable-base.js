@@ -7,16 +7,79 @@ import { inspect } from 'util';
 import { UnsetStateError } from './errors';
 
 function createCallSuper(prototype) {
+
+  /**
+   * @callback ImmutableBase~callSuper
+   * @summary
+   *
+   * Helper method that invokes a super method.
+   *
+   * @example
+   *
+   * ```js
+   * // Invoke super with `callSuper` helper.
+   * const child = parent.extend(callSuper => {
+   *   return {
+   *     method(x, y) {
+   *       return callSuper('method', x, y);
+   *     }
+   *   }
+   * });
+   *
+   * // Equivalent manual invocation of super method.
+   * const parentProto = Object.getPrototypeOf(parent);
+   * const child = parent.extend({
+   *   method(x, y) {
+   *     return parentProto.method.call(this, x, y);
+   *   });
+   * });
+   * ```
+   *
+   * @param {ImmutableBase} self
+   *   Instance invoking the super method (`this` in method).
+   * @param {string} methodName
+   *   Name of super method to invoke.
+   * @returns {mixed}
+   *   The return value of invoked method.
+   */
   return function callSuper(self, methodName, ...args) {
     return prototype[methodName].apply(self, args);
   };
 }
 
-export default class ImmutableBase {
+
+/**
+ * @callback ImmutableBase~extendCallback
+ * @param {ImmutableBase~callSuper} callSuper
+ *   Helper function that invokes a super method.
+ * @returns {Object}
+ *   A hash of methods.
+ */
+
+/**
+ * Base class for {@link Mapper}.
+ */
+class ImmutableBase {
 
   /** @private */
   constructor(options = {}) {
 
+    /**
+     * @summary
+     *
+     * Hash of values that constitute the object state.
+     *
+     * @description
+     *
+     * Typically accessed from methods when extending `ImmutableBase`.
+     *
+     * `state` should be considered read-only, and should only ever by modified
+     * indirectly via {@link ImmutableBase#setState setState}.
+     *
+     * @member {Object} ImmutableBase#state
+     * @readonly
+     * @see ImmutableBase#requireState
+     */
     this.state = 'isMutable' in options
       ? options
       : { isMutable: false, ...options };
@@ -31,11 +94,10 @@ export default class ImmutableBase {
   }
 
   /**
-   * @method requireState
-   * @belongsTo ImmutableBase
+   * @method ImmutableBase#requireState
    * @summary
    *
-   * Get an option that has previously been set on the model.
+   * Get a state value or throw if unset.
    *
    * @param {string} key
    *   State key to retrieve.
@@ -54,6 +116,23 @@ export default class ImmutableBase {
     return this.state[key];
   }
 
+  /**
+   * @method ImmutableBase#setState
+   * @summary
+   *
+   * Create a new instance with altered state.
+   *
+   * @description
+   *
+   * Update {@link ImmutableBase#state state}. If any provided values differ
+   * from those already set then a copy with updated state will be returned.
+   * Otherwise the same instance is returned.
+   *
+   * @param {Object} nextState
+   *   A hash of values to override those already set.
+   * @returns {ImmutableBase}
+   *   A new instance with updated state, or this one if nothing changed.
+   */
   setState(nextState) {
 
     const isNoop = every(nextState, (value, option) =>
@@ -76,23 +155,68 @@ export default class ImmutableBase {
   }
 
   /**
-   * @method extend
-   * @belongsTo ImmutableBase
+   * @method ImmutableBase#extend
    * @summary
    *
-   * Create a new ImmutableBase instance with custom methods.
+   * Apply one or more mixins.
    *
    * @description
    *
-   * Creates an inheriting `ImmutableBase` class with supplied `methods`.
-   * Returns an instance of this class.
+   * Create a new `ImmutableBase` instance with custom methods.
    *
-   * @param {Object|function} methodHashesOrFns
+   * Creates a new class inheriting `ImmutableBase` class with supplied
+   * methods.
+   *
+   * Returns an instance of the new class, as it never needs instantiation with
+   * `new`. Copied as instead created via
+   * {@link ImmutableBase#setState setState}.
+   *
+   * ```js
+   * import { ReadOnlyError } from './errors';
+   *
+   * const ReadOnlyMapper = Mapper.extend({
+   *   insert() { throw new ReadOnlyError(); },
+   *   update() { throw new ReadOnlyError(); }
+   * });
+   * ```
+   *
+   * If overriding methods in the parent class, a callback argument can be
+   * passed instead. It will be invoked with the `callSuper` function as an
+   * argument.
+   *
+   * ```js
+   * function compileRelatedDsl(string) {
+   *   // TODO: implement useful DSL.
+   *   return atlas.related(string.split(', '));
+   * }
+   *
+   * const DslMapper = Mapper.extend(callSuper => {
+   *   return {
+   *     with(related) {
+   *       if (isString(related)) {
+   *         return callSuper(this, 'with', compileRelatedDsl(related));
+   *       }
+   *       return callSuper(this, 'with', ...arguments);
+   *     }
+   *   };
+   * });
+   *
+   * const Users = DslMapper.table('users').relations({
+   *   account: () => hasOne('Account'),
+   *   projects: () => hasMany('Projects')
+   * });
+   *
+   * Users.with('account, projects').fetch().then(users =>
+   * ```
+   *
+   * @param {...(Object|ImmutableBase~extendCallback)} callbackOrMethodsByName
    *   Object of methods to be mixed into the class. Or a function that returns
    *   such an object. The function is invoked with a `callSuper` helper
    *   function.
+   * @returns {ImmutableBase}
+   *   An instance of the new class inheriting from `ImmutableBase`.
    */
-  extend(...methodHashesOrFns) {
+  extend(...callbackOrMethodsByName) {
 
     // It's not possible to extend an instance in place.
     if (this.isMutable()) throw new Error(
@@ -103,7 +227,7 @@ export default class ImmutableBase {
     class Extended extends this.constructor {}
 
     // Mix in each set of methods and build an array of initializers.
-    const initializers = reduce(methodHashesOrFns, (result, methodsOrFn) => {
+    const initializers = reduce(callbackOrMethodsByName, (result, methodsOrFn) => {
 
       // Support supplying a function that is resolved with a `callSuper`
       // helper.
@@ -141,13 +265,13 @@ export default class ImmutableBase {
   // -- Mutability Controls --
 
 
+  /** @private */
   isMutable() {
     return this.state.isMutable;
   }
 
   /**
-   * @method asMutable
-   * @belongsTo ImmutableBase
+   * @method ImmutableBase#asMutable
    * @summary
    *
    * Create a mutable copy of this instance.
@@ -158,11 +282,11 @@ export default class ImmutableBase {
    * `ImmutableBase`. A mutable `ImmutableBase` instance can be modified
    * in place.
    *
-   * Usually using {@link ImmutableBase#withMutations} is preferable to
+   * Typically {@link ImmutableBase#withMutations} is preferable to
    * `asMutable`.
    *
-   * @see {@link ImmutableBase#asImmutable}
-   * @see {@link ImmutableBase#withMutations}
+   * @see ImmutableBase#asImmutable
+   * @see ImmutableBase#withMutations
    *
    * @returns {ImmutableBase} Mutable copy of this instance.
    */
@@ -171,8 +295,7 @@ export default class ImmutableBase {
   }
 
   /**
-   * @method asImmutable
-   * @belongsTo ImmutableBase
+   * @method ImmutableBase#asImmutable
    * @summary
    *
    * Prevent this instance from being mutated further.
@@ -184,8 +307,7 @@ export default class ImmutableBase {
   }
 
   /**
-   * @method withMutations
-   * @belongsTo ImmutableBase
+   * @method ImmutableBase#withMutations
    * @summary
    *
    * Create a mutated copy of this instance.
@@ -279,3 +401,5 @@ export default class ImmutableBase {
     return this[method](...args);
   }
 }
+
+export default ImmutableBase;

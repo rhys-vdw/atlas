@@ -1,0 +1,12 @@
+{{#if see~}}
+
+{{#if (equal see.length 1)~}}
+**See**: {{{linkifyOrInlineLinks see.[0]}}}  
+{{else~}}
+**See**
+
+{{#each see}}- {{{linkifyOrInlineLinks this}}}
+{{/each}}
+
+{{/if~}}
+{{/if~}}

@@ -11,13 +11,19 @@ import {
 export default {
 
   /**
-   * @method update
-   * @belongsTo Mapper
+   * @method Mapper#update
    * @summary
    *
    * Update rows corresponding to one or more records.
    *
-   * @param {Object|Object[]}
+   * @description
+   *
+   * Update rows corresponding to one or more records. If the
+   * {@link Mapper#idAttribute idAttribute} is not set on any of the records
+   * then the returned promise will be rejected with an
+   * {@link UnidentifiableRecordError}.
+   *
+   * @param {...Object|Object[]} records
    *   Record, or records, to be updated.
    * @returns {Promise<Object|Object[]>}
    *   A promise resolving to the updated record or records.
@@ -38,8 +44,8 @@ export default {
   },
 
   /**
-   * @method updateRow
-   * @belongsTo Mapper
+   * @method Mapper#updateRow
+   * @private
    * @summary
    *
    * Update the row corresponding to a record.
@@ -76,6 +82,7 @@ export default {
     );
   },
 
+  /** @private */
   handleUpdateRowResponse({ queryBuilder, response, record }) {
 
     // Handle either rows or changed count.
@@ -92,6 +99,7 @@ export default {
     return this.setColumns(record, first(response));
   },
 
+  /** @private */
   getUpdateAttributes(record) {
     const idAttribute = this.requireState('idAttribute');
     const attributes = this.getAttributes(record);
@@ -104,10 +112,12 @@ export default {
     );
   },
 
+  /** @private */
   getUpdateColumns(record) {
     return this.attributesToColumns(this.getUpdateAttributes(record));
   },
 
+  /** @private */
   prepareUpdate(record) {
 
     // Get ID attributes as an array.

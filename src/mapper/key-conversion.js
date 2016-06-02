@@ -27,10 +27,12 @@ export default {
     return mapKeys(columns, (value, column) => `${table}.${column}`);
   },
 
+  /** @private */
   attributeToTableColumn(attribute) {
     return this.columnToTableColumn(this.attributeToColumn(attribute));
   },
 
+  /** @private */
   attributesToTableColumns(attributes) {
     return this.columnsToTableColumns(this.attributesToColumns(attributes));
   }

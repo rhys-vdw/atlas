@@ -11,8 +11,7 @@ export default {
   },
 
   /**
-   * @method isNew
-   * @belongsTo Mapper
+   * @method Mapper#isNew
    * @summary
    *
    * Check if the record exists in the database.
@@ -34,11 +33,31 @@ export default {
   },
 
   /**
-   * @method idAttribute
-   * @belongsTo Mapper
+   * @method Mapper#idAttribute
    * @summary
    *
-   * Set the primary key attribute (or attributes).
+   * Set primary key.
+   *
+   * @description
+   *
+   * Set the primary key attribute.
+   *
+   * ```js
+   * const Accounts = Mapper
+   *   .table('accounts')
+   *   .idAttribute('email');
+   *
+   * // select * from accounts where email='username@domain.com';
+   * Accounts.find('username@domain.com').then(user =>
+   * ```
+   *
+   * Defining a composite key:
+   *
+   * ```js
+   * const Membeships = Mapper
+   *   .table('memberships')
+   *   .idAttribute(['user_id', 'group_id']);
+   * ```
    *
    * @param {string|string[]} idAttribute
    *   Name of primary key attribute.
@@ -50,21 +69,20 @@ export default {
   },
 
   /**
-   * @method identify
-   * @belongsTo Mapper
+   * @method Mapper#identify
+   * @private
    * @summary
    *
    * Get the ID value for one or more records.
    *
    * @description
    *
-   * Helper method used internally. Uses the currently set {@link
-   * Mapper#idAttribute} to determine the ID value of a record (or an array of
-   * records). Also accepts ID values instead of records, allowing it to be used
-   * to normalize results.
+   * Mainly for internal use. Uses the currently set {@link Mapper#idAttribute}
+   * to determine the ID value of a record (or an array of records). Also
+   * accepts ID values instead of records, allowing it to be used to normalize
+   * results.
    *
-   * @example
-   *
+   * ```
    * Person = Mapper.idAttribute('id');
    *
    * Person.identify({ id: 5, name: 'John Smith' });
@@ -83,6 +101,7 @@ export default {
    *
    * Membership.identify([10, 20]);
    * // -> [10, 20]
+   * ```
    *
    * @param {mixed} record
    *   One or more records or IDs.
@@ -94,6 +113,7 @@ export default {
     return this.identifyBy(idAttribute, ...records);
   },
 
+  /** @private */
   identifyBy(attribute, ...records) {
 
     if (isEmpty(records)) {
@@ -111,6 +131,7 @@ export default {
       : this.identifyAllBy(attribute, flatten(records));
   },
 
+  /** @private */
   identifyOneBy(attribute, record) {
 
     const ensure = (id) => {
@@ -165,12 +186,14 @@ export default {
     return attribute.map(a => ensure(this.getAttribute(record, a)));
   },
 
+  /** @private */
   identifyAllBy(attribute, records) {
     return records.map(
       record => this.identifyOneBy(attribute, record)
     );
   },
 
+  /** @private */
   pickIdentity(record) {
     const { idAttribute } = this.state;
     return this.pickAttributes(record, idAttribute);

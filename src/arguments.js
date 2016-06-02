@@ -4,7 +4,11 @@ import {
   keys as objectKeys, omit, values, reduce
 } from 'lodash';
 
-// Functions
+/**
+ * @module arguments
+ * @private
+ */
+
 const flatCompact = flow(flatten, compact);
 
 /**
@@ -127,7 +131,6 @@ export function keyValueToObject(key, value) {
 }
 
 /**
- * @function isValidId
  * @summary
  *
  * Validate an ID value.
