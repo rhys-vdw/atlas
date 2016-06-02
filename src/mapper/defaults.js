@@ -37,7 +37,7 @@ export default {
    * These values will be used by {@link Mapper#forge forge} and
    * {@link Mapper#insert insert} when no value is provided.
    *
-   * ```
+   * ```js
    * const Users = Mapper.table('users').defaultAttributes({
    *   name: 'Anonymous', rank: 0
    * });
@@ -47,7 +47,7 @@ export default {
    * default value. In the below example a new document record is generated with
    * a default name and template.
    *
-   * ```
+   * ```js
    * const HtmlDocuments = Mapper.table('documents').defaultAttributes({
    *   title: 'New Document',
    *   content: attributes => (

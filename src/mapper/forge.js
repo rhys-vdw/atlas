@@ -14,7 +14,7 @@ export default {
    * Create a new record object. This doesn't persist any data, it just creates an
    * instance to be manipulated with JavaScript.
    *
-   * ```
+   * ```js
    * const Messages = Mapper.tables('messages').defaultAttributes({
    *   created_at: () => new Date(),
    *   urgency: 'low'
