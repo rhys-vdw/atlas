@@ -280,6 +280,7 @@ atlas('Movies').where({ genre: 'horror' }).count().then(count => {
         * [.relations](#Atlas+relations) : <code>Object</code>
         * [.transaction(callback)](#Atlas+transaction) ⇒ <code>Promise</code>
     * _static_
+        * [.VERSION](#Atlas.VERSION) : <code>string</code>
         * [.errors](#Atlas.errors) : <code>[errors](#errors)</code>
         * [.plugins](#Atlas.plugins) : <code>Object</code>
     * _inner_
@@ -503,6 +504,19 @@ atlas.transaction(t => {
 | Param | Type | Description |
 | --- | --- | --- |
 | callback | <code>[transactionCallback](#Atlas..transactionCallback)</code> | Callback within which to write transacted queries. |
+
+
+-
+
+<a name="Atlas.VERSION"></a>
+
+### Atlas.VERSION : <code>string</code>
+Installed version of Atlas.js
+
+```js
+console.log(Atlas.VERSION);
+// 1.0.0
+```
 
 
 -
