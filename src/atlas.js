@@ -5,6 +5,7 @@ import { initialize as initializeRelations } from './relations';
 import { related } from './related';
 import plugins from './plugins';
 import * as errors from './errors';
+import { version as VERSION } from '../package.json';
 
 const createRegistry = () => new Registry({ Mapper });
 
@@ -303,3 +304,15 @@ Atlas.plugins = plugins;
  * @member {errors} Atlas.errors
  */
 Atlas.errors = errors;
+
+/**
+ * Installed version of Atlas.js
+ *
+ * ```js
+ * console.log(Atlas.VERSION);
+ * // 1.0.0
+ * ```
+ *
+ * @member {string} Atlas.VERSION
+ */
+Atlas.VERSION = VERSION;
