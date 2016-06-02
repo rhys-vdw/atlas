@@ -1,8 +1,8 @@
 {
-  "name": "data-mapper",
+  "name": "atlas-orm",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "lint": "eslint src/**",
     "lint-tests": "eslint tests/**",
