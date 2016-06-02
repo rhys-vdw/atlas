@@ -2,7 +2,7 @@ import test from 'tape';
 import Atlas from '../../../lib/atlas';
 
 const basePath = '../../../lib';
-const plugins = ['CamelCase', 'Timestamp']
+const plugins = ['CamelCase', 'Timestamp', 'FormatAttributes']
 
 test('Atlas.plugins exposes all plugins', t => {
   for (const plugin of plugins) {
