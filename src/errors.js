@@ -60,7 +60,7 @@ class UnidentifiableRecordError extends AtlasError {
  *
  * ```js
  * Mapper.save({ name: 'Bob' });
- * // ERROR: Tried to retrieve unset state 'table'~
+ * // ERROR: Tried to retrieve unset state 'table'!
  * ```
  *
  * @see ImmutableBase#requireState
