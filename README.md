@@ -1641,9 +1641,9 @@ BobsGroups.omitPivot().fetch().then(groups => {
 ### mapper.one() ⇒ <code>[Mapper](#Mapper)</code>
 _Query a single row._
 
-Limit query to a single row. Causes subsequent calls to {@link
-Mapper#fetch fetch} to resolve to a single record (rather
-than an array). Opposite of [all](#Mapper+all).
+Limit query to a single row. Causes subsequent calls to
+[fetch](#Mapper+fetch) to resolve to a single record (rather than an
+array). Opposite of [all](#Mapper+all).
 
 Typically it's simpler to use [first](#Mapper+first).
 

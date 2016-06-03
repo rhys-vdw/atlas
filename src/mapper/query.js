@@ -9,7 +9,7 @@ export default {
     this.setState({
       queryBuilder: knex.queryBuilder(),
       atlas: identity
-    })
+    });
   },
 
   atlas(atlas) {

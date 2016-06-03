@@ -252,16 +252,19 @@ export default function Atlas(knex, registry = createRegistry()) {
    */
   atlas.transaction = function transaction(transactionCallback) {
 
-    /**
-     * A callback function that runs the transacted queries.
-     *
-     * @callback Atlas~transactionCallback
-     * @param {Atlas} t
-     *   An instance of `Atlas` connected to the transaction.
-     * @param {Transaction} t.knex
-     *   The Knex.js `Transaction`instace.
-     */
-    return knex.transaction(trx => transactionCallback(createAtlas(trx, registry)));
+    return knex.transaction(trx =>
+
+      /**
+       * A callback function that runs the transacted queries.
+       *
+       * @callback Atlas~transactionCallback
+       * @param {Atlas} t
+       *   An instance of `Atlas` connected to the transaction.
+       * @param {Transaction} t.knex
+       *   The Knex.js `Transaction`instace.
+       */
+      transactionCallback(createAtlas(trx, registry))
+    );
   };
 
   /**

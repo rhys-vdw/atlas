@@ -1,3 +1,4 @@
+/* eslint no-console:0 */
 import Promise from 'bluebird';
 import {
   isArray, isEmpty, reduce, reject, map, zipObject,

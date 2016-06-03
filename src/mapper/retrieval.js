@@ -8,7 +8,6 @@ import {
   isQueryBuilderSpecifyingColumns,
   isQueryBuilderOrdered
 } from './helpers/knex';
-import { isComposite } from '../arguments';
 
 export default {
 
@@ -76,9 +75,9 @@ export default {
    *
    * @description
    *
-   * Limit query to a single row. Causes subsequent calls to {@link
-   * Mapper#fetch fetch} to resolve to a single record (rather
-   * than an array). Opposite of {@link Mapper#all all}.
+   * Limit query to a single row. Causes subsequent calls to
+   * {@link Mapper#fetch fetch} to resolve to a single record (rather than an
+   * array). Opposite of {@link Mapper#all all}.
    *
    * Typically it's simpler to use {@link Mapper#first first}.
    *

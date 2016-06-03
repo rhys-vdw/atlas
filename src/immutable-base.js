@@ -227,7 +227,8 @@ class ImmutableBase {
     class Extended extends this.constructor {}
 
     // Mix in each set of methods and build an array of initializers.
-    const initializers = reduce(callbackOrMethodsByName, (result, methodsOrFn) => {
+    const initializers = reduce(callbackOrMethodsByName,
+    (result, methodsOrFn) => {
 
       // Support supplying a function that is resolved with a `callSuper`
       // helper.
