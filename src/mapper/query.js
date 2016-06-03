@@ -1,4 +1,4 @@
-import { isFunction, isEmpty, isString, assign } from 'lodash';
+import { identity, isFunction, isEmpty, isString, assign } from 'lodash';
 import Knex from 'knex';
 
 const knex = Knex({});
@@ -6,7 +6,10 @@ const knex = Knex({});
 export default {
 
   initialize() {
-    this.setState({ queryBuilder: knex.queryBuilder() });
+    this.setState({
+      queryBuilder: knex.queryBuilder(),
+      atlas: identity
+    })
   },
 
   atlas(atlas) {

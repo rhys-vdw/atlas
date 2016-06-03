@@ -5,7 +5,6 @@ export default function(atlas) {
 
   const Mapper = atlas('Mapper');
   const { knex, register, related, relations } = atlas;
-  const { hasMany, belongsTo, belongsToMany } = relations;
 
   test('Mapper - eager loading', t => {
 
@@ -36,14 +35,14 @@ export default function(atlas) {
     t.databaseTest('loading nested relations', knex, filmTables, st => {
       register({
         Actors: Mapper.table('actors').relations({
-          movies: belongsToMany('Movies', { pivotTable: 'roles' })
+          movies: m => m.belongsToMany('Movies', { pivotTable: 'roles' })
         }),
         Movies: Mapper.table('movies').relations({
-          cast: belongsToMany('Actors', { pivotTable: 'roles' }),
-          director: belongsTo('Directors')
+          cast: m => m.belongsToMany('Actors', { pivotTable: 'roles' }),
+          director: m => m.belongsTo('Directors')
         }),
         Directors: Mapper.table('directors').relations({
-          movies: hasMany('Movies')
+          movies: m => m.hasMany('Movies')
         })
       });
 
@@ -136,7 +135,7 @@ export default function(atlas) {
 
       register({
         Nodes: Mapper.table('nodes').relations({
-          next: belongsTo('Nodes', { selfRef: 'next_id' }),
+          next: m => m.belongsTo('Nodes', { selfRef: 'next_id' }),
         })
       });
 

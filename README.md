@@ -47,109 +47,122 @@ export default Atlas({ knex });
 
 ## Usage
 
-```js
-// example.js
+Use configured [`Atlas`](#Atlas) instance.
 
+```js
 import atlas from './atlas-instance';
 
-const { NotFoundError, related } = atlas;
-const { hasMany, hasOne, belongsToMany } = atlas.relations;
+// Extend from the base mapper.
+const Users = atlas('Mapper').table('users');
 
-const Mapper = atlas('Mapper');
-
-// Create simple Mappers for logins and posts.
-const Logins = Mapper.table('logins');
-const Posts = Mapper.table('posts');
-const Groups = Mapper.table('groups');
-
-// More complex mapper for `users` table.
-const Users = Mapper.table('users').relations({
-  posts: hasMany(Posts, { otherRef: 'author_id' }),
-  lastLogin: hasOne(Logins.orderBy('created_at', 'desc')),
-  groups: belongsToMany(Groups, { pivotTable: 'memberships' }),
+// Print out a list of all users' names.
+Users.fetch().then(users => {
+  console.log(users.map(u => u.name).join(', '))
 });
 
-// Calling `.where` duplicates the immutable `Mapper`.
-const Admins = Users.where('is_admin', true);
 
-Users.fetch().then(users =>
-// select * from users;
+// Find two users and then update an attribute.
+Users.find(1, 2).then(users =>
+  return Users.target(found).updateAll({ has_been_seen: true })
+);
 
-// returns all users
-users === [
+// Delete some rows by ID or record.
+return Users.destroy(4, { id: 6 });
+// delete from users where id in (4, 6)
+```
+
+Records come back as plain objects. Example [`fetch`](#Mapper+fetch) response:
+
+```js
+[
   { id: 1, name: 'Annie', is_admin: true },
   { id: 2, name: 'Beth', is_admin: false },
   { id: 3, name: 'Chris', is_admin: false }
 ]
+```
 
-Admins.fetch().then(admins =>
-// select * from users where is_admin = true;
+Specialize an existing mapper express domain logic:
 
-Users.find(1, 2).then(([annie, beth] =>
-// select * from users where id in (1, 2);
+```js
+const Admins = Users.where('is_admin', true);
 
-Admins.find(3).then(chris => /* ... */).catch(NotFoundError, err => {
-// select * from users where is_admin = true and id in (1, 3);
-  err.toString() === 'Error! No record found.'
+Admins.fetch().then(printAdminList);
+
+Admins.find(3).then(admin => {
+  console.log(`${admin.name} is an admin!`);
+}).catch(NotFoundError, err => {
+  console.error(`No admin with ID 3!`);
+});
+```
+
+Works when creating models too:
+TODO: _Make this actually work!_
+
+```js
+const heath = Admins.forge({ name: 'Heath' });
+// { name: 'Heath', is_admin: true };
+
+return Admins.save({ id: 4, name: 'Nigel' }, { name: 'Heath' });
+// update users set name = 'Nigel', is_admin = true where id = 4;
+// insert into users (name, is_admin) values ('Heath', true);
+```
+
+Defining a schema with relations:
+
+```js
+const Groups = Mapper.table('groups').relations({
+  users() { return this.belongsToMany(Users) },
+  owner() { return this.hasOne(Users, { selfRef: 'owner_id' }) }
 });
 
-// returns only administrators - Chris is not found.
-users === [{ id: 1, name: 'Annie', is_admin: true }];
-
-// Create a new administrator object with defaults.
-const david = Admins.forge({ name: 'David' });
-david === { name: 'David', is_admin: true };
-
-// Also assigns defaults on insertion.
-Admins.save(david, { name: 'Elinor' }).tap(([david, elinor]) => {
-  // insert into users (name, is_admin) values (
-  //   ('David', true), ('Elinor', true)
-  // );
-
-  david === { id: 4, name: 'David', is_admin: true };
-  elinor === { id: 5, name: 'Elinor', is_admin: true };
-}).then(([david, elinor]) => {
-
-  david.name = 'David J Smith';
-
-  // decides to `update` based on presence of `id` attribute.
-  return Admins.save(david, { name: 'Heath' });
-  // update users set name = 'David J Smith', is_admin = true where id = 4;
-  // insert into users (name, is_admin) values (('Heath', true));
-}).then(records => {
-
-  return Users.destroy(records);
-  // delete from users where id in (4, 6)
-
-}).then(() => {
-
-  // Load up Annie and eager load relations.
-  return Users.where({ name: 'Annie' }).with(
-    related('groups', 'lastLogin'),
-    related('posts').query(query =>
-      query.orderBy('created_at', 'desc').limit(2)
-    ).as('recentPosts')
-  ).first();
-
-).then(annie => {
-
-  // annie:
-  {
-    id: 1,
-    name: 'Annie',
-    lastLogin: { user_id: 1, created_at: '2015-11-26' },
-    groups: [
-      { id: 20, name: 'Super Friends', _pivot_user_id: 1 },
-    ],
-    recentPosts: [
-      { id: 120, author_id: 1, created_at: '2015-11-24',
-        title: 'Hi', message: 'Hey there!' },
-      { id: 110, author_id: 1, created_at: '2015-10-30',
-        title: 'Re: Greeting', message: 'Yo', }
-    ]
-  }
-
+// More complex mapper for `users` table.
+const Users = Mapper.table('users').relations({
+  groups()      { return this.belongsToMany(Groups) }
+  ownedGroups() { return this.hasMany(Groups, { otherRef: 'owner_id' }) },
+  posts()       { return this.hasMany(Posts, { otherRef: 'author_id' }) },
+  lastPost()    { return this.hasOne(Posts.orderBy('created_at', 'desc')) },
 });
+
+const Posts = Mapper.table('posts').relations({
+  author() { return this.hasOne(Users, { selfRef: 'author_id' }) }
+});
+```
+
+Now using those relations:
+
+```js
+// Use the `related` helper.
+const { related } = atlas;
+
+// Load up Annie and eager load relations.
+return Users.with(
+  related('groups'),
+  related('lastLogin'),
+  related('posts').query(query =>
+    query.orderBy('created_at', 'desc').limit(2)
+  ).as('recentPosts')
+).findBy('name', 'Annie').then(annie => {
+  render(annie);
+})
+```
+
+Relations get nested in the returned record:
+
+```js
+{
+  id: 1,
+  name: 'Annie',
+  lastLogin: { user_id: 1, created_at: '2015-11-26' },
+  groups: [
+    { id: 20, name: 'Super Friends', _pivot_user_id: 1 },
+  ],
+  recentPosts: [
+    { id: 120, author_id: 1, created_at: '2015-11-24',
+      title: 'Hi', message: 'Hey there!' },
+    { id: 110, author_id: 1, created_at: '2015-10-30',
+      title: 'Re: Greeting', message: 'Yo', }
+  ]
+}
 ```
 
 ## Classes
@@ -242,7 +255,7 @@ scripts.</p>
 <a name="Atlas"></a>
 
 ## Atlas
-_Initialize **Atlas.js**._
+_Initialize **Atlas**._
 
 The `atlas` instance is a helper function. It wraps a `Knex` instance and a
 mapper registry.
@@ -278,15 +291,14 @@ atlas('Movies').where({ genre: 'horror' }).count().then(count => {
         * [.override(nameOrMappersByName, [mapper])](#Atlas+override) ⇒ <code>[Atlas](#Atlas)</code>
         * [.register(nameOrMappersByName, [mapper])](#Atlas+register) ⇒ <code>[Atlas](#Atlas)</code>
         * [.registry](#Atlas+registry) : <code>[Registry](#Registry)</code>
-        * [.related](#Atlas+related) : <code>function</code>
-        * [.relations](#Atlas+relations) : <code>Object</code>
+        * [.related](#Atlas+related) : <code>[related](#related)</code>
         * [.transaction(callback)](#Atlas+transaction) ⇒ <code>Promise</code>
     * _static_
         * [.VERSION](#Atlas.VERSION) : <code>string</code>
         * [.errors](#Atlas.errors) : <code>[errors](#errors)</code>
         * [.plugins](#Atlas.plugins) : <code>Object</code>
     * _inner_
-        * [~transactionCallback(t)](#Atlas..transactionCallback)
+        * [~transactionCallback](#Atlas..transactionCallback) : <code>function</code>
 
 
 -
@@ -306,18 +318,17 @@ mappers, but no queries can be executed ([fetch](#Mapper+fetch),
 
 const atlas = Atlas();
 const Mapper = atlas('Mapper');
-const { hasMany } = atlas.relations;
 
 const Purchases = Mapper.table('purchases');
 
 const Customers = Mapper.table('customers').relations({
-  purchases: hasMany('Purchases'),
-  purchasedProducts: belongsToMany('Products', { Pivot: 'Purchases' })
+  purchases: m => m.hasMany('Purchases'),
+  purchasedProducts: m => m.belongsToMany('Products', { Pivot: 'Purchases' })
 });
 
 const Products = Mapper.table('products').relations({
-  sales: hasMany('Purchases');
-  owners: belongsToMany('Users', { Pivot: 'Purchases' })
+  sales: m => m.hasMany('Purchases');
+  owners: m => m.belongsToMany('Users', { Pivot: 'Purchases' })
 });
 
 atlas.register({ Purchases, Customers, Products });
@@ -395,12 +406,10 @@ Mapper names can also be used directly in relationship definitions, for
 example:
 
 ```js
-const { belongsTo, hasMany } = atlas.relations;
-
 // Using registry allows either side of the relation to reference the other
 // before it is declared.
-const Pet = Mapper.table('pets').relations({ owner: belongsTo('Owner') });
-const Owner = Mapper.table('owners').relations({ pets: hasMany('Pets') });
+const Pet = Mapper.table('pets').relations({ owner: m => m.belongsTo('Owner') });
+const Owner = Mapper.table('owners').relations({ pets: m => m.hasMany('Pets') });
 atlas.register({ Pet, Owner });
 ```
 
@@ -425,30 +434,11 @@ Registry used by this `Atlas` instance.
 
 <a name="Atlas+related"></a>
 
-### atlas.related : <code>function</code>
+### atlas.related : <code>[related](#related)</code>
 Accessor for `related` helper function.
 
 **Read only**: true  
 **See**: [related](#related)  
-
--
-
-<a name="Atlas+relations"></a>
-
-### atlas.relations : <code>Object</code>
-**Todo**
-
-- [ ] document or change
-
-**Properties**
-
-| Name | Type |
-| --- | --- |
-| belongsTo | <code>belongsTo</code> | 
-| belongsToMany | <code>belongsToMany</code> | 
-| hasOne | <code>hasOne</code> | 
-| hasMany | <code>hasMany</code> | 
-
 
 -
 
@@ -513,7 +503,7 @@ atlas.transaction(t => {
 <a name="Atlas.VERSION"></a>
 
 ### Atlas.VERSION : <code>string</code>
-Installed version of Atlas.js
+Installed version of **Atlas**.
 
 ```js
 console.log(Atlas.VERSION);
@@ -545,7 +535,7 @@ console.log(Atlas.VERSION);
 
 <a name="Atlas..transactionCallback"></a>
 
-### Atlas~transactionCallback(t)
+### Atlas~transactionCallback : <code>function</code>
 A callback function that runs the transacted queries.
 
 
@@ -689,8 +679,8 @@ const DslMapper = Mapper.extend(callSuper => {
 });
 
 const Users = DslMapper.table('users').relations({
-  account: () => hasOne('Account'),
-  projects: () => hasMany('Projects')
+  account: m => m.hasOne('Account'),
+  projects: m => m.hasMany('Projects')
 });
 
 Users.with('account, projects').fetch().then(users =>
@@ -911,7 +901,7 @@ Cars.fetch().then(cars => // ...
         * [.orderBy(attribute, [direction])](#Mapper+orderBy) ⇒ <code>[Mapper](#Mapper)</code>
         * [.pivotAttributes(attributes)](#Mapper+pivotAttributes) ⇒ <code>[Mapper](#Mapper)</code>
         * [.query(method, ...args)](#Mapper+query) ⇒ <code>[Mapper](#Mapper)</code>
-        * [.relations(relationByName)](#Mapper+relations) ⇒ <code>[Mapper](#Mapper)</code>
+        * [.relations(relationFactoryByName)](#Mapper+relations) ⇒ <code>[Mapper](#Mapper)</code>
         * [.require()](#Mapper+require) ⇒ <code>[Mapper](#Mapper)</code>
         * [.requireState(key)](#ImmutableBase+requireState) ⇒ <code>mixed</code>
         * [.save(records)](#Mapper+save) ⇒ <code>Promise.&lt;(Object\|Array.&lt;Object&gt;)&gt;</code>
@@ -931,6 +921,7 @@ Cars.fetch().then(cars => // ...
         * [.withMutations(...initializer)](#ImmutableBase+withMutations) ⇒ <code>[ImmutableBase](#ImmutableBase)</code>
     * _inner_
         * [~attributeCallback](#Mapper..attributeCallback) ⇒ <code>mixed</code> &#124; <code>undefined</code>
+        * [~createRelation](#Mapper..createRelation) ⇒ <code>Relation</code>
 
 
 -
@@ -1062,7 +1053,7 @@ _Set default values for attributes._
 These values will be used by [forge](#Mapper+forge) and
 [insert](#Mapper+insert) when no value is provided.
 
-```
+```js
 const Users = Mapper.table('users').defaultAttributes({
   name: 'Anonymous', rank: 0
 });
@@ -1072,7 +1063,7 @@ Alternatively values can be callbacks that receive attributes and return a
 default value. In the below example a new document record is generated with
 a default name and template.
 
-```
+```js
 const HtmlDocuments = Mapper.table('documents').defaultAttributes({
   title: 'New Document',
   content: attributes => (
@@ -1197,8 +1188,8 @@ const DslMapper = Mapper.extend(callSuper => {
 });
 
 const Users = DslMapper.table('users').relations({
-  account: () => hasOne('Account'),
-  projects: () => hasMany('Projects')
+  account: m => m.hasOne('Account'),
+  projects: m => m.hasMany('Projects')
 });
 
 Users.with('account, projects').fetch().then(users =>
@@ -1342,7 +1333,7 @@ _Create a record._
 Create a new record object. This doesn't persist any data, it just creates an
 instance to be manipulated with JavaScript.
 
-```
+```js
 const Messages = Mapper.tables('messages').defaultAttributes({
   created_at: () => new Date(),
   urgency: 'low'
@@ -1381,11 +1372,11 @@ and `HasMany`) provides an `of()` method that accepts one or more records.
 atlas.register({
 
   Projects: Mapper.table('projects').relations({
-    owner: belongsTo('People', { selfRef: 'owner_id' })
+    owner: m => m.belongsTo('People', { selfRef: 'owner_id' })
   }),
 
   People: Mapper.table('people').relations({
-    projects: hasMany('Projects', { otherRef: 'owner_id' })
+    projects: m => m.hasMany('Projects', { otherRef: 'owner_id' })
   })
 
 });
@@ -1736,54 +1727,58 @@ _Modify the underlying Knex `QueryBuilder` instance directly._
 
 <a name="Mapper+relations"></a>
 
-### mapper.relations(relationByName) ⇒ <code>[Mapper](#Mapper)</code>
+### mapper.relations(relationFactoryByName) ⇒ <code>[Mapper](#Mapper)</code>
 _Define a `Mapper`'s relations._
+
+```js
+const Mapper = atlas('Mapper');
+
+const Users = Mapper.table('users').idAttribute('email').relations({
+  friends: m => m.belongsToMany(Users),
+  sentMessages: m => m.hasMany(Messages, { otherRef: 'from_id' }),
+  receivedMessages: m => m.hasMany(Messages, { otherRef: 'to_id' }),
+}),
+
+Messages: Mapper.table('messages').relations({
+  from: m => m.belongsTo(Users, { selfRef: 'from_id' }),
+  to: m => m.belongsTo(Users, { selfRef: 'to_id' })
+}).extend({
+  unread() { return this.where('is_unread', true); },
+  read() { return this.where('is_unread', false); }
+}),
+
+Posts: Mapper.table('posts').relations({
+  author: m => m.belongsTo(Users, { selfRef: 'author_id' }),
+  comments: m => m.hasMany(Comments)
+}),
+
+Comments: Mapper.table('comments').relations({
+  author: m => m.belongsTo(Users, { selfRef: 'author_id' }),
+  post: m => m.belongsTo(Posts)
+})
+```
+
+Relation functions are also bound correctly like a method, so
+you can use `this`.
+
+```js
+const Users = Mapper.table('users').relations({
+  friends: function() { return this.belongsToMany(Users) }
+})
+```
 
 **Returns**: <code>[Mapper](#Mapper)</code> - Mapper with provided relations.  
 **See**
 
 - [load](#Mapper+load)
 - [with](#Mapper+with)
-- [relations](#Atlas+relations)
+- [Atlas#relations](null)
 
 
 | Param | Type | Description |
 | --- | --- | --- |
-| relationByName | <code>Object</code> | A hash of relations keyed by name. |
+| relationFactoryByName | <code>Object.&lt;string, Mapper~createRelation&gt;</code> | A hash of relations keyed by name. |
 
-**Example**  
-```js
-const { belongsTo, belongsToMany, hasMany } = atlas.relations;
-const Mapper = atlas('Mapper');
-
-atlas.register({
-
-  Users: Mapper.table('users').idAttribute('email').relations({
-    friends: belongsToMany('Users'),
-    sentMessages: hasMany('Messages', { otherRef: 'from_id' }),
-    receivedMessages: hasMany('Messages', { otherRef: 'to_id' }),
-  }),
-
-  Messages: Mapper.table('messages').relations({
-    from: belongsTo('Users', { selfRef: 'from_id' }),
-    to: belongsTo('Users', { selfRef: 'to_id' })
-  }).extend({
-    unread() { return this.where('is_unread', true); },
-    read() { return this.where('is_unread', false); }
-  }),
-
-  Posts: Mapper.table('posts').relations({
-    author: belongsTo('Users', { selfRef: 'author_id' }),
-    comments: hasMany('Comments')
-  }),
-
-  Comments: Mapper.table('comments').relations({
-    author: belongsTo('Users', { selfRef: 'author_id' }),
-    post: belongsTo('Posts')
-  })
-
-);
-```
 
 -
 
@@ -2144,6 +2139,21 @@ AustralianWomen = People.withMutations(() => {
 
 -
 
+<a name="Mapper..createRelation"></a>
+
+### Mapper~createRelation ⇒ <code>Relation</code>
+Callback invoked with the `Mapper` instance and returning a `Relation`.
+
+**Returns**: <code>Relation</code> - A relation instance.  
+**this**: <code>[Mapper](#Mapper)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| Mapper | <code>[Mapper](#Mapper)</code> | The Mapper upon which this relation is being invoked. |
+
+
+-
+
 <a name="Registry"></a>
 
 ## Registry
@@ -2298,8 +2308,8 @@ const DslMapper = Mapper.extend(callSuper => {
 });
 
 const Users = DslMapper.table('users').relations({
-  account: () => hasOne('Account'),
-  projects: () => hasMany('Projects')
+  account: m => m.hasOne('Account'),
+  projects: m => m.hasMany('Projects')
 });
 
 Users.with('account, projects').fetch().then(users =>
@@ -2392,7 +2402,7 @@ knex('nodes').insert([
 
 atlas.register({
   Nodes: Mapper.table('nodes').relations({
-    next: belongsTo('Nodes', { selfRef: 'next_id' })
+    next: m => m.belongsTo('Nodes', { selfRef: 'next_id' })
   })
 });
 
@@ -2653,7 +2663,7 @@ Unset state was required, but had not been set.
 
 ```js
 Mapper.save({ name: 'Bob' });
-// ERROR: Tried to retrieve unset state 'table'~
+// ERROR: Tried to retrieve unset state 'table'!
 ```
 
 **See**: [requireState](#ImmutableBase+requireState)  

@@ -4,7 +4,6 @@ import Mapper from '../mapper';
 import { mapperAttributeRef } from '../naming/default-column';
 import * as DefaultTable from '../naming/table';
 import { isComposite, assertKeysCompatible } from '../arguments';
-import { hasMany } from './index';
 import { PIVOT_PREFIX } from '../constants';
 
 export default class BelongsToMany {
@@ -47,7 +46,7 @@ export default class BelongsToMany {
     }
 
     // Create the relation between Other and Pivot
-    const pivots = hasMany(Pivot, {
+    const pivots = m => m.hasMany(Pivot, {
       selfKey: otherKey,
       otherRef: pivotOtherRef,
       pivotTable

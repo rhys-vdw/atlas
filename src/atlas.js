@@ -1,7 +1,6 @@
 import { isObject, isString, each } from 'lodash';
 import Registry from './registry';
 import Mapper from './mapper';
-import { initialize as initializeRelations } from './relations';
 import { related } from './related';
 import plugins from './plugins';
 import * as errors from './errors';
@@ -9,7 +8,7 @@ import { version as VERSION } from '../package.json';
 
 const createRegistry = () => new Registry({ Mapper });
 
-const createToMapper = (registry) => (mapperOrName) => {
+const createToMapper = registry => mapperOrName => {
   return isString(mapperOrName)
     ? registry.retrieve(mapperOrName)
     : mapperOrName;
@@ -19,7 +18,7 @@ const createAtlas = (knex, registry) => {
   const toMapper = createToMapper(registry);
   return function atlas(mapperOrName) {
     const mapper = toMapper(mapperOrName);
-    return mapper.withMutations({ atlas, knex });
+    return mapper && mapper.withMutations({ atlas, knex });
   };
 };
 
@@ -55,7 +54,7 @@ const createAtlas = (knex, registry) => {
  *
  * @summary
  *
- * Initialize **Atlas.js**.
+ * Initialize **Atlas**.
  *
  * @description
  *
@@ -71,18 +70,17 @@ const createAtlas = (knex, registry) => {
  *
  * const atlas = Atlas();
  * const Mapper = atlas('Mapper');
- * const { hasMany } = atlas.relations;
  *
  * const Purchases = Mapper.table('purchases');
  *
  * const Customers = Mapper.table('customers').relations({
- *   purchases: hasMany('Purchases'),
- *   purchasedProducts: belongsToMany('Products', { Pivot: 'Purchases' })
+ *   purchases: m => m.hasMany('Purchases'),
+ *   purchasedProducts: m => m.belongsToMany('Products', { Pivot: 'Purchases' })
  * });
  *
  * const Products = Mapper.table('products').relations({
- *   sales: hasMany('Purchases');
- *   owners: belongsToMany('Users', { Pivot: 'Purchases' })
+ *   sales: m => m.hasMany('Purchases');
+ *   owners: m => m.belongsToMany('Users', { Pivot: 'Purchases' })
  * });
  *
  * atlas.register({ Purchases, Customers, Products });
@@ -151,12 +149,10 @@ export default function Atlas(knex, registry = createRegistry()) {
    * example:
    *
    * ```js
-   * const { belongsTo, hasMany } = atlas.relations;
-   *
    * // Using registry allows either side of the relation to reference the other
    * // before it is declared.
-   * const Pet = Mapper.table('pets').relations({ owner: belongsTo('Owner') });
-   * const Owner = Mapper.table('owners').relations({ pets: hasMany('Pets') });
+   * const Pet = Mapper.table('pets').relations({ owner: m => m.belongsTo('Owner') });
+   * const Owner = Mapper.table('owners').relations({ pets: m => m.hasMany('Pets') });
    * atlas.register({ Pet, Owner });
    * ```
    *
@@ -259,7 +255,7 @@ export default function Atlas(knex, registry = createRegistry()) {
     /**
      * A callback function that runs the transacted queries.
      *
-     * @function Atlas~transactionCallback
+     * @callback Atlas~transactionCallback
      * @param {Atlas} t
      *   An instance of `Atlas` connected to the transaction.
      * @param {Transaction} t.knex
@@ -268,22 +264,9 @@ export default function Atlas(knex, registry = createRegistry()) {
     return knex.transaction(trx => transactionCallback(createAtlas(trx, registry)));
   };
 
-  // Initialize and assign relation builders.
-  const toMapper = createToMapper(registry);
-
-  /**
-   * @member {Object} Atlas#relations
-   * @property {belongsTo} belongsTo
-   * @property {belongsToMany} belongsToMany
-   * @property {hasOne} hasOne
-   * @property {hasMany} hasMany
-   * @todo document or change
-   */
-  atlas.relations = initializeRelations(toMapper);
-
   /**
    * Accessor for `related` helper function.
-   * @member {function} Atlas#related
+   * @member {related} Atlas#related
    * @readonly
    * @see related
    */
@@ -306,7 +289,7 @@ Atlas.plugins = plugins;
 Atlas.errors = errors;
 
 /**
- * Installed version of Atlas.js
+ * Installed version of **Atlas**.
  *
  * ```js
  * console.log(Atlas.VERSION);

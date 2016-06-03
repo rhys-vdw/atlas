@@ -1,26 +1,31 @@
-import identity from 'lodash/identity';
-
 import BelongsTo from './belongs-to';
 import BelongsToMany from './belongs-to-many';
 import HasMany from './has-many';
 import HasOne from './has-one';
 
-export const initialize = (toMapper = identity) => ({
+export { BelongsTo, BelongsToMany, HasMany, HasOne };
 
-  belongsTo: (Other, options) => (Self) =>
-    new BelongsTo(Self, toMapper(Other), options),
+export default {
 
-  belongsToMany: (Other, options) => (Self) => {
-    const { Pivot, ...rest } = options;
-    return new BelongsToMany(Self, toMapper(Other), toMapper(Pivot), rest);
+  belongsTo(Other, options) {
+    const { atlas } = this.state;
+    return new BelongsTo(this, atlas(Other), options);
   },
 
-  hasMany: (Other, options) => (Self) =>
-    new HasMany(Self, toMapper(Other), options),
+  belongsToMany(Other, options) {
+    const { atlas } = this.state;
+    const { Pivot, ...rest } = options;
+    return new BelongsToMany(this, atlas(Other), atlas(Pivot), rest);
+  },
 
-  hasOne: (Other, options) => (Self) =>
-    new HasOne(Self, toMapper(Other), options),
-});
+  hasMany(Other, options) {
+    const { atlas } = this.state;
+    return new HasMany(this, atlas(Other), options);
+  },
 
-const { belongsTo, belongsToMany, hasMany, hasOne } = initialize();
-export { belongsTo, belongsToMany, hasMany, hasOne };
+  hasOne(Other, options) {
+    const { atlas } = this.state;
+    return new HasOne(this, atlas(Other), options);
+  },
+
+};

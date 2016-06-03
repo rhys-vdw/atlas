@@ -119,7 +119,7 @@ class Related extends ImmutableBase {
    *
    * atlas.register({
    *   Nodes: Mapper.table('nodes').relations({
-   *     next: belongsTo('Nodes', { selfRef: 'next_id' })
+   *     next: m => m.belongsTo('Nodes', { selfRef: 'next_id' })
    *   })
    * });
    *

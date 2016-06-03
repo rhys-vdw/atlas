@@ -1,6 +1,5 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
-import { hasMany, belongsTo } from '../../../lib/relations';
 import CamelCase from '../../../lib/plugins/CamelCase';
 
 test('== Mapper - joins ==', t => {
@@ -44,7 +43,7 @@ test('== Mapper - joins ==', t => {
     const Self = Mapper.table('selves').idAttribute('s_id');
 
     const Joined = Self.relations({
-      others: hasMany(Other)
+      others: m => m.hasMany(Other)
     }).joinRelation('others');
 
     t.queriesEqual(
@@ -87,7 +86,7 @@ test('== Mapper - joins ==', t => {
     const Self = CamelMapper.table('selves').idAttribute('selfId');
 
     const Joined = Self.relations({
-      others: hasMany(Other)
+      others: m => m.hasMany(Other)
     }).joinRelation('others').pivotAttributes('someValue');
 
     t.queriesEqual(
@@ -112,7 +111,7 @@ test('== Mapper - joins ==', t => {
     const Self = Mapper.table('selves').idAttribute('s_id');
 
     const Joined = Self.relations({
-      others: belongsTo(Other),
+      others: m => m.belongsTo(Other),
     }).joinRelation('others');
 
     st.queriesEqual(
@@ -133,7 +132,7 @@ test('== Mapper - joins ==', t => {
     const People = Mapper.table('people');
 
     const Joined = People.relations({
-      children: hasMany(People, { otherRef: 'mother_id' })
+      children: m => m.hasMany(People, { otherRef: 'mother_id' })
     }).joinRelation('children').pivotAttributes('a');
 
     t.queriesEqual(
@@ -154,7 +153,7 @@ test('== Mapper - joins ==', t => {
     const Self = Mapper.table('selves').idAttribute('s_id');
 
     const Joined = Self.relations({
-      others: hasMany(Other)
+      others: m => m.hasMany(Other)
     }).joinRelation('others');
 
     t.queriesEqual(

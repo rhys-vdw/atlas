@@ -13,44 +13,50 @@ export default {
    *
    * Define a `Mapper`'s relations.
    *
-   * @example
+   * @description
    *
-   * const { belongsTo, belongsToMany, hasMany } = atlas.relations;
+   * ```js
    * const Mapper = atlas('Mapper');
    *
-   * atlas.register({
+   * const Users = Mapper.table('users').idAttribute('email').relations({
+   *   friends: m => m.belongsToMany(Users),
+   *   sentMessages: m => m.hasMany(Messages, { otherRef: 'from_id' }),
+   *   receivedMessages: m => m.hasMany(Messages, { otherRef: 'to_id' }),
+   * }),
    *
-   *   Users: Mapper.table('users').idAttribute('email').relations({
-   *     friends: belongsToMany('Users'),
-   *     sentMessages: hasMany('Messages', { otherRef: 'from_id' }),
-   *     receivedMessages: hasMany('Messages', { otherRef: 'to_id' }),
-   *   }),
+   * Messages: Mapper.table('messages').relations({
+   *   from: m => m.belongsTo(Users, { selfRef: 'from_id' }),
+   *   to: m => m.belongsTo(Users, { selfRef: 'to_id' })
+   * }).extend({
+   *   unread() { return this.where('is_unread', true); },
+   *   read() { return this.where('is_unread', false); }
+   * }),
    *
-   *   Messages: Mapper.table('messages').relations({
-   *     from: belongsTo('Users', { selfRef: 'from_id' }),
-   *     to: belongsTo('Users', { selfRef: 'to_id' })
-   *   }).extend({
-   *     unread() { return this.where('is_unread', true); },
-   *     read() { return this.where('is_unread', false); }
-   *   }),
+   * Posts: Mapper.table('posts').relations({
+   *   author: m => m.belongsTo(Users, { selfRef: 'author_id' }),
+   *   comments: m => m.hasMany(Comments)
+   * }),
    *
-   *   Posts: Mapper.table('posts').relations({
-   *     author: belongsTo('Users', { selfRef: 'author_id' }),
-   *     comments: hasMany('Comments')
-   *   }),
+   * Comments: Mapper.table('comments').relations({
+   *   author: m => m.belongsTo(Users, { selfRef: 'author_id' }),
+   *   post: m => m.belongsTo(Posts)
+   * })
+   * ```
    *
-   *   Comments: Mapper.table('comments').relations({
-   *     author: belongsTo('Users', { selfRef: 'author_id' }),
-   *     post: belongsTo('Posts')
-   *   })
+   * Relation functions are also bound correctly like a method, so
+   * you can use `this`.
    *
-   * );
+   * ```js
+   * const Users = Mapper.table('users').relations({
+   *   friends: function() { return this.belongsToMany(Users) }
+   * })
+   * ```
    *
    * @see Mapper#load
    * @see Mapper#with
    * @see Atlas#relations
    *
-   * @param {Object} relationByName
+   * @param {Object<string, Mapper~createRelation>} relationFactoryByName
    *   A hash of relations keyed by name.
    * @returns {Mapper}
    *   Mapper with provided relations.
@@ -85,11 +91,11 @@ export default {
    * atlas.register({
    *
    *   Projects: Mapper.table('projects').relations({
-   *     owner: belongsTo('People', { selfRef: 'owner_id' })
+   *     owner: m => m.belongsTo('People', { selfRef: 'owner_id' })
    *   }),
    *
    *   People: Mapper.table('people').relations({
-   *     projects: hasMany('Projects', { otherRef: 'owner_id' })
+   *     projects: m => m.hasMany('Projects', { otherRef: 'owner_id' })
    *   })
    *
    * });
@@ -167,7 +173,16 @@ export default {
       `got: ${createRelation}`
     );
 
-    return createRelation(this);
+    /**
+     * Callback invoked with the `Mapper` instance and returning a `Relation`.
+     *
+     * @callback Mapper~createRelation
+     * @this Mapper
+     * @param {Mapper} Mapper
+     *   The Mapper upon which this relation is being invoked.
+     * @returns {Relation} A relation instance.
+     */
+    return createRelation.call(this, this);
   },
 
   /**

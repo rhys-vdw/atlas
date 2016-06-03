@@ -15,7 +15,7 @@ function avatarsTable(avatars) {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex, related, relations: { hasOne } } = atlas;
+  const { knex, related } = atlas;
 
   test('Mapper - relations - HasOne', t => {
 
@@ -26,7 +26,7 @@ export default function(atlas) {
       const Avatars = Mapper.table('avatars');
 
       const Users = Mapper.table('users').relations({
-        avatar: hasOne(Avatars)
+        avatar: m => m.hasOne(Avatars)
       });
 
       return Promise.join(
@@ -87,7 +87,7 @@ export default function(atlas) {
       const Avatars = Mapper.table('avatars');
 
       const Users = Mapper.table('users').relations({
-        avatar: hasOne(Avatars)
+        avatar: m => m.hasOne(Avatars)
       });
 
       return knex('avatars').insert([
@@ -136,7 +136,7 @@ export default function(atlas) {
       const Avatars = Mapper.table('avatars');
 
       const Users = Mapper.table('users').relations({
-        avatar: hasOne(Avatars)
+        avatar: m => m.hasOne(Avatars)
       });
 
       return knex('avatars').insert([

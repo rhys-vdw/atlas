@@ -23,7 +23,6 @@ export default function(atlas) {
 
   const Mapper = atlas('Mapper');
   const { knex, related } = atlas;
-  const { belongsToMany } = atlas.relations;
 
   test('Mapper - relations - BelongsToMany', t => {
 
@@ -32,7 +31,7 @@ export default function(atlas) {
       const Groups = Mapper.table('groups');
 
       const Users = Mapper.table('users').relations({
-        groups: belongsToMany(Groups, {
+        groups: m => m.belongsToMany(Groups, {
           otherRef: 'user_id', pivotTable: 'memberships'
         })
       });
@@ -122,7 +121,7 @@ export default function(atlas) {
       const Groups = Mapper.table('groups');
 
       const Users = Mapper.table('users').relations({
-        groups: belongsToMany(Groups, {
+        groups: m => m.belongsToMany(Groups, {
           otherRef: 'user_id', pivotTable: 'memberships'
         })
       });
@@ -185,7 +184,7 @@ export default function(atlas) {
       const Groups = Mapper.table('groups');
 
       const Users = Mapper.table('users').relations({
-        groups: belongsToMany(Groups, {
+        groups: m => m.belongsToMany(Groups, {
           otherRef: 'user_id', pivotTable: 'memberships'
         })
       });

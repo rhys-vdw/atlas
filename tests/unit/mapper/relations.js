@@ -6,16 +6,17 @@ test('Mapper - relations unit test', t => {
   t.test('Mapper#relations', t => {
 
     const atlas = Atlas();
-    const { hasOne } = atlas.relations;
     const Things = Mapper.table('things');
-    const hasOneThing = hasOne(Things);
-    const Owner = Mapper.table('owners').relations({ hasThing: hasOneThing });
+    const ownedThing = o => o.hasOne(Things)
+    const Owner = Mapper.table('owners').relations({
+      hasThing: ownedThing
+    });
 
     t.notEqual(Owner, Mapper, 'copies immutable Mapper');
 
     t.deepEqual(
       Owner.requireState('relations'),
-      { hasThing: hasOneThing },
+      { hasThing: ownedThing },
       'Correctly assigns relations'
     );
 

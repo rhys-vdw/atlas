@@ -11,6 +11,7 @@ import KeyConversion from './key-conversion';
 import Order from './order';
 import Query from './query';
 import RecordAdapter from './record-adapter';
+import RelationTypes from '../relations';
 import Relations from './relations';
 import Retrieval from './retrieval';
 import Save from './save';
@@ -72,6 +73,7 @@ const Mapper = new ImmutableBase().extend(
   Query,
   RecordAdapter,
   Relations,
+  RelationTypes,
   Retrieval,
   Save,
   Target,

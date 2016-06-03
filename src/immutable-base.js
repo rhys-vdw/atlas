@@ -202,8 +202,8 @@ class ImmutableBase {
    * });
    *
    * const Users = DslMapper.table('users').relations({
-   *   account: () => hasOne('Account'),
-   *   projects: () => hasMany('Projects')
+   *   account: m => m.hasOne('Account'),
+   *   projects: m => m.hasMany('Projects')
    * });
    *
    * Users.with('account, projects').fetch().then(users =>

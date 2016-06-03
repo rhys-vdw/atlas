@@ -16,7 +16,6 @@ export default function(atlas) {
 
   const Mapper = atlas('Mapper');
   const { knex, related } = atlas;
-  const { hasMany } = atlas.relations;
 
   test('Mapper - relations - HasMany', t => {
 
@@ -25,7 +24,7 @@ export default function(atlas) {
       const Posts = Mapper.table('posts');
 
       const Users = Mapper.table('users').relations({
-        posts: hasMany(Posts.query('orderBy', 'id'), { otherRef: 'author_id' })
+        posts: m => m.hasMany(Posts.query('orderBy', 'id'), { otherRef: 'author_id' })
       });
 
       return knex('posts').insert([
@@ -85,7 +84,7 @@ export default function(atlas) {
       const Posts = Mapper.table('posts');
 
       const Users = Mapper.table('users').relations({
-        posts: hasMany(Posts.query('orderBy', 'id'), { otherRef: 'author_id' })
+        posts: m => m.hasMany(Posts.query('orderBy', 'id'), { otherRef: 'author_id' })
       });
 
       return knex('posts').insert([
@@ -141,7 +140,7 @@ export default function(atlas) {
       const Posts = Mapper.table('posts');
 
       const Users = Mapper.table('users').relations({
-        posts: hasMany(Posts.query('orderBy', 'id'), { otherRef: 'author_id' })
+        posts: m => m.hasMany(Posts.query('orderBy', 'id'), { otherRef: 'author_id' })
       });
 
       return knex('posts').insert([

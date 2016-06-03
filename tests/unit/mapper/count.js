@@ -1,6 +1,5 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
-import { hasMany } from '../../../lib/relations/index.js';
 
 test('Mapper - count', t => {
 
@@ -36,7 +35,7 @@ test('Mapper - count', t => {
   t.test('Mapper.getRelation().of().count()', t => {
 
     const Parent = Mapper.table('parents').relations({
-      children: hasMany(Mapper.table('children'))
+      children: m => m.hasMany(Mapper.table('children'))
     });
 
     const bob = { id: 5, name: 'Bob' };
