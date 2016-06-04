@@ -31,9 +31,6 @@ export default class HasOne {
 
     return Other.withMutations(mapper => {
       mapper.targetBy(otherRef, id);
-      if (isSingle) {
-        mapper.defaultAttribute(otherRef, id);
-      }
     });
   }
 

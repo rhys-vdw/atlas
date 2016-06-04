@@ -85,7 +85,6 @@ export default class BelongsToMany {
     return Other.withMutations(other => {
       if (isSingle) {
         other.query('where', pivotSelfTableColumn, id);
-        other.defaultAttribute(otherAttribute, id);
       } else {
         other.query('whereIn', pivotSelfTableColumn, id);
       }

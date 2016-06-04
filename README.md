@@ -95,8 +95,7 @@ Admins.find(3).then(admin => {
 });
 ```
 
-~Works when creating models too:~
-_This has not yet been implemented ([issue](https://github.com/rhys-vdw/atlas/issues/69))_
+Works when creating models too:
 
 ```js
 const heath = Admins.forge({ name: 'Heath' });
@@ -931,7 +930,7 @@ Cars.fetch().then(cars => // ...
         * [.toQueryBuilder()](#Mapper+toQueryBuilder) ⇒ <code>QueryBuilder</code>
         * [.update(records)](#Mapper+update) ⇒ <code>Promise.&lt;(Object\|Array.&lt;Object&gt;)&gt;</code>
         * [.updateAll(attributes)](#Mapper+updateAll) ⇒ <code>Promise.&lt;(Array.&lt;Object&gt;\|Number)&gt;</code>
-        * [.where()](#Mapper+where) ⇒ <code>[Mapper](#Mapper)</code>
+        * [.where(attribute, ...args)](#Mapper+where) ⇒ <code>[Mapper](#Mapper)</code>
         * [.whereIn()](#Mapper+whereIn) ⇒ <code>[Mapper](#Mapper)</code>
         * [.with(...related)](#Mapper+with) ⇒ <code>[Mapper](#Mapper)</code>
         * [.withMutations(...initializer)](#ImmutableBase+withMutations) ⇒ <code>[ImmutableBase](#ImmutableBase)</code>
@@ -2040,17 +2039,72 @@ _Update all matching rows._
 
 <a name="Mapper+where"></a>
 
-### mapper.where() ⇒ <code>[Mapper](#Mapper)</code>
-Passthrough to [`QueryBuilder#where`](http://knexjs.org/#Builder-where)
-that respects [Mapper#attributeToColumn](Mapper#attributeToColumn) if overridden.
+### mapper.where(attribute, ...args) ⇒ <code>[Mapper](#Mapper)</code>
+_Select a subset of records._
 
+Passthrough to [`QueryBuilder#where`](http://knexjs.org/#Builder-where)
+with some extra features.
+
+```js
+const People = Mapper.table('people');
+People.where({ name: 'Rhys' }).fetch().then(people => // ...
 ```
-Mapper.where(attribute:string, value:mixed) -> Mapper
-Mapper.where(attribute:string, operator:string, value:mixed) -> Mapper
-Mapper.where(attributes:string[], values:mixed[]) -> Mapper
-Mapper.where({ attribute: value }) -> Mapper
-Mapper.where(callback:function) -> Mapper
+
+Mapper respects [Mapper#attributeToColumn](Mapper#attributeToColumn) if overridden.
+
+```js
+const { CamelCase }
+const Monsters = Mapper.extend(CamelCase()).table('monsters');
+const ScaryMonsters = Monsters.where({ eyeColor: 'red', clawSize: 'large' });
+
+ScaryMonsters.count().then(count => {
+  if (count > 0) {
+    runAway();
+  }
+});
 ```
+
+```sql
+select count(*) from monsters
+where eye_color = 'red' and claw_size = 'large'
+```
+
+Also overrides attributes (by calling [strictAttributes](strictAttributes) internally).
+
+```js
+const Deleted = Users.where('is_deleted', true);
+const tas = Deleted.forge({ name: 'Tas' });
+// tas -> { name: 'Tas', is_deleted: true }
+
+Deleted.save({ id: 5, is_deleted: false }).then(deleted => {
+  // deleted -> { id: 5, is_deleted: true }
+});
+```
+
+Also allows an operator (see Knex docs for more into):
+
+```js
+const MultiHeaded = Monsters.where('headCount', '>', 1);
+const Living = Monsters.where('isDead', '!=', 1);
+```
+
+And handles arrays (useful for composite keys):
+
+```js
+Mapper.table('monster_kills')
+  .where(['monster_id', 'victim_id'], [spider.id, fred.id])
+  .count(killCount => {
+    console.log(
+      `Fred was ${killCount == 0 ? 'not ' : ''} killed by a spider!`
+    );
+  });
+```
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| attribute | <code>string</code> &#124; <code>Array.&lt;string&gt;</code> &#124; <code>Object</code> | Attribute name(s) or object of values keyed by attribute name. |
+| ...args | <code>mixed</code> | See description. |
 
 
 -
