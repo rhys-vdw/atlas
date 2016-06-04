@@ -1626,7 +1626,7 @@ Posts.with('author').fetch().then(postsWithAuthor => {
 
 | Param | Type | Description |
 | --- | --- | --- |
-| ...related | <code>[Related](#Related)</code> &#124; <code>string</code> &#124; <code>[Array.&lt;Related&gt;](#Related)</code> &#124; <code>Array.&lt;string&gt;</code> | One or more Related instances or relation names. |
+| ...related | <code>[Related](#Related)</code> &#124; <code>string</code> &#124; <code>[ALL](#related.ALL)</code> | One or more Related instances or relation names. Or [ALL](#related.ALL)   to select all registered relations. |
 
 
 -
@@ -2111,7 +2111,7 @@ atlas('Users').with(
 
 | Param | Type | Description |
 | --- | --- | --- |
-| ...related | <code>[Related](#Related)</code> &#124; <code>string</code> &#124; <code>[Array.&lt;Related&gt;](#Related)</code> &#124; <code>Array.&lt;string&gt;</code> | One or more Related instances or relation names. |
+| ...related | <code>[Related](#Related)</code> &#124; <code>string</code> &#124; <code>[ALL](#related.ALL)</code> &#124; <code>[NONE](#related.NONE)</code> | One or more `Related` instances or relation names. Pass   [ALL](#related.ALL) or [NONE](#related.NONE) to select all relations or   clear any previously specific relations. |
 
 
 -
@@ -2749,6 +2749,27 @@ Authors.where({ surname: 'Herbert' }).with(
 | Param | Type | Description |
 | --- | --- | --- |
 | relationName | <code>string</code> &#124; <code>Relation</code> | The name of a relation registered with [relations](#Mapper+relations) or a   [Relation](Relation) instance. |
+
+
+* [related(relationName)](#related) ⇒ <code>[Related](#Related)</code>
+    * [.ALL](#related.ALL)
+    * [.NONE](#related.NONE)
+
+
+-
+
+<a name="related.ALL"></a>
+
+### related.ALL
+Select all relations
+
+
+-
+
+<a name="related.NONE"></a>
+
+### related.NONE
+Clear all relations
 
 
 -

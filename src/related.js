@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import { flatten, isFunction, isString } from 'lodash';
 
 import ImmutableBase from './immutable-base';
-import { RELATED_SENTINEL } from './constants';
+import { ALL, NONE, RELATED_SENTINEL } from './constants';
 
 export function isRelated(maybeRelated) {
   return !!(maybeRelated && maybeRelated[RELATED_SENTINEL]);
@@ -335,6 +335,18 @@ function toRelated(relationName) {
     `got ${inspect(relationName)}`
   );
 }
+
+/**
+ * Select all relations
+ * @constant
+ */
+toRelated.ALL = ALL;
+
+/**
+ * Clear all relations
+ * @constant
+ */
+toRelated.NONE = NONE;
 
 /**
  * @private

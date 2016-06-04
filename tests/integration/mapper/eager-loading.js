@@ -4,7 +4,7 @@ import test from 'tape';
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex, register, related, relations } = atlas;
+  const { knex, related, relations } = atlas;
 
   test('Mapper - eager loading', t => {
 
@@ -33,17 +33,18 @@ export default function(atlas) {
     };
 
     t.databaseTest('loading nested relations', knex, filmTables, st => {
-      register({
-        Actors: Mapper.table('actors').relations({
-          movies: m => m.belongsToMany('Movies', { pivotTable: 'roles' })
-        }),
-        Movies: Mapper.table('movies').relations({
-          cast: m => m.belongsToMany('Actors', { pivotTable: 'roles' }),
-          director: m => m.belongsTo('Directors')
-        }),
-        Directors: Mapper.table('directors').relations({
-          movies: m => m.hasMany('Movies')
-        })
+
+      const Actors = Mapper.table('actors').relations({
+        movies: m => m.belongsToMany(Movies, { pivotTable: 'roles' })
+      });
+
+      const Movies = Mapper.table('movies').relations({
+        cast: m => m.belongsToMany(Actors, { pivotTable: 'roles' }),
+        director: m => m.belongsTo(Directors)
+      });
+
+      const Directors = Mapper.table('directors').relations({
+        movies: m => m.hasMany(Movies)
       });
 
       return knex('actors').insert([
@@ -64,7 +65,7 @@ export default function(atlas) {
       ])).then(() => Promise.join(
 
         st.resolvesToDeep(
-          atlas('Actors').with(
+          Actors.with(
             related('movies').mapper({pivotAttributes: 'character_name'})
           ).find(1),
           { id: 1, name: 'Kurt Russel', movies: [
@@ -79,7 +80,7 @@ export default function(atlas) {
         ),
 
         st.resolvesToDeep(
-          atlas('Actors').with(related('movies').with('director')).find(2),
+          Actors.with(related('movies').with('director')).find(2),
           { id: 2, name: 'James Spader', movies: [
             { _pivot_actor_id: 2, id: 3, title: 'Stargate', director_id: 2,
               director: { id: 2, name: 'Roland Emmerich' }
@@ -89,9 +90,7 @@ export default function(atlas) {
         ),
 
         st.resolvesToDeep(
-          atlas('Directors')
-          .with(related('movies').with('cast', 'director'))
-          .fetch(),
+          Directors.with(related('movies').with('cast', 'director')).fetch(),
           [ { id: 1,
               name: 'John Carpenter',
               movies:
@@ -133,10 +132,8 @@ export default function(atlas) {
 
     t.databaseTest('loading recursive relations', knex, nodesTables, st => {
 
-      register({
-        Nodes: Mapper.table('nodes').relations({
-          next: m => m.belongsTo('Nodes', { selfRef: 'next_id' }),
-        })
+      const Nodes = Mapper.table('nodes').relations({
+        next: m => m.belongsTo(Nodes, { selfRef: 'next_id' }),
       });
 
       return knex('nodes').insert([
@@ -151,7 +148,7 @@ export default function(atlas) {
       ]).then(() => Promise.join(
 
         st.resolvesToDeep(
-          atlas('Nodes').with(
+          Nodes.with(
             related('next').with(
               related('next').with(
                 related('next')))).find(2),
@@ -163,7 +160,7 @@ export default function(atlas) {
         ),
 
         st.resolvesToDeep(
-          atlas('Nodes').with(related('next').recursions(2)).find(2),
+          Nodes.with(related('next').recursions(2)).find(2),
           { id: 2, value: 't', next_id: 3, next:
           { id: 3, value: 'l', next_id: 4, next:
           { id: 4, value: 'a', next_id: 5, next:
@@ -172,7 +169,7 @@ export default function(atlas) {
         ),
 
         st.resolvesToDeep(
-          atlas('Nodes').with(related('next').recursions(Infinity)).find(2),
+          Nodes.with(related('next').recursions(Infinity)).find(2),
           { id: 2, value: 't', next_id: 3, next:
           { id: 3, value: 'l', next_id: 4, next:
           { id: 4, value: 'a', next_id: 5, next:
