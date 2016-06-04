@@ -27,7 +27,6 @@ export default class HasMany {
     return Other.withMutations(other => {
       if (isSingle) {
         other.where(otherAttribute, id);
-        other.defaultAttribute(otherAttribute, id);
       } else {
         other.whereIn(otherAttribute, id);
       }

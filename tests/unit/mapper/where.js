@@ -4,6 +4,65 @@ import Mapper from '../../../lib/mapper';
 
 test('Mapper - where', t => {
 
+  t.test('where(attribute, value)', st => {
+
+    const Things = Mapper.table('things').where('a', 'A');
+
+    st.queriesEqual(
+      Things.prepareFetch().toQueryBuilder(),
+      `select "things".* from "things" where "things"."a" = 'A'`
+    );
+
+    st.deepEqual(Things.forge(), { a: 'A' });
+
+    st.end();
+  });
+
+  t.test(`where(attribute, '=', value)`, st => {
+
+    const Things = Mapper.table('things').where('a', '=', 'A');
+
+    st.queriesEqual(
+      Things.prepareFetch().toQueryBuilder(),
+      `select "things".* from "things" where "things"."a" = 'A'`
+    );
+
+    st.deepEqual(Things.forge({ a: 'overridden' }), { a: 'A' });
+
+    st.end();
+  });
+
+  t.test(`where({ [attribute], value })`, st => {
+
+    const Things = Mapper.table('things').where({ a: 'A', b: 'B' });
+
+    st.queriesEqual(
+      Things.prepareFetch().toQueryBuilder(),
+      `select "things".* from "things"
+      where "things"."a" = 'A' and "things"."b" = 'B'`
+    );
+
+    st.deepEqual(Things.forge({ a: 'overridden' }), { a: 'A', b: 'B' });
+
+    st.end();
+  });
+
+  t.test(`where(attributes[], values[])`, st => {
+
+    const Things = Mapper.table('things').where(['a', 'b'], ['A', 'B']);
+
+    st.queriesEqual(
+      Things.prepareFetch().toQueryBuilder(),
+      `select "things".* from "things"
+      where "things"."a" = 'A' and "things"."b" = 'B'`
+    );
+
+    st.deepEqual(Things.forge({ a: 'overridden' }), { a: 'A', b: 'B' });
+
+    st.end();
+  });
+
+
   t.test('whereIn(Mapper)', st => {
 
     const Things = Mapper.table('things');

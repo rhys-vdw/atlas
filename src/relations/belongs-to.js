@@ -28,9 +28,6 @@ export default class BelongsTo {
 
     return Other.withMutations(mapper => {
       mapper.targetBy(otherAttribute, id);
-      if (isSingle) {
-        mapper.defaultAttribute(otherAttribute, id);
-      }
     });
   }
 

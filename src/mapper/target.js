@@ -45,8 +45,6 @@ export default {
       if (isSingle) {
         if (normalized == null) {
           mapper.noop();
-        } else if (isComposite) {
-          mapper.where(zipObject(attribute, normalized));
         } else {
           mapper.where(attribute, normalized);
         }
