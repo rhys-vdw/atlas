@@ -1,7 +1,10 @@
 import { inspect } from 'util';
-import { keys as objectKeys, reject, isFunction, isString } from 'lodash';
+import {
+  keys as objectKeys, reject, isEmpty, isFunction, isString
+} from 'lodash';
 import { normalizeRelated, isRelated } from '../related';
 import EagerLoader from '../eager-loader';
+import { ALL, NONE } from '../constants';
 
 export default {
 
@@ -227,12 +230,25 @@ export default {
    *
    * @todo Support saving relations.
    *
-   * @param {...(Related|string|Related[]|string[])} related
-   *   One or more Related instances or relation names.
+   * @param {...(Related|string|related.ALL|related.NONE)} related
+   *   One or more `Related` instances or relation names. Pass
+   *   {@link related.ALL} or {@link related.NONE} to select all relations or
+   *   clear any previously specific relations.
    * @returns {Mapper}
    *   Mapper configured to eager load related records.
    */
   with(...related) {
+
+    if (related[0] === ALL) {
+      return this.setState({
+        related: normalizeRelated(this.getRelationNames())
+      });
+    }
+
+    if (related[0] === NONE) {
+      const previous = this.state.related;
+      return isEmpty(previous) ? this : this.setState({ related: [] });
+    }
 
     const flattened = normalizeRelated(...related);
 
@@ -292,13 +308,21 @@ export default {
    *
    * *See `Mapper.relations()` for example of how to set up this schema.*
    *
-   * @param {...(Related|string|Related[]|string[])} related
-   *   One or more Related instances or relation names.
+   * @param {...(Related|string|related.ALL)} related
+   *   One or more Related instances or relation names. Or {@link related.ALL}
+   *   to select all registered relations.
    * @returns {EagerLoader}
    *   An EagerLoader instance configured to load the given relations into
    *   records.
    */
   load(...related) {
+
+    if (related[0] === ALL) {
+      related = this.getRelationNames();
+    } else if (related[0] === NONE) {
+      related = [];
+    }
+
     return new EagerLoader(this, normalizeRelated(...related));
   }
 
