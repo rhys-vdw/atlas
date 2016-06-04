@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { flatten, map, reject, isEmpty, isString } from 'lodash';
+import { flatten, isFunction, isString } from 'lodash';
 
 import ImmutableBase from './immutable-base';
 import { RELATED_SENTINEL } from './constants';
@@ -192,16 +192,12 @@ class Related extends ImmutableBase {
    *   Self, this method is chainable.
    */
   with(...related) {
-    const flattened = flatten(related);
 
-    if (isEmpty(flattened)) {
+    const flattened = normalizeRelated(...related);
+
+    if (flattened.length === 0) {
       return this;
     }
-
-    const invalid = reject(flattened, isRelated);
-    if (!isEmpty(invalid)) throw new TypeError(
-      `Expected instance(s) of Related, got: ${inspect(invalid)}`
-    );
 
     const previous = this.state.related || [];
 
@@ -272,37 +268,86 @@ class Related extends ImmutableBase {
 
 Related.prototype[RELATED_SENTINEL] = true;
 
-function create(relation) {
-  return isString(relation)
-    ? new Related().as(relation)
-    : new Related().relation(relation);
+/**
+ * Convenience function to help build {@link Related} instances.
+ * Pass this instance to {@link Mapper#with} or {@link Mapper#load} to describe
+ * an eager relation.
+ *
+ * These are equivalent:
+ *
+ * ```js
+ * BooksWithCover = Books.with('coverImage');
+ * BooksWithCover = Books.with(related('coverImage'));
+ * ```
+ *
+ * But using the `related` wrapper allows chaining for more complex eager
+ * loading behaviour:
+ *
+ * ```js
+ * const { NotFoundError } = atlas.errors;
+ *
+ * Books.with(related('coverImage').require()).findBy('title', 'Dune')
+ *   .then(book => renderThumbnail(book))
+ *   .catch(NotFoundError, error => {
+ *     console.error('Could not render thumbnail, no cover image!');
+ *   });
+ * ```
+ *
+ * Including nested loading:
+ *
+ * ```js
+ * Authors.where({ surname: 'Herbert' }).with(
+ *   related('books').with('coverImage', 'blurb')
+ * ).fetch().then(authors => {
+ *   res.html(authors.map(renderBibliography).join('<br>'))
+ * })
+ * ```
+ *
+ * @see Mapper#with
+ * @see Mapper#load
+ * @see Related#with
+ *
+ * @alias related
+ * @param {string|Relation} relationName
+ *   The name of a relation registered with {@link Mapper#relations} or a
+ *   {@link Relation} instance.
+ * @returns {Related}
+ *   A {@link Related} instance.
+ */
+function toRelated(relationName) {
+
+  // Normalize instances of `Relation`.
+  if (isRelated(relationName)) {
+    return relationName;
+  }
+
+  if (isString(relationName)) {
+    return new Related().as(relationName);
+  }
+
+  // Any object with method `of` is considered to be a Relation instance.
+  if (relationName && isFunction(relationName.of)) {
+    return new Related().relation(relationName);
+  }
+
+  throw new TypeError(
+    `Expected instance of string, Related or Relation, ` +
+    `got ${inspect(relationName)}`
+  );
 }
 
 /**
- * Convenience function to help build {@link Related} instances.
- *
- * @example
- *
- * Book.where({ author: 'Frank Herbert' })
- *   .with(related('coverImage'))
- *   .fetch()
- *   .then(books => books.map(renderThumbnail));
- *
- * Book.with(
- *   related('chapters', 'coverImage').map(r => r.require())
- * ).findBy('isbn', '9780575035409').then(book =>
- *   renderBook(book)
- * );
- *
- * @static
- * @param {...string|Relation} relationName
- * @return {Related|Related[]}
+ * @private
+ * @param {...(Related|string|Related[]|string[])} related
+ *   One or more `Related` instances or relation names.
+ * @returns {Related[]}
+ *   Array or `Related` instances.
  */
-export function related(...relations) {
-  const flattened = flatten(relations);
-  return flattened.length === 1
-    ? create(flattened[0])
-    : map(flattened, create);
+export function normalizeRelated(...relatedList) {
+  return flatten(relatedList).map(toRelated);
 }
+
+
+export { toRelated as related };
 
 export default Related;

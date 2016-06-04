@@ -185,16 +185,22 @@ class ImmutableBase {
    * argument.
    *
    * ```js
-   * function compileRelatedDsl(string) {
-   *   // TODO: implement useful DSL.
-   *   return atlas.related(string.split(', '));
+   * const SPLIT_COMMA = /,\s+/;
+   * const SPLIT_RELATED = /(\w*)(?:\((.*)\))?/;
+   *
+   * function compileDsl(string) {
+   *   return string.split(SPLIT_COMMA).map(token => {
+   *     const [_, relationName, nested] = token.match(SPLIT_REGEX);
+   *     const relatedInstance = atlas.related(relationName);
+   *     return nested ? relatedInstance.with(compileDsl(nested)) : relatedInstance;
+   *   });
    * }
    *
    * const DslMapper = Mapper.extend(callSuper => {
    *   return {
    *     with(related) {
    *       if (isString(related)) {
-   *         return callSuper(this, 'with', compileRelatedDsl(related));
+   *         return callSuper(this, 'with', compileDsl(related));
    *       }
    *       return callSuper(this, 'with', ...arguments);
    *     }
@@ -206,7 +212,7 @@ class ImmutableBase {
    *   projects: m => m.hasMany('Projects')
    * });
    *
-   * Users.with('account, projects').fetch().then(users =>
+   * Users.with('account, projects(collaborators, documents)').fetch().then(users =>
    * ```
    *
    * @param {...(Object|ImmutableBase~extendCallback)} callbackOrMethodsByName
@@ -279,7 +285,7 @@ class ImmutableBase {
    *
    * @description
    *
-   * Calling {@link ImmutableBase#setState} usually returns new instace of
+   * Calling {@link ImmutableBase#setState} usually returns new instance of
    * `ImmutableBase`. A mutable `ImmutableBase` instance can be modified
    * in place.
    *
@@ -318,22 +324,20 @@ class ImmutableBase {
    * AustralianWomen = People.withMutations(People => {
    *  People
    *    .where({ country: 'Australia', gender: 'female' });
-   *    .with(related('spouse', 'children', 'jobs'))
+   *    .with('spouse', 'children', 'jobs')
    * });
    *
    * @example <caption>Using an object initializer</caption>
    *
    * AustralianWomen = People.withMutations({
    *   where: { country: 'Australia', gender: 'female' },
-   *   with: related('spouse', 'children', 'jobs')
+   *   with: ['spouse', 'children', 'jobs']
    * });
    *
-   * @example <caption>Returning an object initializer</caption>
-   *
-   * AustralianWomen = People.withMutations(() => {
+   * AustralianWomen = People.withMutations(mapper => {
    *   return {
    *     where: { country: 'Australia', gender: 'female' },
-   *     with: related('spouse', 'children', 'jobs')
+   *     with: ['spouse', 'children', 'jobs']
    *   }
    * });
    *

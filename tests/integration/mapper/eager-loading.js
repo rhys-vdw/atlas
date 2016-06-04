@@ -79,7 +79,7 @@ export default function(atlas) {
         ),
 
         st.resolvesToDeep(
-          atlas('Actors').with(related('movies').with(related('director'))).find(2),
+          atlas('Actors').with(related('movies').with('director')).find(2),
           { id: 2, name: 'James Spader', movies: [
             { _pivot_actor_id: 2, id: 3, title: 'Stargate', director_id: 2,
               director: { id: 2, name: 'Roland Emmerich' }
@@ -90,7 +90,7 @@ export default function(atlas) {
 
         st.resolvesToDeep(
           atlas('Directors')
-          .with(related('movies').with(related('cast', 'director')))
+          .with(related('movies').with('cast', 'director'))
           .fetch(),
           [ { id: 1,
               name: 'John Carpenter',

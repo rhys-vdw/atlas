@@ -146,7 +146,7 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.load(related('groups')).into({ id: 1, name: 'dean' }),
+            Users.load('groups').into({ id: 1, name: 'dean' }),
             { id: 1, name: 'dean', groups: [
               { _pivot_user_id: 1, id: 10, name: `General` },
               { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
@@ -154,7 +154,7 @@ export default function(atlas) {
             'loads into single record'
           ),
           st.resolvesToDeep(
-            Users.load(related('groups')).into(sarah, baz), [
+            Users.load('groups').into(sarah, baz), [
               { id: 2, name: 'Sarah', groups: [
                 { _pivot_user_id: 2, id: 10, name: `General` },
                 { _pivot_user_id: 2, id: 12, name: `Off topic` }
@@ -167,7 +167,7 @@ export default function(atlas) {
 
           ),
           st.resolvesToDeep(
-            Users.load(related('groups')).into(dean, other), [
+            Users.load('groups').into(dean, other), [
               { id: 1, name: 'dean', groups: [
                 { _pivot_user_id: 1, id: 10, name: `General` },
                 { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
@@ -208,7 +208,7 @@ export default function(atlas) {
       ])).then(() => {
 
         return st.resolvesToDeep(
-          Users.query('orderBy', 'id').with(related('groups')).fetch(), [
+          Users.query('orderBy', 'id').with('groups').fetch(), [
             { id: 1, name: 'Dean', groups: [
               { _pivot_user_id: 1, id: 10, name: `General` },
               { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
