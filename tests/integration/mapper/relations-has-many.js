@@ -102,7 +102,7 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.load(related('posts')).into(dean),
+            Users.load('posts').into(dean),
             { id: 1, name: 'dean', posts: [
                 { id: 10, author_id: 1, message: `Dean's first post` },
                 { id: 13, author_id: 1, message: `Dean again` },
@@ -110,7 +110,7 @@ export default function(atlas) {
             'loads into single record'
           ),
           st.resolvesToDeep(
-            Users.load(related('posts')).into(sarah, baz), [
+            Users.load('posts').into(sarah, baz), [
               { id: 2, name: 'Sarah', posts: [
                 { id: 12, author_id: 2, message: `Hello I'm Sarah` },
               ] },
@@ -121,7 +121,7 @@ export default function(atlas) {
             ], 'loads into multiple records'
           ),
           st.resolvesToDeep(
-            Users.load(related('posts')).into(dean, other), [
+            Users.load('posts').into(dean, other), [
               { id: 1, name: 'dean', posts: [
                 { id: 10, author_id: 1, message: `Dean's first post` },
                 { id: 13, author_id: 1, message: `Dean again` },
@@ -157,7 +157,7 @@ export default function(atlas) {
       ])).then(() => {
 
         return st.resolvesToDeep(
-          Users.query('orderBy', 'id').with(related('posts')).fetch(), [
+          Users.query('orderBy', 'id').with('posts').fetch(), [
             { id: 1, name: 'Dean', posts: [
                 { id: 10, author_id: 1, message: `Dean's first post` },
                 { id: 13, author_id: 1, message: `Dean again` },

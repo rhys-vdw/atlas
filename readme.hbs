@@ -81,7 +81,7 @@ Records come back as plain objects. Example [`fetch`](#Mapper+fetch) response:
 ]
 ```
 
-Specialize an existing mapper express domain logic:
+Specialize an existing mapper target a subset of rows:
 
 ```js
 const Admins = Users.where('is_admin', true);
@@ -95,8 +95,8 @@ Admins.find(3).then(admin => {
 });
 ```
 
-Works when creating models too:
-TODO: _Make this actually work!_
+~Works when creating models too:~
+_This has not yet been implemented ([issue](https://github.com/rhys-vdw/atlas/issues/69))_
 
 ```js
 const heath = Admins.forge({ name: 'Heath' });
@@ -128,35 +128,25 @@ const Posts = Mapper.table('posts').relations({
 });
 ```
 
-Now using those relations:
+Now eager loading those relations:
 
 ```js
-// Use the `related` helper.
-const { related } = atlas;
-
-// Load up Annie and eager load relations.
-return Users.with(
-  related('groups'),
-  related('lastLogin'),
-  related('posts').query(query =>
-    query.orderBy('created_at', 'desc').limit(2)
-  ).as('recentPosts')
-).findBy('name', 'Annie').then(annie => {
-  render(annie);
-})
+return Users.with('groups', 'lastLogin', 'posts')
+  .findBy('name', 'Annie')
+  .then(annie => { console.log(util.inspect(annie)); });
 ```
 
-Relations get nested in the returned record:
+Relations get keyed by name in the returned record, eg:
 
 ```js
 {
-  id: 1,
+  id: 20,
   name: 'Annie',
   lastLogin: { user_id: 1, created_at: '2015-11-26' },
   groups: [
     { id: 20, name: 'Super Friends', _pivot_user_id: 1 },
   ],
-  recentPosts: [
+  posts: [
     { id: 120, author_id: 1, created_at: '2015-11-24',
       title: 'Hi', message: 'Hey there!' },
     { id: 110, author_id: 1, created_at: '2015-10-30',

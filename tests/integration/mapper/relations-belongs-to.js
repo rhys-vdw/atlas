@@ -93,14 +93,14 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Posts.load(related('author')).into(deanA),
+            Posts.load('author').into(deanA),
             { id: 10, author_id: 1, message: `Dean's first post`, author:
               { id: 1, name: 'Dean' }
             },
             'loads into single record'
           ),
           st.resolvesToDeep(
-            Posts.load(related('author')).into(sarahA, barryA), [
+            Posts.load('author').into(sarahA, barryA), [
               { id: 12, author_id: 2, message: `Hello I'm Sarah`, author:
                 { id: 2, name: 'Sarah' }
               },
@@ -110,7 +110,7 @@ export default function(atlas) {
             ], 'loads into multiple records'
           ),
           st.resolvesToDeep(
-            Posts.load(related('author')).into(deanA, deanB), [
+            Posts.load('author').into(deanA, deanB), [
               { id: 10, author_id: 1, message: `Dean's first post`, author:
                 { id: 1, name: 'Dean' }
               },
@@ -120,7 +120,7 @@ export default function(atlas) {
             ], 'loads the same author into two records'
           ),
           st.resolvesToDeep(
-            Posts.load(related('author')).into(deanB, deletedAuthor), [
+            Posts.load('author').into(deanB, deletedAuthor), [
               { id: 13, author_id: 1, message: `Dean again`, author:
                 { id: 1, name: 'Dean' }
               },
@@ -128,7 +128,7 @@ export default function(atlas) {
             ], 'loads related into one record and null into another'
           ),
           st.resolvesToDeep(
-            Posts.load(related('author')).into(noAuthor),
+            Posts.load('author').into(noAuthor),
             { id: 15, author_id: null, message: `anonymous`, author: null },
             'loads relation as null when foreign key is null'
           )
@@ -161,7 +161,7 @@ export default function(atlas) {
       ])).then(() => {
 
         return st.resolvesToDeep(
-          Posts.with(related('author')).fetch(), [
+          Posts.with('author').fetch(), [
             { id: 10, author_id: 1, message: `Dean's first post` , author:
               { id: 1, name: 'Dean' }
             },

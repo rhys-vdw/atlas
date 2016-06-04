@@ -81,7 +81,7 @@ Records come back as plain objects. Example [`fetch`](#Mapper+fetch) response:
 ]
 ```
 
-Specialize an existing mapper express domain logic:
+Specialize an existing mapper target a subset of rows:
 
 ```js
 const Admins = Users.where('is_admin', true);
@@ -95,8 +95,8 @@ Admins.find(3).then(admin => {
 });
 ```
 
-Works when creating models too:
-TODO: _Make this actually work!_
+~Works when creating models too:~
+_This has not yet been implemented ([issue](https://github.com/rhys-vdw/atlas/issues/69))_
 
 ```js
 const heath = Admins.forge({ name: 'Heath' });
@@ -128,35 +128,25 @@ const Posts = Mapper.table('posts').relations({
 });
 ```
 
-Now using those relations:
+Now eager loading those relations:
 
 ```js
-// Use the `related` helper.
-const { related } = atlas;
-
-// Load up Annie and eager load relations.
-return Users.with(
-  related('groups'),
-  related('lastLogin'),
-  related('posts').query(query =>
-    query.orderBy('created_at', 'desc').limit(2)
-  ).as('recentPosts')
-).findBy('name', 'Annie').then(annie => {
-  render(annie);
-})
+return Users.with('groups', 'lastLogin', 'posts')
+  .findBy('name', 'Annie')
+  .then(annie => { console.log(util.inspect(annie)); });
 ```
 
-Relations get nested in the returned record:
+Relations get keyed by name in the returned record, eg:
 
 ```js
 {
-  id: 1,
+  id: 20,
   name: 'Annie',
   lastLogin: { user_id: 1, created_at: '2015-11-26' },
   groups: [
     { id: 20, name: 'Super Friends', _pivot_user_id: 1 },
   ],
-  recentPosts: [
+  posts: [
     { id: 120, author_id: 1, created_at: '2015-11-24',
       title: 'Hi', message: 'Hey there!' },
     { id: 110, author_id: 1, created_at: '2015-10-30',
@@ -247,8 +237,31 @@ scripts.</p>
 ## Functions
 
 <dl>
-<dt><a href="#related">related(relationName)</a> ⇒ <code><a href="#Related">Related</a></code> | <code><a href="#Related">Array.&lt;Related&gt;</a></code></dt>
-<dd><p>Convenience function to help build <a href="#Related">Related</a> instances.</p>
+<dt><a href="#related">related(relationName)</a> ⇒ <code><a href="#Related">Related</a></code></dt>
+<dd><p>Convenience function to help build <a href="#Related">Related</a> instances.
+Pass this instance to <a href="#Mapper+with">with</a> or <a href="#Mapper+load">load</a> to describe
+an eager relation.</p>
+<p>These are equivalent:</p>
+<pre><code class="language-javascript">BooksWithCover = Books.with(&#39;coverImage&#39;);
+BooksWithCover = Books.with(related(&#39;coverImage&#39;));
+</code></pre>
+<p>But using the <code>related</code> wrapper allows chaining for more complex eager
+loading behaviour:</p>
+<pre><code class="lang-js">const { NotFoundError } = atlas.errors;
+
+Books.with(related(&#39;coverImage&#39;).require()).findBy(&#39;title&#39;, &#39;Dune&#39;)
+  .then(book =&gt; renderThumbnail(book))
+  .catch(NotFoundError, error =&gt; {
+    console.error(&#39;Could not render thumbnail, no cover image!&#39;);
+  });
+</code></pre>
+<p>Including nested loading:</p>
+<pre><code class="lang-js">Authors.where({ surname: &#39;Herbert&#39; }).with(
+  related(&#39;books&#39;).with(&#39;coverImage&#39;, &#39;blurb&#39;)
+).fetch().then(authors =&gt; {
+  res.html(authors.map(renderBibliography).join(&#39;&lt;br&gt;&#39;))
+})
+</code></pre>
 </dd>
 </dl>
 
@@ -344,7 +357,7 @@ import mapperRegistry from './mapper-registry';
 const pg = Atlas(pgKnex, mapperRegistry);
 const { related } = pg;
 
-pg('Product').with(related('sales', 'owners')).fetch().then(products =>
+pg('Product').with('sales', 'owners').fetch().then(products =>
   // Fetches and related records from PostgreSQL database.
 ):
 ```
@@ -542,7 +555,7 @@ A callback function that runs the transacted queries.
 | Param | Type | Description |
 | --- | --- | --- |
 | t | <code>[Atlas](#Atlas)</code> | An instance of `Atlas` connected to the transaction. |
-| t.knex | <code>Transaction</code> | The Knex.js `Transaction`instace. |
+| t.knex | <code>Transaction</code> | The Knex.js `Transaction` instance. |
 
 
 -
@@ -618,7 +631,7 @@ _Prevent this instance from being mutated further._
 ### immutableBase.asMutable() ⇒ <code>[ImmutableBase](#ImmutableBase)</code>
 _Create a mutable copy of this instance._
 
-Calling [setState](#ImmutableBase+setState) usually returns new instace of
+Calling [setState](#ImmutableBase+setState) usually returns new instance of
 `ImmutableBase`. A mutable `ImmutableBase` instance can be modified
 in place.
 
@@ -662,16 +675,22 @@ passed instead. It will be invoked with the `callSuper` function as an
 argument.
 
 ```js
-function compileRelatedDsl(string) {
-  // TODO: implement useful DSL.
-  return atlas.related(string.split(', '));
+const SPLIT_COMMA = /,\s+/;
+const SPLIT_RELATED = /(\w*)(?:\((.*)\))?/;
+
+function compileDsl(string) {
+  return string.split(SPLIT_COMMA).map(token => {
+    const [_, relationName, nested] = token.match(SPLIT_REGEX);
+    const relatedInstance = atlas.related(relationName);
+    return nested ? relatedInstance.with(compileDsl(nested)) : relatedInstance;
+  });
 }
 
 const DslMapper = Mapper.extend(callSuper => {
   return {
     with(related) {
       if (isString(related)) {
-        return callSuper(this, 'with', compileRelatedDsl(related));
+        return callSuper(this, 'with', compileDsl(related));
       }
       return callSuper(this, 'with', ...arguments);
     }
@@ -683,7 +702,7 @@ const Users = DslMapper.table('users').relations({
   projects: m => m.hasMany('Projects')
 });
 
-Users.with('account, projects').fetch().then(users =>
+Users.with('account, projects(collaborators, documents)').fetch().then(users =>
 ```
 
 **Returns**: <code>[ImmutableBase](#ImmutableBase)</code> - An instance of the new class inheriting from `ImmutableBase`.  
@@ -764,7 +783,7 @@ _Create a mutated copy of this instance._
 AustralianWomen = People.withMutations(People => {
  People
    .where({ country: 'Australia', gender: 'female' });
-   .with(related('spouse', 'children', 'jobs'))
+   .with('spouse', 'children', 'jobs')
 });
 ```
 **Example** *(Using an object initializer)*  
@@ -772,16 +791,13 @@ AustralianWomen = People.withMutations(People => {
 
 AustralianWomen = People.withMutations({
   where: { country: 'Australia', gender: 'female' },
-  with: related('spouse', 'children', 'jobs')
+  with: ['spouse', 'children', 'jobs']
 });
-```
-**Example** *(Returning an object initializer)*  
-```js
 
-AustralianWomen = People.withMutations(() => {
+AustralianWomen = People.withMutations(mapper => {
   return {
     where: { country: 'Australia', gender: 'female' },
-    with: related('spouse', 'children', 'jobs')
+    with: ['spouse', 'children', 'jobs']
   }
 });
 ```
@@ -895,7 +911,7 @@ Cars.fetch().then(cars => // ...
         * [.isNew(record)](#Mapper+isNew) ⇒ <code>bool</code>
         * [.joinMapper(Other, selfAttribute, otherAttribute)](#Mapper+joinMapper) ⇒ <code>[Mapper](#Mapper)</code>
         * [.joinRelation(relationName)](#Mapper+joinRelation) ⇒ <code>[Mapper](#Mapper)</code>
-        * [.load(related)](#Mapper+load) ⇒ <code>[EagerLoader](#EagerLoader)</code>
+        * [.load(...related)](#Mapper+load) ⇒ <code>[EagerLoader](#EagerLoader)</code>
         * [.omitPivot()](#Mapper+omitPivot) ⇒ <code>[Mapper](#Mapper)</code>
         * [.one()](#Mapper+one) ⇒ <code>[Mapper](#Mapper)</code>
         * [.orderBy(attribute, [direction])](#Mapper+orderBy) ⇒ <code>[Mapper](#Mapper)</code>
@@ -917,7 +933,7 @@ Cars.fetch().then(cars => // ...
         * [.updateAll(attributes)](#Mapper+updateAll) ⇒ <code>Promise.&lt;(Array.&lt;Object&gt;\|Number)&gt;</code>
         * [.where()](#Mapper+where) ⇒ <code>[Mapper](#Mapper)</code>
         * [.whereIn()](#Mapper+whereIn) ⇒ <code>[Mapper](#Mapper)</code>
-        * [.with(related)](#Mapper+with) ⇒ <code>[Mapper](#Mapper)</code>
+        * [.with(...related)](#Mapper+with) ⇒ <code>[Mapper](#Mapper)</code>
         * [.withMutations(...initializer)](#ImmutableBase+withMutations) ⇒ <code>[ImmutableBase](#ImmutableBase)</code>
     * _inner_
         * [~attributeCallback](#Mapper..attributeCallback) ⇒ <code>mixed</code> &#124; <code>undefined</code>
@@ -966,7 +982,7 @@ _Prevent this instance from being mutated further._
 ### mapper.asMutable() ⇒ <code>[ImmutableBase](#ImmutableBase)</code>
 _Create a mutable copy of this instance._
 
-Calling [setState](#ImmutableBase+setState) usually returns new instace of
+Calling [setState](#ImmutableBase+setState) usually returns new instance of
 `ImmutableBase`. A mutable `ImmutableBase` instance can be modified
 in place.
 
@@ -1171,16 +1187,22 @@ passed instead. It will be invoked with the `callSuper` function as an
 argument.
 
 ```js
-function compileRelatedDsl(string) {
-  // TODO: implement useful DSL.
-  return atlas.related(string.split(', '));
+const SPLIT_COMMA = /,\s+/;
+const SPLIT_RELATED = /(\w*)(?:\((.*)\))?/;
+
+function compileDsl(string) {
+  return string.split(SPLIT_COMMA).map(token => {
+    const [_, relationName, nested] = token.match(SPLIT_REGEX);
+    const relatedInstance = atlas.related(relationName);
+    return nested ? relatedInstance.with(compileDsl(nested)) : relatedInstance;
+  });
 }
 
 const DslMapper = Mapper.extend(callSuper => {
   return {
     with(related) {
       if (isString(related)) {
-        return callSuper(this, 'with', compileRelatedDsl(related));
+        return callSuper(this, 'with', compileDsl(related));
       }
       return callSuper(this, 'with', ...arguments);
     }
@@ -1192,7 +1214,7 @@ const Users = DslMapper.table('users').relations({
   projects: m => m.hasMany('Projects')
 });
 
-Users.with('account, projects').fetch().then(users =>
+Users.with('account, projects(collaborators, documents)').fetch().then(users =>
 ```
 
 **Returns**: <code>[ImmutableBase](#ImmutableBase)</code> - An instance of the new class inheriting from `ImmutableBase`.  
@@ -1564,7 +1586,7 @@ Performs an inner join between the [table](#Mapper+table) of this
 
 <a name="Mapper+load"></a>
 
-### mapper.load(related) ⇒ <code>[EagerLoader](#EagerLoader)</code>
+### mapper.load(...related) ⇒ <code>[EagerLoader](#EagerLoader)</code>
 _Eager load relations into existing records._
 
 Much like `with()`, but attaches relations to an existing record.
@@ -1576,18 +1598,25 @@ single method, `into`:
 const bob = { email: 'bob@thing.com', name: 'Bob', id: 5 };
 const jane = { email: 'jane@thing.com', name: 'Jane', id: 100 };
 
-Users.load(related('posts')).into(bob, jane)
+Users.load('posts').into(bob, jane).then(([bob, jane]) => {
+  cosole.log(`Bob's posts: ${bob.posts.map(p => p.title)}`);
+  cosole.log(`Jane's posts: ${jane.posts.map(p => p.title)}`);
+});
 ```
 
 ```js
 // Load posts.
-Posts.fetch(posts =>
+Posts.fetch(posts => {
   // Now load and attach related authors.
-  Posts.load(related('author')).into(posts)
-).then(postsWithAuthor => ...);
+  return Posts.load('author').into(posts);
+}).then(postsWithAuthor => {
+  // ...
+})
 
 // Exactly the same as:
-Posts.with(related('author')).fetch().then(postsWithAuthor => ...);
+Posts.with('author').fetch().then(postsWithAuthor => {
+ // ...
+})
 ```
 
 *See `Mapper.relations()` for example of how to set up this schema.*
@@ -1597,7 +1626,7 @@ Posts.with(related('author')).fetch().then(postsWithAuthor => ...);
 
 | Param | Type | Description |
 | --- | --- | --- |
-| related | <code>[Related](#Related)</code> &#124; <code>[Array.&lt;Related&gt;](#Related)</code> | One or more Related instances describing the relation tree. |
+| ...related | <code>[Related](#Related)</code> &#124; <code>string</code> &#124; <code>[Array.&lt;Related&gt;](#Related)</code> &#124; <code>Array.&lt;string&gt;</code> | One or more Related instances or relation names. |
 
 
 -
@@ -2037,7 +2066,7 @@ that respects [Mapper#attributeToColumn](Mapper#attributeToColumn) if overridden
 
 <a name="Mapper+with"></a>
 
-### mapper.with(related) ⇒ <code>[Mapper](#Mapper)</code>
+### mapper.with(...related) ⇒ <code>[Mapper](#Mapper)</code>
 _Specify relations to eager load._
 
 Specify relations to eager load with [fetch](#Mapper+fetch),
@@ -2045,29 +2074,31 @@ Specify relations to eager load with [fetch](#Mapper+fetch),
 class.
 
 ```js
-const { related } = atlas;
-
 // Get all posts created today, eager loading author relation for each.
 atlas('Posts')
   .where('created_at', '>', moment().startOf('day'))
-  .with(related('author'))
+  .with(author')
   .fetch()
-  .then(todaysPosts => ...);
+  .then(todaysPosts => {
+    // ...
+  });
+
+const { related } = atlas;
 
 // Load user with recent posts and unread messages.
 atlas('Users').with(
 
   // Eager load last twent posts.
-  related('posts').with(related('comments').with(related('author'))).mapper({
+  related('posts').with(related('comments').with('author')).mapper({
     query: query => query.orderBy('created_at', 'desc').limit(20)
   }),
 
   // Eager load unread messages.
   related('receivedMessages').mapper('unread').as('unreadMessages')
 
-).find('some.guy@domain.com').then(user => console.log(
-  `${user.name} has ${user.unreadMessages.length} unread messages`
-));
+).findBy('email', 'some.guy@domain.com').then(user => {
+  console.log(`${user.name} has ${user.unreadMessages.length} unread messages`);
+});
 ```
 
 *See [relations](#Mapper+relations) for an example of how to set up this schema.*
@@ -2080,7 +2111,7 @@ atlas('Users').with(
 
 | Param | Type | Description |
 | --- | --- | --- |
-| related | <code>[Related](#Related)</code> &#124; <code>[Array.&lt;Related&gt;](#Related)</code> | One or more Related instances describing the relation tree. |
+| ...related | <code>[Related](#Related)</code> &#124; <code>string</code> &#124; <code>[Array.&lt;Related&gt;](#Related)</code> &#124; <code>Array.&lt;string&gt;</code> | One or more Related instances or relation names. |
 
 
 -
@@ -2102,7 +2133,7 @@ _Create a mutated copy of this instance._
 AustralianWomen = People.withMutations(People => {
  People
    .where({ country: 'Australia', gender: 'female' });
-   .with(related('spouse', 'children', 'jobs'))
+   .with('spouse', 'children', 'jobs')
 });
 ```
 **Example** *(Using an object initializer)*  
@@ -2110,16 +2141,13 @@ AustralianWomen = People.withMutations(People => {
 
 AustralianWomen = People.withMutations({
   where: { country: 'Australia', gender: 'female' },
-  with: related('spouse', 'children', 'jobs')
+  with: ['spouse', 'children', 'jobs']
 });
-```
-**Example** *(Returning an object initializer)*  
-```js
 
-AustralianWomen = People.withMutations(() => {
+AustralianWomen = People.withMutations(mapper => {
   return {
     where: { country: 'Australia', gender: 'female' },
-    with: related('spouse', 'children', 'jobs')
+    with: ['spouse', 'children', 'jobs']
   }
 });
 ```
@@ -2247,7 +2275,7 @@ _Prevent this instance from being mutated further._
 ### related.asMutable() ⇒ <code>[ImmutableBase](#ImmutableBase)</code>
 _Create a mutable copy of this instance._
 
-Calling [setState](#ImmutableBase+setState) usually returns new instace of
+Calling [setState](#ImmutableBase+setState) usually returns new instance of
 `ImmutableBase`. A mutable `ImmutableBase` instance can be modified
 in place.
 
@@ -2291,16 +2319,22 @@ passed instead. It will be invoked with the `callSuper` function as an
 argument.
 
 ```js
-function compileRelatedDsl(string) {
-  // TODO: implement useful DSL.
-  return atlas.related(string.split(', '));
+const SPLIT_COMMA = /,\s+/;
+const SPLIT_RELATED = /(\w*)(?:\((.*)\))?/;
+
+function compileDsl(string) {
+  return string.split(SPLIT_COMMA).map(token => {
+    const [_, relationName, nested] = token.match(SPLIT_REGEX);
+    const relatedInstance = atlas.related(relationName);
+    return nested ? relatedInstance.with(compileDsl(nested)) : relatedInstance;
+  });
 }
 
 const DslMapper = Mapper.extend(callSuper => {
   return {
     with(related) {
       if (isString(related)) {
-        return callSuper(this, 'with', compileRelatedDsl(related));
+        return callSuper(this, 'with', compileDsl(related));
       }
       return callSuper(this, 'with', ...arguments);
     }
@@ -2312,7 +2346,7 @@ const Users = DslMapper.table('users').relations({
   projects: m => m.hasMany('Projects')
 });
 
-Users.with('account, projects').fetch().then(users =>
+Users.with('account, projects(collaborators, documents)').fetch().then(users =>
 ```
 
 **Returns**: <code>[ImmutableBase](#ImmutableBase)</code> - An instance of the new class inheriting from `ImmutableBase`.  
@@ -2535,7 +2569,7 @@ _Create a mutated copy of this instance._
 AustralianWomen = People.withMutations(People => {
  People
    .where({ country: 'Australia', gender: 'female' });
-   .with(related('spouse', 'children', 'jobs'))
+   .with('spouse', 'children', 'jobs')
 });
 ```
 **Example** *(Using an object initializer)*  
@@ -2543,16 +2577,13 @@ AustralianWomen = People.withMutations(People => {
 
 AustralianWomen = People.withMutations({
   where: { country: 'Australia', gender: 'female' },
-  with: related('spouse', 'children', 'jobs')
+  with: ['spouse', 'children', 'jobs']
 });
-```
-**Example** *(Returning an object initializer)*  
-```js
 
-AustralianWomen = People.withMutations(() => {
+AustralianWomen = People.withMutations(mapper => {
   return {
     where: { country: 'Australia', gender: 'female' },
-    with: related('spouse', 'children', 'jobs')
+    with: ['spouse', 'children', 'jobs']
   }
 });
 ```
@@ -2672,27 +2703,53 @@ Mapper.save({ name: 'Bob' });
 
 <a name="related"></a>
 
-## related(relationName) ⇒ <code>[Related](#Related)</code> &#124; <code>[Array.&lt;Related&gt;](#Related)</code>
+## related(relationName) ⇒ <code>[Related](#Related)</code>
 Convenience function to help build [Related](#Related) instances.
+Pass this instance to [with](#Mapper+with) or [load](#Mapper+load) to describe
+an eager relation.
 
+These are equivalent:
 
-| Param | Type |
-| --- | --- |
-| relationName | <code>string</code> &#124; <code>Relation</code> | 
-
-**Example**  
 ```js
-Book.where({ author: 'Frank Herbert' })
-  .with(related('coverImage'))
-  .fetch()
-  .then(books => books.map(renderThumbnail));
-
-Book.with(
-  related('chapters', 'coverImage').map(r => r.require())
-).findBy('isbn', '9780575035409').then(book =>
-  renderBook(book)
-);
+BooksWithCover = Books.with('coverImage');
+BooksWithCover = Books.with(related('coverImage'));
 ```
+
+But using the `related` wrapper allows chaining for more complex eager
+loading behaviour:
+
+```js
+const { NotFoundError } = atlas.errors;
+
+Books.with(related('coverImage').require()).findBy('title', 'Dune')
+  .then(book => renderThumbnail(book))
+  .catch(NotFoundError, error => {
+    console.error('Could not render thumbnail, no cover image!');
+  });
+```
+
+Including nested loading:
+
+```js
+Authors.where({ surname: 'Herbert' }).with(
+  related('books').with('coverImage', 'blurb')
+).fetch().then(authors => {
+  res.html(authors.map(renderBibliography).join('<br>'))
+})
+```
+
+**Returns**: <code>[Related](#Related)</code> - A [Related](#Related) instance.  
+**See**
+
+- [with](#Mapper+with)
+- [load](#Mapper+load)
+- [with](#Related+with)
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| relationName | <code>string</code> &#124; <code>Relation</code> | The name of a relation registered with [relations](#Mapper+relations) or a   [Relation](Relation) instance. |
+
 
 -
 

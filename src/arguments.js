@@ -152,4 +152,3 @@ export function isValidId(id) {
     : id != null;
   return result;
 }
-

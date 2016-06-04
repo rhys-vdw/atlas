@@ -1,8 +1,6 @@
 import { inspect } from 'util';
-import {
-  flatten, keys as objectKeys, reject, isEmpty, isFunction, isString
-} from 'lodash';
-import { isRelated } from '../related';
+import { keys as objectKeys, reject, isFunction, isString } from 'lodash';
+import { normalizeRelated, isRelated } from '../related';
 import EagerLoader from '../eager-loader';
 
 export default {
@@ -193,54 +191,57 @@ export default {
    *
    * @description
    *
-   * Specify relations to eager load with {@link Mapper#fetch fetch},
-   * {@link Mapper#find find} etc. These are declared using the {@link Related}
+   * Specify relations to eager load with {@link Mapper#fetch},
+   * {@link Mapper#find} etc. These are declared using the {@link Related}
    * class.
    *
    * ```js
-   * const { related } = atlas;
-   *
    * // Get all posts created today, eager loading author relation for each.
    * atlas('Posts')
    *   .where('created_at', '>', moment().startOf('day'))
-   *   .with(related('author'))
+   *   .with(author')
    *   .fetch()
-   *   .then(todaysPosts => ...);
+   *   .then(todaysPosts => {
+   *     // ...
+   *   });
+   *
+   * const { related } = atlas;
    *
    * // Load user with recent posts and unread messages.
    * atlas('Users').with(
    *
    *   // Eager load last twent posts.
-   *   related('posts').with(related('comments').with(related('author'))).mapper({
+   *   related('posts').with(related('comments').with('author')).mapper({
    *     query: query => query.orderBy('created_at', 'desc').limit(20)
    *   }),
    *
    *   // Eager load unread messages.
    *   related('receivedMessages').mapper('unread').as('unreadMessages')
    *
-   * ).find('some.guy@domain.com').then(user => console.log(
-   *   `${user.name} has ${user.unreadMessages.length} unread messages`
-   * ));
+   * ).findBy('email', 'some.guy@domain.com').then(user => {
+   *   console.log(`${user.name} has ${user.unreadMessages.length} unread messages`);
+   * });
    * ```
    *
    * *See {@link Mapper#relations} for an example of how to set up this schema.*
    *
    * @todo Support saving relations.
    *
-   * @param {...Related|Related[]} related
-   *   One or more Related instances describing the relation tree.
+   * @param {...(Related|string|Related[]|string[])} related
+   *   One or more Related instances or relation names.
    * @returns {Mapper}
    *   Mapper configured to eager load related records.
    */
   with(...related) {
-    const flattened = flatten(related);
 
-    if (isEmpty(flattened)) {
+    const flattened = normalizeRelated(...related);
+
+    if (flattened.length === 0) {
       return this;
     }
 
     const invalid = reject(flattened, isRelated);
-    if (!isEmpty(invalid)) throw new TypeError(
+    if (invalid.length > 0) throw new TypeError(
       `Expected instance(s) of Related, got: ${inspect(invalid)}`
     );
 
@@ -268,30 +269,37 @@ export default {
    * const bob = { email: 'bob@thing.com', name: 'Bob', id: 5 };
    * const jane = { email: 'jane@thing.com', name: 'Jane', id: 100 };
    *
-   * Users.load(related('posts')).into(bob, jane)
+   * Users.load('posts').into(bob, jane).then(([bob, jane]) => {
+   *   cosole.log(`Bob's posts: ${bob.posts.map(p => p.title)}`);
+   *   cosole.log(`Jane's posts: ${jane.posts.map(p => p.title)}`);
+   * });
    * ```
    *
    * ```js
    * // Load posts.
-   * Posts.fetch(posts =>
+   * Posts.fetch(posts => {
    *   // Now load and attach related authors.
-   *   Posts.load(related('author')).into(posts)
-   * ).then(postsWithAuthor => ...);
+   *   return Posts.load('author').into(posts);
+   * }).then(postsWithAuthor => {
+   *   // ...
+   * })
    *
    * // Exactly the same as:
-   * Posts.with(related('author')).fetch().then(postsWithAuthor => ...);
+   * Posts.with('author').fetch().then(postsWithAuthor => {
+   *  // ...
+   * })
    * ```
    *
    * *See `Mapper.relations()` for example of how to set up this schema.*
    *
-   * @param {...Related|Related[]} related
-   *   One or more Related instances describing the relation tree.
+   * @param {...(Related|string|Related[]|string[])} related
+   *   One or more Related instances or relation names.
    * @returns {EagerLoader}
    *   An EagerLoader instance configured to load the given relations into
    *   records.
    */
   load(...related) {
-    return new EagerLoader(this, flatten(related));
+    return new EagerLoader(this, normalizeRelated(...related));
   }
 
 };

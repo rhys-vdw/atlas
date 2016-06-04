@@ -103,14 +103,14 @@ export default function(atlas) {
 
         return Promise.join(
           st.resolvesToDeep(
-            Users.load(related('avatar')).into(dean),
+            Users.load('avatar').into(dean),
             { id: 1, name: 'dean', avatar:
               { id: 10, user_id: 1, image_path: './dean.jpg' }
             },
             'loads into single record'
           ),
           st.resolvesToDeep(
-            Users.load(related('avatar')).into(sarah, baz), [
+            Users.load('avatar').into(sarah, baz), [
               { id: 2, name: 'Sarah', avatar:
                 { id: 12, user_id: 2, image_path: './sarah.jpg' }
               }, { id: 3, name: 'Baz', avatar:
@@ -119,7 +119,7 @@ export default function(atlas) {
             ], 'loads into multiple records'
           ),
           st.resolvesToDeep(
-            Users.load(related('avatar')).into(dean, other), [
+            Users.load('avatar').into(dean, other), [
               { id: 1, name: 'dean', avatar:
                 { id: 10, user_id: 1, image_path: './dean.jpg' }
               }, { id: 4, name: 'Other', avatar: null }
@@ -151,7 +151,7 @@ export default function(atlas) {
       ])).then(() => {
 
         return st.resolvesToDeep(
-          Users.with(related('avatar')).fetch(), [
+          Users.with('avatar').fetch(), [
             { id: 1, name: 'Dean', avatar:
               { id: 10, user_id: 1, image_path: './dean.jpg' }
             },

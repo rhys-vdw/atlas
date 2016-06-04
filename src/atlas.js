@@ -96,7 +96,7 @@ const createAtlas = (knex, registry) => {
  * const pg = Atlas(pgKnex, mapperRegistry);
  * const { related } = pg;
  *
- * pg('Product').with(related('sales', 'owners')).fetch().then(products =>
+ * pg('Product').with('sales', 'owners').fetch().then(products =>
  *   // Fetches and related records from PostgreSQL database.
  * ):
  * ```
@@ -261,7 +261,7 @@ export default function Atlas(knex, registry = createRegistry()) {
        * @param {Atlas} t
        *   An instance of `Atlas` connected to the transaction.
        * @param {Transaction} t.knex
-       *   The Knex.js `Transaction`instace.
+       *   The Knex.js `Transaction` instance.
        */
       transactionCallback(createAtlas(trx, registry))
     );
