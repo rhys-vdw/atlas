@@ -38,7 +38,7 @@
     "pg": "^4.4.3",
     "source-map-support": "^0.3.3",
     "tap-dot": "^1.0.0",
-    "tape": "^4.2.0",
+    "tape": "^4.5.1",
     "tape-catch": "^1.0.4"
   },
   "peerDependencies": {
