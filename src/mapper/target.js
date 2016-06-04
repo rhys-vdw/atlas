@@ -1,4 +1,4 @@
-import { isArray, head, zipObject, reject } from 'lodash';
+import { isArray, head, reject } from 'lodash';
 import { isComposite as isCompositeKey } from '../arguments';
 
 export default {

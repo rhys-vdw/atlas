@@ -15,25 +15,25 @@ test('== HasOne ==', t => {
     });
 
     t.equal(
-      hasOneCustom.selfKey, 'self_key',
-      'stores custom `selfKey` correctly'
+      hasOneCustom.selfAttribute, 'self_key',
+      'stores custom `selfAttribute` correctly'
     );
 
     t.equal(
-      hasOneCustom.otherRef, 'other_ref',
-      'stores custom `otherRef` correctly'
+      hasOneCustom.otherAttribute, 'other_ref',
+      'stores custom `otherAttribute` correctly'
     );
 
     const hasOneDefault = new HasOne(Self, Other);
 
     t.equal(
-      hasOneDefault.selfKey, 'id',
-      'defaults `selfKey` to id attribute'
+      hasOneDefault.selfAttribute, 'id',
+      'defaults `selfAttribute` to id attribute'
     );
 
     t.equal(
-      hasOneDefault.otherRef, 'self_id',
-      'defaults `otherRef` to {singular table name}_{id attribute}'
+      hasOneDefault.otherAttribute, 'self_id',
+      'defaults `otherAttribute` to {singular table name}_{id attribute}'
     );
 
     t.end();

@@ -1,6 +1,6 @@
-import { isArray, keyBy, head } from 'lodash';
+import { isArray, keyBy } from 'lodash';
 import { mapperAttributeRef } from '../naming/default-column';
-import { isComposite, assertKeysCompatible } from '../arguments';
+import { assertKeysCompatible } from '../arguments';
 
 export default class BelongsTo {
   constructor(Self, Other, { selfRef, otherKey } = {}) {
@@ -22,9 +22,6 @@ export default class BelongsTo {
     const { Self, Other, selfAttribute, otherAttribute } = this;
 
     const id = Self.identifyBy(selfAttribute, ...targetIds);
-
-    const isSingle = !isArray(id) ||
-      isComposite(selfAttribute) && !isComposite(head(id));
 
     return Other.withMutations(mapper => {
       mapper.targetBy(otherAttribute, id);

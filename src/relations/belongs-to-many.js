@@ -75,7 +75,7 @@ export default class BelongsToMany {
 
   of(...targetIds) {
     const {
-      Self, Other, selfAttribute, otherAttribute, pivotSelfTableColumn
+      Self, Other, selfAttribute, pivotSelfTableColumn
     } = this;
 
     const id = Self.identifyBy(selfAttribute, ...targetIds);
