@@ -56,6 +56,25 @@ export default {
     });
   },
 
+  getTable() {
+    return this.requireState('table');
+  },
+
+  as(name) {
+    return this.setState({ name });
+  },
+
+  getName() {
+    return this.state.name || this.getTable();
+  },
+
+  /** @private */
+  getAliasedTable() {
+    const table = this.getTable();
+    const name = this.getName();
+    return table === name ? table : `${table} as ${name}`;
+  },
+
   /**
    * @method Mapper#toQueryBuilder
    * @summary

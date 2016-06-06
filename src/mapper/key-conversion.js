@@ -1,6 +1,13 @@
 import identity from 'lodash/identity';
 import mapKeys from 'lodash/mapKeys';
 
+function DEBUG(fn) {
+  return function DEBUG_WRAPPER(...args) {
+    const result = fn.apply(this, args);
+    console.log(`${fn.name}(${args}) -> ${result}`);
+    return result;
+  }
+}
 export default {
 
   /** @protected */
@@ -17,14 +24,14 @@ export default {
 
   /** @private */
   columnToTableColumn(column) {
-    const table = this.requireState('table');
-    return `${table}.${column}`;
+    const alias = this.getName();
+    return `${alias}.${column}`;
   },
 
   /** @private */
   columnsToTableColumns(columns) {
-    const table = this.requireState('table');
-    return mapKeys(columns, (value, column) => `${table}.${column}`);
+    const alias = this.getName();
+    return mapKeys(columns, (value, column) => `${alias}.${column}`);
   },
 
   /** @private */
@@ -35,6 +42,11 @@ export default {
   /** @private */
   attributesToTableColumns(attributes) {
     return this.columnsToTableColumns(this.attributesToColumns(attributes));
-  }
+  },
 
+  /** @private */
+  attributeToAliasedColumn(name, attribute) {
+    const column = this.attributeToColumn(attribute);
+    return `${name}.${column} as _${name}_${column}`;
+  },
 };

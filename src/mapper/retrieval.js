@@ -1,11 +1,9 @@
 import Promise from 'bluebird';
-import isEmpty from 'lodash/isEmpty';
-import map from 'lodash/map';
-import flatten from 'lodash/flatten';
+import { each, some, isEmpty, map, flatten, uniq, isObject } from 'lodash';
 import { NotFoundError, NoRowsFoundError } from '../errors';
 import { PIVOT_PREFIX } from '../constants';
 import {
-  isQueryBuilderSpecifyingColumns,
+  isQueryBuilderSpecifyingOwnColumns,
   isQueryBuilderOrdered
 } from './helpers/knex';
 
@@ -40,9 +38,20 @@ export default {
    * @returns {Mapper}
    */
   attributes(...attributes) {
-    const columns = flatten(attributes).map(attribute =>
-      this.attributeToTableColumn(attribute)
-    );
+    const columns = flatten(attributes).reduce((result, attribute) => {
+      if (isObject(attribute)) {
+        each(attribute, (attribute, relation) => {
+
+          // This uses the `attributeToColumn` of *this* mapper instead of
+          // the related mapper. Probably doesn't matter in practise.
+          result.push(this.attributeToAliasedColumn(relation, attribute));
+        });
+      } else {
+
+        result.push(this.attributeToTableColumn(attribute))
+      }
+      return result;
+    }, []);
     return this.query('select', columns);
   },
 
@@ -302,26 +311,27 @@ export default {
         queryBuilder.limit(1);
       }
 
-      // Nothing more to do if columns are already specified.
-      if (!isQueryBuilderSpecifyingColumns(queryBuilder)) {
+      // Select some columns from joined tables.
+      if (some(this.state.joins) && !omitPivot) {
 
-        // Always omit pivot if client has specified columns.
-        if (!omitPivot) {
-          const { pivotAttributes } = this.state;
+        const joinedColumns = this.state.joins.reduce((cols, Joined) => {
 
-          if (!isEmpty(pivotAttributes)) {
-            const { pivotRelationName, pivotAlias } = this.state;
-            const Pivot = this.getRelation(pivotRelationName).Other;
-
-            const pivotColumns = map(pivotAttributes, attribute => {
-              const column = Pivot.attributeToColumn(attribute);
-              return `${pivotAlias}.${column} as ${PIVOT_PREFIX}${column}`;
+          const { pivotAttributes } = Joined.state;
+          if (some(pivotAttributes)) {
+            const alias = Joined.getName();
+            each(pivotAttributes, attribute => {
+              cols.push(Joined.attributeToAliasedColumn(alias, attribute));
             });
-
-            queryBuilder.select(pivotColumns);
           }
-        }
+          return cols;
+        }, []);
 
+        queryBuilder.select(joinedColumns);
+      }
+
+      // Nothing more to do if columns are already specified.
+      // This covers calls to `Mapper#attributes` or `Mapper#query`.
+      if (!isQueryBuilderSpecifyingOwnColumns(queryBuilder)) {
         queryBuilder.select(this.columnToTableColumn('*'));
       }
     });

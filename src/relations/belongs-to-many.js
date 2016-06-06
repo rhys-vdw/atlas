@@ -1,4 +1,4 @@
-import { assign, isArray, groupBy, first } from 'lodash';
+import { assign, flatten, isArray, groupBy, first } from 'lodash';
 
 import Mapper from '../mapper';
 import { mapperAttributeRef } from '../naming/default-column';
@@ -9,7 +9,7 @@ import { PIVOT_PREFIX } from '../constants';
 export default class BelongsToMany {
   constructor(Self, Other, Pivot = null, {
     selfKey, otherKey,
-    pivotSelfRef, pivotOtherRef, pivotTable, pivotName = 'pivot'
+    pivotSelfRef, pivotOtherRef, pivotTable, pivotName = pivotTable
   } = {}) {
 
     // Default self keys.
@@ -39,9 +39,12 @@ export default class BelongsToMany {
     // Create Pivot mapper if none provided.
 
     if (Pivot == null) {
+      const table = pivotTable || DefaultTable.pivot(Other, Self);
       Pivot = Mapper.withMutations({
-        table: pivotTable || DefaultTable.pivot(Other, Self),
-        idAttribute: [pivotSelfRef, pivotOtherRef]
+        table,
+        as: pivotName,
+        idAttribute: flatten([pivotSelfRef, pivotOtherRef]),
+        pivotAttributes: pivotSelfRef
       });
     }
 
@@ -60,22 +63,18 @@ export default class BelongsToMany {
       pivotAttributes: [pivotSelfRef]
     });
 
-    const selfAttribute = selfKey;
-    const pivotSelfColumn = Pivot.attributeToColumn(pivotSelfRef);
-    const pivotSelfTableColumn = Pivot.columnToTableColumn(pivotSelfColumn);
-    const otherAttribute = Other.columnToAttribute(
-      `${PIVOT_PREFIX}${pivotSelfColumn}`
-    );
-
+    const pivotColumn = Other.attributeToColumn(pivotSelfRef);
     assign(this, {
       Self, Other: JoinedOther,
-      selfAttribute, otherAttribute, pivotSelfTableColumn,
+      selfAttribute: selfKey,
+      otherAttribute: Other.columnToAttribute(`_${Pivot.getName()}_${pivotColumn}`),
+      pivotColumn,
     });
   }
 
   of(...targetIds) {
     const {
-      Self, Other, selfAttribute, pivotSelfTableColumn
+      Self, Other, selfAttribute, pivotColumn
     } = this;
 
     const id = Self.identifyBy(selfAttribute, ...targetIds);
@@ -84,9 +83,9 @@ export default class BelongsToMany {
 
     return Other.withMutations(other => {
       if (isSingle) {
-        other.query('where', pivotSelfTableColumn, id);
+        other.query('where', pivotColumn, id);
       } else {
-        other.query('whereIn', pivotSelfTableColumn, id);
+        other.query('whereIn', pivotColumn, id);
       }
     });
   }

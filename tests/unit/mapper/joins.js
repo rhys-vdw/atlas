@@ -4,12 +4,12 @@ import CamelCase from '../../../lib/plugins/CamelCase';
 
 test('== Mapper - joins ==', t => {
 
-  t.test('Mapper#pivotAttributes()', t => {
+  t.test('Mapper#pivotAttributes()', st => {
     const WithPivot = Mapper
       .pivotAttributes(['a', 'b'])
       .pivotAttributes('c');
 
-    t.deepEqual(
+    st.deepEqual(
       WithPivot.requireState('pivotAttributes'),
       ['a', 'b', 'c'],
       `is additive`
@@ -19,25 +19,25 @@ test('== Mapper - joins ==', t => {
       .pivotAttributes(['a', 'a'])
       .pivotAttributes(['a']);
 
-    t.deepEqual(
+    st.deepEqual(
       ToDedupe.requireState('pivotAttributes'),
       ['a'],
       `deduplicates`
     );
 
-    t.end();
+    st.end();
   });
 
-  t.test('Mapper#omitPivot()', t => {
+  t.test('Mapper#omitPivot()', st => {
     const Omitted = Mapper.omitPivot();
 
-    t.equal(Mapper.requireState('omitPivot'), false, 'defaults to false');
-    t.equal(Omitted.requireState('omitPivot'), true, 'can be set to true');
+    st.equal(Mapper.requireState('omitPivot'), false, 'defaults to false');
+    st.equal(Omitted.requireState('omitPivot'), true, 'can be set to true');
 
-    t.end();
+    st.end();
   });
 
-  t.test('Mapper#joinRelation - simple join', t => {
+  t.skip('Mapper#joinRelation - simple join', t => {
 
     const Other = Mapper.table('others').idAttribute('o_id');
     const Self = Mapper.table('selves').idAttribute('s_id');
@@ -58,9 +58,9 @@ test('== Mapper - joins ==', t => {
     t.queriesEqual(
       WithPivot.prepareFetch().toQueryBuilder(), `
         select
-          "others"."a" as "_pivot_a",
-          "others"."b" as "_pivot_b",
-          "others"."c" as "_pivot_c",
+          "others"."a" as "_others_a",
+          "others"."b" as "_others_b",
+          "others"."c" as "_others_c",
           "selves".*
         from
           "selves"
@@ -86,13 +86,13 @@ test('== Mapper - joins ==', t => {
     const Self = CamelMapper.table('selves').idAttribute('selfId');
 
     const Joined = Self.relations({
-      others: m => m.hasMany(Other)
-    }).joinRelation('others').pivotAttributes('someValue');
+      others: m => m.hasMany(Other.pivotAttributes('someValue'))
+    }).joinRelation('others');
 
     t.queriesEqual(
       Joined.prepareFetch().toQueryBuilder(), `
         select
-          "others"."some_value" as "_pivot_some_value",
+          "others"."some_value" as "_others_some_value",
           "selves".*
         from
           "selves"
@@ -132,20 +132,21 @@ test('== Mapper - joins ==', t => {
     const People = Mapper.table('people');
 
     const Joined = People.relations({
-      children: m => m.hasMany(People, { otherRef: 'mother_id' })
-    }).joinRelation('children').pivotAttributes('a');
+      children: m => m.hasMany(People.pivotAttributes('a'), { otherRef: 'mother_id' })
+    }).joinRelation('children');
 
     t.queriesEqual(
       Joined.prepareFetch().toQueryBuilder(), `
-        select "pivot"."a" as "_pivot_a", "people".* from "people"
-        inner join "people" as "pivot" on "people"."id" = "pivot"."mother_id"
+        select "children"."a" as "_children_a", "people".* from "people"
+        inner join "people" as "children"
+        on "people"."id" = "children"."mother_id"
       `, 'aliases join table when joining self'
     );
 
     t.end();
   });
 
-  t.test('Mapper#joinRelation - complex join', t => {
+  t.test('Mapper#joinRelation - complex join', st => {
 
     const Other = Mapper.table('others').idAttribute('o_id')
       .where('thing', '>', 5);
@@ -156,34 +157,47 @@ test('== Mapper - joins ==', t => {
       others: m => m.hasMany(Other)
     }).joinRelation('others');
 
-    t.queriesEqual(
+    st.queriesEqual(
       Joined.prepareFetch().toQueryBuilder(), `
         select "selves".* from "selves"
         inner join (
           select "others".* from "others"
           where "others"."thing" > 5
-        ) as "pivot" on "selves"."s_id" = "pivot"."self_s_id"
+        ) as "others" on "selves"."s_id" = "others"."self_s_id"
       `, 'performs simple join when target has no statements'
     );
 
-    const WithPivot = Joined.pivotAttributes('a', 'b', 'c');
+    st.end();
+  });
 
-    t.queriesEqual(
-      WithPivot.prepareFetch().toQueryBuilder(), `
+  t.test('Mapper#joinRelation - complex join with join attributes', st => {
+
+    const Other = Mapper.table('others').idAttribute('o_id')
+      .where('thing', '>', 5);
+
+    const Self = Mapper.table('selves').idAttribute('s_id');
+
+    const Joined = Self.relations({
+      others: m => m.hasMany(Other.pivotAttributes('a', 'b', 'c'))
+    }).joinRelation('others');
+
+
+    st.queriesEqual(
+      Joined.prepareFetch().toQueryBuilder(), `
         select
-          "pivot"."a" as "_pivot_a",
-          "pivot"."b" as "_pivot_b",
-          "pivot"."c" as "_pivot_c",
+          "others"."a" as "_others_a",
+          "others"."b" as "_others_b",
+          "others"."c" as "_others_c",
           "selves".*
         from
           "selves"
         inner join (
           select "others".* from "others"
           where "others"."thing" > 5
-        ) as "pivot" on "selves"."s_id" = "pivot"."self_s_id"
-      `, 'selects pivot attributes'
+        ) as "others" on "selves"."s_id" = "others"."self_s_id"
+      `, 'selects joined attributes'
     );
 
-    t.end();
+    st.end();
   });
 });
