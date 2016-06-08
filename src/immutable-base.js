@@ -100,7 +100,7 @@ class ImmutableBase {
    * Get a state value or throw if unset.
    *
    * @param {string} key
-   *   State key to retrieve.
+   *   Key of state value to retrieve.
    * @returns {mixed}
    *   Value previously assigned to state key. Do not mutate this value.
    * @throws UnsetStateError

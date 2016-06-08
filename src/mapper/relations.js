@@ -1,12 +1,13 @@
 import { inspect } from 'util';
 import {
-  keys as objectKeys, filter, flatten, isEmpty, isFunction, isString
+  keyBy, keys as objectKeys, filter, flatten, isArray, isEmpty, isFunction,
+  isString, groupBy
 } from 'lodash';
 import Mapper from './mapper';
-import { normalizeRelated, isRelated } from '../related';
 import EagerLoader from '../eager-loader';
 import { ALL, NONE } from '../constants';
 import { mapperAttributeRef } from '../naming/default-column';
+import { isComposite } from '../arguments';
 
 export default {
 
@@ -61,17 +62,59 @@ export default {
     });
   },
 
+  of(...records) {
+
+    const Other = this.requireState('relationOther');
+    const selfAttribute = this.getRelationAttribute();
+    const otherAttribute = Other.getRelationAttribute();
+
+    // Get all the IDs.
+    const id = Other.identifyBy(otherAttribute, ...records);
+
+    // If this mapper for a plural relation (many-to-*) then we always want to
+    // return multiple records.
+    if (!this.state.isSingle) {
+      return this.whereIn(selfAttribute, id);
+    }
+
+
+    // If not this is a single relation (one-to-*). Multiple records must be
+    // fetched only if there are multiple targets.
+    if (isArray(id)) {
+
+      // An array is not necessarily more than one target. If this has a
+      // composite key then that might be a composite key value...
+      if (isComposite(selfAttribute) && !isComposite(id[0])) {
+        return this.where(selfAttribute, id);
+      }
+
+      // ...If not we're targeting more than one record in a (one-to-*)
+      // relationship.
+      return this.withMutations(mapper => {
+        mapper
+          .all()
+          .distinct(selfAttribute)
+          .whereIn(selfAttribute, id)
+          .limit(records.length);
+      });
+    }
+
+    // Simple *-to-one
+    return this.where(selfAttribute, id);
+  },
 
   getRelationAttribute(Other) {
-    return this.state.relationAttribute || this.getDefaultRelationAttribute(Other);
+    return (
+      this.state.relationAttribute ||
+      this.getDefaultRelationAttribute(Other)
+    );
   },
 
   getDefaultRelationAttribute(Other) {
 
     // Many-to-one.
     if (!this.state.isSingle && Other.state.isSingle) {
-
-      const attribute = Other.getRelationAttribute(this);
+      const attribute = Other.requireState('idAttribute');
       return this.columnToAttribute(mapperAttributeRef(Other, attribute));
     }
 
@@ -79,6 +122,38 @@ export default {
     return this.requireState('idAttribute');
   },
 
+  // TODO: This should delegate to a single/plural 'mapRelated' variant
+  //       function. it's a bit confusing as it is (and expensive).
+  mapRelated(parentRecords, selfRecords) {
+
+    // Handle (parent, child) mapping
+    if (!isArray(parentRecords)) {
+      return selfRecords || this.none();
+    }
+
+    const { isSingle, isRequired } = this.state;
+    const Parent = this.requireState('relationOther');
+    const selfAttribute = this.getRelationAttribute();
+    const parentAttribute = Parent.getRelationAttribute();
+
+    const keyFn = isSingle ? keyBy : groupBy;
+
+    const selfRecordsById = keyFn(selfRecords, record =>
+      this.identifyBy(selfAttribute, record)
+    );
+
+    return parentRecords.map(parentRecord => {
+      const id = Parent.identifyBy(parentAttribute, parentRecord);
+      const selfRecord = selfRecordsById[id];
+      // TODO: Use a proper `RequirementFailedError` for this and all other
+      // required triggered errors.
+      if (isRequired && isEmpty(selfRecord)) throw new Error(
+        `Failed to retrieve relation "${this.getName()}" with where ` +
+        `${parentAttribute} is ${id}`
+      );
+      return selfRecord || this.none();
+    });
+  },
 
   /**
    * @method Mapper#relations
@@ -328,14 +403,8 @@ export default {
       return isEmpty(previous) ? this : this.setState({ related: [] });
     }
 
-    const flattened = flatten(...related);
-
-    const invalid = filter(flattened, isFunction);
-    if (invalid.length > 0) throw new TypeError(
-      `Expected instance(s) of Related, got: ${inspect(invalid)}`
-    );
-
     const previous = this.state.related || [];
+    const flattened = flatten(related);
 
     return this.setState({
       related: [ ...previous, ...flattened ]

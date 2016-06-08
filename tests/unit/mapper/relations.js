@@ -67,8 +67,9 @@ test('Mapper#load()', t => {
   const eagerLoader = Mapper.load();
   t.ok(
     eagerLoader instanceof EagerLoader,
-    'returns an instance of `EagerLoader'
+    'returns an instance of `EagerLoader`'
   );
+  t.end();
 });
 
 test('Mapper#load(ALL)', t => {
@@ -86,7 +87,7 @@ test('Mapper#load(ALL)', t => {
   t.end();
 });
 
-test.only('Mapper#load(NONE)', t => {
+test('Mapper#load(NONE)', t => {
 
   const Records = Mapper.table('records').relations({
     a: m => m.belongsTo(Records),

@@ -47,23 +47,25 @@ class EagerLoader {
     }
 
     // Group relations by name.
-    const relationByName = reduce(relations, (result, related) => {
-      const relationName = related.name();
+    // TODO: This is silly. `with` should throw if a duplicate relation is
+    // registered. `relations` should be a hash of `createRelation` functions.
+    const relationByName = reduce(relations, (result, relation) => {
+      const relationName = relation.getName();
       if (!isUndefined(result[relationName])) console.warn(
         `WARNING: Duplicate relation name "${relationName}" overrides ` +
         `existing relation.`
       );
-      result[relationName] = related;
+      result[relationName] = relation;
       return result;
     }, {});
 
     // Now fetch all related records from each relation and resolve them as a
     // keyed object to be assigned to parent records.
-    return Promise.props(mapValues(relationByName, related => {
-      return related.toMapperOf(Self, ...records).fetch().then(records =>
-        related.mapRelated(Self, targets, records)
-      );
-    })).then(recordsByName => {
+    return Promise.props(mapValues(relationByName, relation =>
+      relation.of(...records).fetch().then(related =>
+        relation.mapRelated(targets, related)
+      )
+    )).then(recordsByName => {
 
       // If we have only one record to assign to, simply assign the hash.
       if (!isArray(targets)) {

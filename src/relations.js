@@ -18,25 +18,37 @@ function hasOne(Other, { selfAttribute, otherAttribute } = {}) {
 */
 
 
-
+function getAttribute(attributes, mapper) {
+  if (attributes != null) {
+    return attributes[mapper.getName()];
+  }
+}
 
 // one-to-one
-function hasOne(Other, { selfAttribute, otherAttribute } = {}) {
+function hasOne(Other, attributes) {
+  const selfAttribute = getAttribute(attributes, this);
+  const otherAttribute = getAttribute(attributes, Other);
   return this.one(selfAttribute).to(Other.one(otherAttribute));
 }
 
 // one-to-many
-function hasMany(Other, { selfAttribute, otherAttribute } = {}) {
+function hasMany(Other, attributes) {
+  const selfAttribute = getAttribute(attributes, this);
+  const otherAttribute = getAttribute(attributes, Other);
   return this.one(selfAttribute).to(Other.many(otherAttribute));
 }
 
 // many-to-one
-function belongsTo(Other, { selfAttribute, otherAttribute } = {}) {
+function belongsTo(Other, attributes) {
+  const selfAttribute = getAttribute(attributes, this);
+  const otherAttribute = getAttribute(attributes, Other);
   return this.many(selfAttribute).to(Other.one(otherAttribute));
 }
 
 // many-to-many (singular assumes *no join table* - might be a thing)
-function hasAndBelongsToMany(Other, { selfAttribute, otherAttribute } = {}) {
+function hasAndBelongsToMany(Other, attributes) {
+  const selfAttribute = getAttribute(attributes, this);
+  const otherAttribute = getAttribute(attributes, Other);
   return this.many(selfAttribute).to(Other.many(otherAttribute));
 }
 

@@ -1,13 +1,6 @@
 import identity from 'lodash/identity';
 import mapKeys from 'lodash/mapKeys';
 
-function DEBUG(fn) {
-  return function DEBUG_WRAPPER(...args) {
-    const result = fn.apply(this, args);
-    console.log(`${fn.name}(${args}) -> ${result}`);
-    return result;
-  }
-}
 export default {
 
   /** @protected */

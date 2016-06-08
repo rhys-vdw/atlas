@@ -15,6 +15,11 @@ export default {
   },
 
   /** @protected */
+  none() {
+    return this.state.isSingle ? null : [];
+  },
+
+  /** @protected */
   getAttributes: identity,
 
   /** @protected */

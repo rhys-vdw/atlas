@@ -38,7 +38,18 @@ export default {
    * @returns {Mapper}
    */
   attributes(...attributes) {
-    const columns = flatten(attributes).reduce((result, attribute) => {
+    const columns = this.attributesToSelectColumns(...attributes);
+    return this.query('select', columns);
+  },
+
+  distinct(...attributes) {
+    const columns = this.attributesToSelectColumns(...attributes);
+    return this.query('distinct', columns);
+  },
+
+  /** @private */
+  attributesToSelectColumns(...attributes) {
+    return flatten(attributes).reduce((result, attribute) => {
       if (isObject(attribute)) {
         each(attribute, (attribute, relation) => {
 
@@ -47,12 +58,10 @@ export default {
           result.push(this.attributeToAliasedColumn(relation, attribute));
         });
       } else {
-
         result.push(this.attributeToTableColumn(attribute))
       }
       return result;
     }, []);
-    return this.query('select', columns);
   },
 
   /**
