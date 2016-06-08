@@ -190,7 +190,7 @@ class ImmutableBase {
    *
    * function compileDsl(string) {
    *   return string.split(SPLIT_COMMA).map(token => {
-   *     const [_, relationName, nested] = token.match(SPLIT_REGEX);
+   *     const [_, relationName, nested] = token.match(SPLIT_RELATED);
    *     const relatedInstance = atlas.related(relationName);
    *     return nested ? relatedInstance.with(compileDsl(nested)) : relatedInstance;
    *   });

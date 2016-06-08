@@ -1,53 +1,47 @@
 import test from 'tape';
 import Mapper from '../../../lib/mapper';
 import Atlas from '../../../lib/atlas';
-import { related } from '../../../lib/related';
+import EagerLoader from '../../../lib/eager-loader';
+
+const { ALL, NONE } = Atlas;
 
 test('Mapper#relations', t => {
 
-  const atlas = Atlas();
-  const Things = Mapper.table('things');
-  const ownedThing = o => o.hasOne(Things)
+  const createRelation = () => Mapper.as('thing');
   const Owner = Mapper.table('owners').relations({
-    hasThing: ownedThing
+    thingAlias: createRelation
   });
 
   t.notEqual(Owner, Mapper, 'copies immutable Mapper');
 
   t.deepEqual(
     Owner.requireState('relations'),
-    { hasThing: ownedThing },
+    { thingAlias: createRelation },
     'Correctly assigns relations'
   );
 
-  const hasThing = Owner.getRelation('hasThing');
-
-  t.equal(hasThing.Self, Owner, 'correctly assigned self');
+  t.equal(
+    Owner.getRelation('thingAlias').getName(),
+    'thingAlias',
+    'aliases relation'
+  );
 
   t.end();
 });
 
 test('Mapper#with(ALL)', t => {
 
-  const relations = [];
   const Records = Mapper.table('records').relations({
-    a: m => relations[0] = m.belongsTo(Records),
-    b: m => relations[1] = m.belongsTo(Records),
-    c: m => relations[2] = m.belongsTo(Records),
-    d: m => relations[3] = m.belongsTo(Records),
-  }).with(related.ALL);
+    a: self => self.belongsTo(Records),
+    b: self => self.belongsTo(Records),
+  }).with(ALL);
 
-  const relatedInstances = Records.requireState('related');
+  const related = Records.requireState('related');
 
-  t.equal(relatedInstances[0].name(), 'a');
-  t.equal(relatedInstances[1].name(), 'b');
-  t.equal(relatedInstances[2].name(), 'c');
-  t.equal(relatedInstances[3].name(), 'd');
+  t.deepEqual(related, ['a', 'b']);
 
-  t.equal(relatedInstances[0].getRelation(Records), relations[0]);
-  t.equal(relatedInstances[1].getRelation(Records), relations[1]);
-  t.equal(relatedInstances[2].getRelation(Records), relations[2]);
-  t.equal(relatedInstances[3].getRelation(Records), relations[3]);
+  t.equal(Records.getRelation('a').getName(), 'a');
+  t.equal(Records.getRelation('b').getName(), 'b');
 
   t.end();
 });
@@ -56,48 +50,51 @@ test('Mapper#with(NONE)', t => {
 
   const relations = [];
   const Records = Mapper.table('records').relations({
-    a: m => relations[0] = m.belongsTo(Records),
-    b: m => relations[1] = m.belongsTo(Records),
-    c: m => relations[2] = m.belongsTo(Records),
-    d: m => relations[3] = m.belongsTo(Records),
-  }).with('a', 'b', 'c', 'd');
+    a: self => self.belongsTo(Records),
+    b: self => self.belongsTo(Records),
+    c: self => self.belongsTo(Records),
+    d: self => self.belongsTo(Records),
+  }).with(ALL);
 
-  const relatedInstances = Records.with(related.NONE).requireState('related');
+  const related = Records.with(NONE).requireState('related');
 
-  t.deepEqual(relatedInstances, []);
+  t.deepEqual(related, []);
 
   t.end();
+});
+
+test('Mapper#load()', t => {
+  const eagerLoader = Mapper.load();
+  t.ok(
+    eagerLoader instanceof EagerLoader,
+    'returns an instance of `EagerLoader'
+  );
 });
 
 test('Mapper#load(ALL)', t => {
 
-  const relations = [];
   const Records = Mapper.table('records').relations({
-    a: m => relations[0] = m.belongsTo(Records),
-    b: m => relations[1] = m.belongsTo(Records),
+    a: self => self.belongsTo(Records),
+    b: self => self.belongsTo(Records),
   });
 
-  const { relatedList } = Records.load(related.ALL);
+  const eagerLoader = Records.load(ALL);
 
-  t.equal(relatedList[0].name(), 'a');
-  t.equal(relatedList[1].name(), 'b');
-
-  t.equal(relatedList[0].getRelation(Records), relations[0]);
-  t.equal(relatedList[1].getRelation(Records), relations[1]);
+  t.equal(eagerLoader.relations[0].getName(), 'a');
+  t.equal(eagerLoader.relations[1].getName(), 'b');
 
   t.end();
 });
 
-test('Mapper#load(NONE)', t => {
+test.only('Mapper#load(NONE)', t => {
 
-  const relations = [];
   const Records = Mapper.table('records').relations({
-    a: m => relations[0] = m.belongsTo(Records),
-    b: m => relations[1] = m.belongsTo(Records),
+    a: m => m.belongsTo(Records),
+    b: m => m.belongsTo(Records),
   });
 
-  const { relatedList } = Records.load(related.NONE);
+  const { relations } = Records.load(NONE);
 
-  t.deepEqual(relatedList, []);
+  t.deepEqual(relations, []);
   t.end();
 });

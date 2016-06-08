@@ -1,12 +1,84 @@
 import { inspect } from 'util';
 import {
-  keys as objectKeys, reject, isEmpty, isFunction, isString
+  keys as objectKeys, filter, flatten, isEmpty, isFunction, isString
 } from 'lodash';
+import Mapper from './mapper';
 import { normalizeRelated, isRelated } from '../related';
 import EagerLoader from '../eager-loader';
 import { ALL, NONE } from '../constants';
+import { mapperAttributeRef } from '../naming/default-column';
 
 export default {
+
+  /**
+   * @method Mapper#one
+   * @summary
+   *
+   * Set the key attribute for a "one-to-many" or "one-to-one" relation.
+   *
+   * @param {string|string[]} [attribute]
+   * @returns {Mapper}
+   */
+  one(relationAttribute) {
+    return this.withMutations(mapper =>
+      mapper.single().setState({ relationAttribute })
+    );
+  },
+
+  /**
+   * @method Mapper#many
+   * @summary
+   *
+   * Set the key attribute for a "many-to-many" or "many-to-one" relation.
+   *
+   * @param {string|string[]} [attribute]
+   * @returns {Mapper}
+   */
+  many(relationAttribute) {
+    return this.withMutations(mapper =>
+      mapper.all().setState({ relationAttribute })
+    );
+  },
+
+  /**
+   * @method Mapper#to
+   * @summary
+   *
+   * Create a relation.
+   *
+   * @param {Mapper} Other
+   *   The mapper representing the relation table.
+   * @returns {Mapper} The new relation.
+   */
+  to(Other) {
+
+    const selfAttribute = this.getRelationAttribute(Other);
+    const otherAttribute = Other.getRelationAttribute(this);
+
+    return Other.setState({
+      relationAttribute: otherAttribute,
+      relationOther: this.setState({ relationAttribute: selfAttribute })
+    });
+  },
+
+
+  getRelationAttribute(Other) {
+    return this.state.relationAttribute || this.getDefaultRelationAttribute(Other);
+  },
+
+  getDefaultRelationAttribute(Other) {
+
+    // Many-to-one.
+    if (!this.state.isSingle && Other.state.isSingle) {
+
+      const attribute = Other.getRelationAttribute(this);
+      return this.columnToAttribute(mapperAttributeRef(Other, attribute));
+    }
+
+    // Many-to-many, one-to-one, one-to-many.
+    return this.requireState('idAttribute');
+  },
+
 
   /**
    * @method Mapper#relations
@@ -160,18 +232,19 @@ export default {
   getRelation(relationName) {
 
     if (!isString(relationName)) throw new TypeError(
-      `Expected 'relationName' to be a string, got: ${relationName}`
+      `Expected 'relationName' to be a string, got: ${inspect(relationName)}`
     );
 
     const { relations } = this.state;
     if (!(relationName in relations)) throw new TypeError(
-      `Unknown relation, got: '${relationName}'`
+      `No relation called '${relationName}'. Make sure you've registered it ` +
+      `with '.relations({ ${relationName}: createRelation })'`
     );
 
     const createRelation = relations[relationName];
     if (!isFunction(createRelation)) throw new TypeError(
       `Expected relation '${relationName}' to be a function, ` +
-      `got: ${createRelation}`
+      `got: ${inspect(createRelation)}`
     );
 
     /**
@@ -181,9 +254,16 @@ export default {
      * @this Mapper
      * @param {Mapper} Mapper
      *   The Mapper upon which this relation is being invoked.
-     * @returns {Relation} A relation instance.
+     * @returns {Mapper} A relation instance.
      */
-    return createRelation.call(this, this);
+    const relation = createRelation.call(this, this);
+
+    if (!relation instanceof Mapper) throw new TypeError(
+      `Expected 'createRelation' function named '${relationName}' to return
+      instance of 'Mapper', got: ${inspect(relation)}`
+    );
+
+    return relation.as(relationName);
   },
 
   /**
@@ -240,9 +320,7 @@ export default {
   with(...related) {
 
     if (related[0] === ALL) {
-      return this.setState({
-        related: normalizeRelated(this.getRelationNames())
-      });
+      return this.setState({ related: this.getRelationNames() });
     }
 
     if (related[0] === NONE) {
@@ -250,13 +328,9 @@ export default {
       return isEmpty(previous) ? this : this.setState({ related: [] });
     }
 
-    const flattened = normalizeRelated(...related);
+    const flattened = flatten(...related);
 
-    if (flattened.length === 0) {
-      return this;
-    }
-
-    const invalid = reject(flattened, isRelated);
+    const invalid = filter(flattened, isFunction);
     if (invalid.length > 0) throw new TypeError(
       `Expected instance(s) of Related, got: ${inspect(invalid)}`
     );
@@ -315,15 +389,17 @@ export default {
    *   An EagerLoader instance configured to load the given relations into
    *   records.
    */
-  load(...related) {
+  load(...relations) {
 
-    if (related[0] === ALL) {
-      related = this.getRelationNames();
-    } else if (related[0] === NONE) {
-      related = [];
+    if (relations[0] === ALL) {
+      relations = this.getRelationNames();
+    } else if (relations[0] === NONE) {
+      relations = [];
+    } else {
+      relations = flatten(relations);
     }
 
-    return new EagerLoader(this, normalizeRelated(...related));
+    return new EagerLoader(this, relations);
   }
 
 };

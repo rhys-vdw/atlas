@@ -77,7 +77,7 @@ export default {
   },
 
   /**
-   * @method Mapper#one
+   * @method Mapper#single
    * @summary
    *
    * Query a single row.
@@ -99,7 +99,7 @@ export default {
    * @returns {Mapper}
    *   Mapper targeting a single row.
    */
-  one() {
+  single() {
     return this.setState({ isSingle: true });
   },
 

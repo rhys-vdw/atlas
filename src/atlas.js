@@ -4,6 +4,8 @@ import Mapper from './mapper';
 import { related } from './related';
 import plugins from './plugins';
 import * as errors from './errors';
+import * as relations from './relations';
+import * as constants from './constants';
 import { version as VERSION } from '../package.json';
 
 const createRegistry = () => new Registry({ Mapper });
@@ -290,6 +292,19 @@ Atlas.plugins = plugins;
  * @member {errors} Atlas.errors
  */
 Atlas.errors = errors;
+
+/**
+ * Select all relations
+ * @constant
+ */
+Atlas.ALL = constants.ALL;
+
+/**
+ * Clear all relations
+ * @constant
+ */
+Atlas.NONE = constants.NONE;
+
 
 /**
  * Installed version of **Atlas**.

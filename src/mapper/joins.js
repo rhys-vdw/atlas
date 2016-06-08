@@ -4,38 +4,11 @@ import {
 } from '../arguments';
 import { isQueryBuilderEmpty } from './helpers/knex';
 import { PIVOT_ALIAS } from '../constants';
-import { mapperAttributeRef } from '../naming/default-column';
 
 export default {
 
   initialize() {
-    this.setState({
-      omitPivot: false,
-      pivotAlias: null,
-      pivotAttributes: [],
-      pivotRelationName: null
-    });
-  },
-
-  joinAttribute(attribute) {
-    return this.setState({ joinAttribute: attribute });
-  },
-
-  getJoinAttribute(Other) {
-
-    // Custom.
-    if (this.state.joinAttribute) {
-      return this.state.joinAttribute;
-    }
-
-    // One-to-one, many-to-many, many-to-one.
-    if (!this.state.isSingle && Other.state.isSingle) {
-      const attribute = Other.getJoinAttribute();
-      return this.columnToAttribute(mapperAttributeRef(Other, attribute));
-    }
-
-    // One-to-many.
-    return this.requireState('idAttribute');
+    this.setState({ omitPivot: false });
   },
 
   /**
@@ -110,7 +83,7 @@ export default {
    */
   pivotAttributes(...attributes) {
     const pivotAttributes = uniq([
-      ...this.state.pivotAttributes,
+      ...(this.state.pivotAttributes || []),
       ...flatten(attributes)
     ]);
     return this.setState({ pivotAttributes });
@@ -132,17 +105,17 @@ export default {
    * @return {Mapper}
    *   Mapper joined to Other.
    */
-  join(Other) {
+  join(
+    Other,
+    selfAttribute = this.getRelationAttribute(Other),
+    otherAttribute = Other.getRelationAttribute(this)
+  ) {
+
+    assertKeysCompatible({ selfAttribute, otherAttribute });
 
     const previousJoins = this.state.joins || [];
 
-    // Get join attributes.
-    const selfAttribute = this.getJoinAttribute(Other);
-    const otherAttribute = Other.getJoinAttribute(this);
-    assertKeysCompatible({ selfAttribute, otherAttribute });
-
     // Use a default alias if there's a name conflict.
-    // TODO: This will break with multiple naming conflicts.
     const previousName = Other.getName();
     Other = Other.setState({ name:
       previousName  === this.getName()
@@ -191,17 +164,7 @@ export default {
    *   Mapper joined to given relation.
    */
   joinRelation(relationName) {
-    const relation = this.getRelation(relationName);
-    const { selfAttribute, otherAttribute, Other } = relation;
-
-    return this.withMutations(mapper =>
-      mapper
-        .setState({
-          pivotRelationName: relationName,
-          joinAttribute: selfAttribute
-        })
-        .join(Other.joinAttribute(otherAttribute).as(relationName))
-    );
+    return this.join(this.getRelation(relationName));
   },
 
 };

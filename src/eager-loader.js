@@ -1,12 +1,12 @@
 /* eslint no-console:0 */
 import Promise from 'bluebird';
 import {
-  isArray, isEmpty, reduce, reject, map, zipObject,
-  keys as objectKeys, mapValues, values as objectValues
+  flatten, isArray, isEmpty, isUndefined, keys as objectKeys, map, mapValues,
+  reduce, reject, values as objectValues, zipObject
 } from 'lodash';
-import { ensureArray, normalizeRecords } from './arguments';
-import { isRelated } from './related';
 import { inspect } from 'util';
+import { ensureArray, normalizeRecords } from './arguments';
+import Mapper from './mapper/mapper';
 
 /**
  * Eager loads related records into an existing record.
@@ -17,17 +17,14 @@ class EagerLoader {
   /**
    * @param {Mapper} Self
    *   Mapper of target records.
-   * @param {Related|Related[]} related
+   * @param {function|string[]} related
    *   One or more Related instances describing the relation tree.
    */
-  constructor(Self, related) {
-    const invalid = reject(ensureArray(related), isRelated);
-    if (!isEmpty(invalid)) throw new TypeError(
-      `Expected instance(s) of Related, got ${inspect(invalid)}`
-    );
-
+  constructor(Self, relations) {
     this.Self = Self;
-    this.relatedList = related;
+    this.relations = flatten(relations).map(relation =>
+      Self.getRelation(relation)
+    );
   }
 
   /**
@@ -38,32 +35,31 @@ class EagerLoader {
    */
   into(...records) {
 
+    const { Self, relations } = this;
+
     // `mapRelated` expects input to be normalized. eg. it receives either an
     // array or a single record (no spread).
     const targets = normalizeRecords(...records);
 
-    if (isEmpty(targets)) {
+    // If there are no relations or target records, short circuit.
+    if (isEmpty(targets) || relations.length === 0) {
       return targets;
     }
 
-    const { Self, relatedList } = this;
-
     // Group relations by name.
-    const relatedByName = reduce(relatedList, (result, related) => {
+    const relationByName = reduce(relations, (result, related) => {
       const relationName = related.name();
-      if (result.hasOwnProperty(relationName)) {
-        console.error(
-          `WARNING: Duplicate relation name "${relationName}" will be ignored`
-        );
-      } else {
-        result[relationName] = related;
-      }
+      if (!isUndefined(result[relationName])) console.warn(
+        `WARNING: Duplicate relation name "${relationName}" overrides ` +
+        `existing relation.`
+      );
+      result[relationName] = related;
       return result;
     }, {});
 
     // Now fetch all related records from each relation and resolve them as a
     // keyed object to be assigned to parent records.
-    return Promise.props(mapValues(relatedByName, related => {
+    return Promise.props(mapValues(relationByName, related => {
       return related.toMapperOf(Self, ...records).fetch().then(records =>
         related.mapRelated(Self, targets, records)
       );

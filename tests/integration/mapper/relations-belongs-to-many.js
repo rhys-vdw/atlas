@@ -24,7 +24,7 @@ export default function(atlas) {
   const Mapper = atlas('Mapper');
   const { knex, related } = atlas;
 
-  test('Mapper - relations - BelongsToMany', t => {
+  test.skip('Mapper - relations - BelongsToMany', t => {
 
     t.databaseTest('`Mapper#getRelation()`', knex, tables, st => {
 
@@ -49,7 +49,7 @@ export default function(atlas) {
         { user_id: 3, group_id: 12, is_owner: true },
       ])).then(() => {
 
-        return Promise.join(
+        return Promise.each(
           st.resolvesToDeep(
             Users.getRelation('groups').of(1).attributes({ memberships: 'is_owner' }).fetch(),
             [
