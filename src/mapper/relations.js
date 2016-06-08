@@ -71,36 +71,59 @@ export default {
     // Get all the IDs.
     const id = Other.identifyBy(otherAttribute, ...records);
 
-    // If this mapper for a plural relation (many-to-*) then we always want to
-    // return multiple records.
-    if (!this.state.isSingle) {
-      return this.whereIn(selfAttribute, id);
+    if (!isArray(id)) {
+      return this.where(selfAttribute, id);
     }
 
+    // An array is not necessarily more than one target. If this has a
+    // composite key then that might be a composite key value...
+    if (isComposite(selfAttribute) && isComposite(id[0])) {
+      return this.where(selfAttribute, id);
+    }
 
-    // If not this is a single relation (one-to-*). Multiple records must be
-    // fetched only if there are multiple targets.
-    if (isArray(id)) {
-
-      // An array is not necessarily more than one target. If this has a
-      // composite key then that might be a composite key value...
-      if (isComposite(selfAttribute) && !isComposite(id[0])) {
-        return this.where(selfAttribute, id);
-      }
-
-      // ...If not we're targeting more than one record in a (one-to-*)
-      // relationship.
+    // Special case for single relations that have multiple targets.
+    // The mapper may actually be a 'many-to-*' relation masquerading as
+    // a 'one-to-*' eg:
+    //
+    // const userLatestMessage = User
+    //   .relation('messages')
+    //   .orderBy('received_at', 'desc')
+    //   .as('latest_message')
+    //   .one();
+    //
+    // userLatestMessage.of(samantha, anna).fetch().then(messages =>
+    //   // ...
+    // )
+    //
+    // Since the query actually fetches multiple rows the query must be marked
+    // 'distinct'.
+    //
+    // TODO:
+    //
+    // For now the `distinct` clause will cause the query to fail due to
+    // conflicts. Something more intelligent is required to generate:
+    //
+    // select * from messages inner join (
+    //   select user_id, max(received_at) from messages
+    //   where messages.user_id in (1, 2)
+    //   group by user_id
+    // ) as sub on sub.user_id = messages.id
+    //
+    // See issue #80
+    //
+    if (this.state.isSingle) {
       return this.withMutations(mapper => {
         mapper
           .all()
           .distinct(selfAttribute)
-          .whereIn(selfAttribute, id)
-          .limit(records.length);
+          .whereIn(selfAttribute, id);
       });
     }
 
     // Simple *-to-one
-    return this.where(selfAttribute, id);
+    return isArray(id) && !isComposite(id[0])
+      ? this.whereIn(selfAttribute, id)
+      : this.where(selfAttribute, id);
   },
 
   getRelationAttribute(Other) {

@@ -17,7 +17,7 @@ export default function(atlas) {
   const Mapper = atlas('Mapper');
   const { knex, related } = atlas;
 
-  test.only('Mapper - relations - HasMany', t => {
+  test('Mapper - relations - HasMany', t => {
 
     t.databaseTest('`Mapper#getRelation()`', knex, { posts: postsTable }, st => {
 

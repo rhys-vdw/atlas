@@ -26,7 +26,7 @@ export default function(atlas) {
       const Users = Mapper.table('users');
 
       const Posts = Mapper.table('posts').relations({
-        author: m => m.belongsTo(Users, { selfRef: 'author_id' })
+        author: m => m.belongsTo(Users, { posts: 'author_id' })
       });
 
       return knex('users').insert([
@@ -75,7 +75,7 @@ export default function(atlas) {
       const Users = Mapper.table('users');
 
       const Posts = Mapper.table('posts').relations({
-        author: m => m.belongsTo(Users, { selfRef: 'author_id' })
+        author: m => m.belongsTo(Users, { posts: 'author_id' })
       });
 
       return knex('users').insert([
@@ -143,7 +143,7 @@ export default function(atlas) {
       const Users = Mapper.table('users');
 
       const Posts = Mapper.table('posts').relations({
-        author: m => m.belongsTo(Users, { selfRef: 'author_id' })
+        author: m => m.belongsTo(Users, { posts: 'author_id' })
       });
 
       return knex('posts').insert([

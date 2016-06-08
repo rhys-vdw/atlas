@@ -1,4 +1,6 @@
-import { identity, isFunction, isEmpty, isString, assign } from 'lodash';
+import {
+  identity, isFunction, isEmpty, isUndefined, isString, assign
+} from 'lodash';
 import Knex from 'knex';
 
 const knex = Knex({});
@@ -49,10 +51,12 @@ export default {
    * @returns {Mapper}
    *   Mapper instance targeting given table.
    */
-  table(table) {
+  table(table, alias) {
     return this.withMutations(mapper => {
-      mapper.setState({ table });
-      mapper.query('from', table);
+      mapper.setState({ table, name: alias });
+      if (!isUndefined(table)) {
+        mapper.query('from', mapper.getAliasedTable());
+      }
     });
   },
 
@@ -61,7 +65,7 @@ export default {
   },
 
   as(name) {
-    return this.setState({ name });
+    return this.table(this.state.table, name);
   },
 
   getName() {
