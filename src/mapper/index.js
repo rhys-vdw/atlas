@@ -11,6 +11,7 @@ import KeyConversion from './key-conversion';
 import Order from './order';
 import Query from './query';
 import RecordAdapter from './record-adapter';
+import Relation from './relation';
 import Relations from './relations';
 import * as RelationTypes from '../relations';
 import Retrieval from './retrieval';
@@ -34,6 +35,7 @@ const instance = new Mapper().extend(
   Order,
   Query,
   RecordAdapter,
+  Relation,
   Relations,
   RelationTypes,
   Retrieval,
