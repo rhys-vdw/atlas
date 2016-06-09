@@ -1,7 +1,6 @@
 import { isObject, isString, each } from 'lodash';
 import Registry from './registry';
 import Mapper from './mapper';
-import { related } from './related';
 import plugins from './plugins';
 import * as errors from './errors';
 import * as relations from './relations';
@@ -268,14 +267,6 @@ export default function Atlas(knex, registry = createRegistry()) {
       transactionCallback(createAtlas(trx, registry))
     );
   };
-
-  /**
-   * Accessor for `related` helper function.
-   * @member {related} Atlas#related
-   * @readonly
-   * @see related
-   */
-  atlas.related = related;
 
   return atlas;
 }
