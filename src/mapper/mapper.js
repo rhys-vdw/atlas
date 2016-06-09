@@ -1,8 +1,8 @@
-import ImmutableBase from '../immutable-base';
+import Chain from '../Chain';
 
 /**
  * @class
- * @extends ImmutableBase
+ * @extends Chain
  * @classdesc
  *
  * Mappers represent a set of data in your database. A mapper can be scoped or
@@ -38,4 +38,4 @@ import ImmutableBase from '../immutable-base';
  * ```
  *
  */
-export default class Mapper extends ImmutableBase {}
+export default class Mapper extends Chain {}

@@ -79,7 +79,7 @@ export default {
    */
   where(attribute, ...args) {
 
-    return this.withMutations(mapper => {
+    return this.mutate(mapper => {
 
       let column = null;
       if (isString(attribute)) {

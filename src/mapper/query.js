@@ -52,7 +52,7 @@ export default {
    *   Mapper instance targeting given table.
    */
   table(table, alias) {
-    return this.withMutations(mapper => {
+    return this.mutate(mapper => {
       mapper.setState({ table, name: alias });
       if (!isUndefined(table)) {
         mapper.query('from', mapper.getAliasedTable());

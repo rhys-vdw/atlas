@@ -3,7 +3,6 @@ import {
   assertKeysCompatible, ensureArray, keyValueToObject
 } from '../arguments';
 import { isQueryBuilderEmpty } from './helpers/knex';
-import { PIVOT_ALIAS } from '../constants';
 
 export default {
 
@@ -137,12 +136,12 @@ export default {
 
     const joinColumns = keyValueToObject(selfColumns, otherColumns);
 
-    return this.withMutations(mapper => {
+    return this.mutate(mapper => {
       mapper.query('join', joinTable, joinColumns);
       mapper.setState({
         joins: [ ...previousJoins, Other ]
       });
-    })
+    });
   },
 
   /**

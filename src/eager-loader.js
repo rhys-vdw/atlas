@@ -2,11 +2,9 @@
 import Promise from 'bluebird';
 import {
   flatten, isArray, isEmpty, isUndefined, keys as objectKeys, map, mapValues,
-  reduce, reject, values as objectValues, zipObject
+  reduce, values as objectValues, zipObject
 } from 'lodash';
-import { inspect } from 'util';
-import { ensureArray, normalizeRecords } from './arguments';
-import Mapper from './mapper/mapper';
+import { normalizeRecords } from './arguments';
 
 /**
  * Eager loads related records into an existing record.

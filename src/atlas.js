@@ -3,7 +3,6 @@ import Registry from './registry';
 import Mapper from './mapper';
 import plugins from './plugins';
 import * as errors from './errors';
-import * as relations from './relations';
 import * as constants from './constants';
 import { version as VERSION } from '../package.json';
 
@@ -19,7 +18,9 @@ const createAtlas = (knex, registry) => {
   const toMapper = createToMapper(registry);
   return function atlas(mapperOrName) {
     const mapper = toMapper(mapperOrName);
-    return mapper && mapper.withMutations({ atlas, knex });
+    return mapper && mapper.mutate(mapper =>
+      mapper.knex(knex).atlas(atlas)
+    );
   };
 };
 

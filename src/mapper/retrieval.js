@@ -1,7 +1,6 @@
 import Promise from 'bluebird';
-import { each, some, isEmpty, map, flatten, uniq, isObject } from 'lodash';
+import { each, some, isEmpty, flatten, isObject } from 'lodash';
 import { NotFoundError, NoRowsFoundError } from '../errors';
-import { PIVOT_PREFIX } from '../constants';
 import {
   isQueryBuilderSpecifyingOwnColumns,
   isQueryBuilderOrdered
@@ -58,7 +57,7 @@ export default {
           result.push(this.attributeToAliasedColumn(relation, attribute));
         });
       } else {
-        result.push(this.attributeToTableColumn(attribute))
+        result.push(this.attributeToTableColumn(attribute));
       }
       return result;
     }, []);
@@ -168,7 +167,7 @@ export default {
    *   Mapper targeting a single row.
    */
   first() {
-    return this.withMutations(mapper => {
+    return this.mutate(mapper => {
 
       // `first` only makes sesne if the query is ordered, so check.
       if (!isQueryBuilderOrdered(mapper.state.queryBuilder)) {

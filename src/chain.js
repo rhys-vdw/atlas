@@ -1,15 +1,19 @@
-import {
-  isArray, isEmpty, isFunction, isObject, isString, every, reduce, assign, pick
-} from 'lodash';
+import { isFunction, every, reduce, assign, pick } from 'lodash';
 import objectToString from 'object-to-string';
 import { inspect } from 'util';
 
 import { UnsetStateError } from './errors';
 
+function combineFunctions(fns) {
+  return function(...args) {
+    fns.map(fn => fn.apply(this, args));
+  };
+}
+
 function createCallSuper(prototype) {
 
   /**
-   * @callback ImmutableBase~callSuper
+   * @callback Chain~callSuper
    * @summary
    *
    * Helper method that invokes a super method.
@@ -35,7 +39,7 @@ function createCallSuper(prototype) {
    * });
    * ```
    *
-   * @param {ImmutableBase} self
+   * @param {Chain} self
    *   Instance invoking the super method (`this` in method).
    * @param {string} methodName
    *   Name of super method to invoke.
@@ -49,8 +53,8 @@ function createCallSuper(prototype) {
 
 
 /**
- * @callback ImmutableBase~extendCallback
- * @param {ImmutableBase~callSuper} callSuper
+ * @callback Chain~extendCallback
+ * @param {Chain~callSuper} callSuper
  *   Helper function that invokes a super method.
  * @returns {Object}
  *   A hash of methods.
@@ -59,7 +63,7 @@ function createCallSuper(prototype) {
 /**
  * Base class for {@link Mapper}.
  */
-class ImmutableBase {
+class Chain {
 
   /** @private */
   constructor(options = {}) {
@@ -71,14 +75,14 @@ class ImmutableBase {
      *
      * @description
      *
-     * Typically accessed from methods when extending `ImmutableBase`.
+     * Typically accessed from methods when extending `Chain`.
      *
      * `state` should be considered read-only, and should only ever by modified
-     * indirectly via {@link ImmutableBase#setState setState}.
+     * indirectly via {@link Chain#setState setState}.
      *
-     * @member {Object} ImmutableBase#state
+     * @member {Object} Chain#state
      * @readonly
-     * @see ImmutableBase#requireState
+     * @see Chain#requireState
      */
     this.state = 'isMutable' in options
       ? options
@@ -86,7 +90,7 @@ class ImmutableBase {
   }
 
   toString() {
-    const type = this.constructor.name || 'ImmutableBase';
+    const type = this.constructor.name || 'Chain';
     const stateString = objectToString(this.state, {
       keySeparator: '=', attrSeparator: ', '
     });
@@ -94,7 +98,7 @@ class ImmutableBase {
   }
 
   /**
-   * @method ImmutableBase#requireState
+   * @method Chain#requireState
    * @summary
    *
    * Get a state value or throw if unset.
@@ -117,20 +121,20 @@ class ImmutableBase {
   }
 
   /**
-   * @method ImmutableBase#setState
+   * @method Chain#setState
    * @summary
    *
    * Create a new instance with altered state.
    *
    * @description
    *
-   * Update {@link ImmutableBase#state state}. If any provided values differ
+   * Update {@link Chain#state state}. If any provided values differ
    * from those already set then a copy with updated state will be returned.
    * Otherwise the same instance is returned.
    *
    * @param {Object} nextState
    *   A hash of values to override those already set.
-   * @returns {ImmutableBase}
+   * @returns {Chain}
    *   A new instance with updated state, or this one if nothing changed.
    */
   setState(nextState) {
@@ -155,21 +159,21 @@ class ImmutableBase {
   }
 
   /**
-   * @method ImmutableBase#extend
+   * @method Chain#extend
    * @summary
    *
    * Apply one or more mixins.
    *
    * @description
    *
-   * Create a new `ImmutableBase` instance with custom methods.
+   * Create a new `Chain` instance with custom methods.
    *
-   * Creates a new class inheriting `ImmutableBase` class with supplied
+   * Creates a new class inheriting `Chain` class with supplied
    * methods.
    *
    * Returns an instance of the new class, as it never needs instantiation with
    * `new`. Copied as instead created via
-   * {@link ImmutableBase#setState setState}.
+   * {@link Chain#setState setState}.
    *
    * ```js
    * import { ReadOnlyError } from './errors';
@@ -215,12 +219,12 @@ class ImmutableBase {
    * Users.with('account, projects(collaborators, documents)').fetch().then(users =>
    * ```
    *
-   * @param {...(Object|ImmutableBase~extendCallback)} callbackOrMethodsByName
+   * @param {...(Object|Chain~extendCallback)} callbackOrMethodsByName
    *   Object of methods to be mixed into the class. Or a function that returns
    *   such an object. The function is invoked with a `callSuper` helper
    *   function.
-   * @returns {ImmutableBase}
-   *   An instance of the new class inheriting from `ImmutableBase`.
+   * @returns {Chain}
+   *   An instance of the new class inheriting from `Chain`.
    */
   extend(...callbackOrMethodsByName) {
 
@@ -265,7 +269,7 @@ class ImmutableBase {
 
     // Instantiate the new instance.
     return new Extended(this.state)
-      .withMutations(initializers)
+      .mutate(combineFunctions(initializers))
       .asImmutable();
   }
 
@@ -278,133 +282,87 @@ class ImmutableBase {
   }
 
   /**
-   * @method ImmutableBase#asMutable
+   * @method Chain#asMutable
    * @summary
    *
    * Create a mutable copy of this instance.
    *
    * @description
    *
-   * Calling {@link ImmutableBase#setState} usually returns new instance of
-   * `ImmutableBase`. A mutable `ImmutableBase` instance can be modified
-   * in place.
+   * Calling {@link setState} usually returns new instance of `Chain`.
+   * A mutable `Chain` instance can be modified in place without
+   * creating copies.
    *
-   * Typically {@link ImmutableBase#withMutations} is preferable to
-   * `asMutable`.
+   * Prefer to call {@link mutate} to prevent leaking state.
    *
-   * @see ImmutableBase#asImmutable
-   * @see ImmutableBase#withMutations
+   * @see Chain#asImmutable
+   * @see Chain#mutate
    *
-   * @returns {ImmutableBase} Mutable copy of this instance.
+   * @returns {Chain} Mutable copy of this instance.
    */
   asMutable() {
     return this.setState({ isMutable: true });
   }
 
   /**
-   * @method ImmutableBase#asImmutable
-   * @summary
+   * @summary Prevent this instance from being mutated further.
    *
-   * Prevent this instance from being mutated further.
+   * Call to seal an {@link Chain} after having called
+   * {@link asMutable}.
    *
-   * @returns {ImmutableBase} This instance.
+   * @returns {Chain} This instance.
    */
   asImmutable() {
     return this.setState({ isMutable: false });
   }
 
   /**
-   * @method ImmutableBase#withMutations
+   * @method Chain#mutate
    * @summary
    *
    * Create a mutated copy of this instance.
    *
    * @example <caption>Using a callback initializer</caption>
    *
-   * AustralianWomen = People.withMutations(People => {
+   * AustralianWomen = People.mutate(People => {
    *  People
    *    .where({ country: 'Australia', gender: 'female' });
    *    .with('spouse', 'children', 'jobs')
    * });
    *
-   * @example <caption>Using an object initializer</caption>
-   *
-   * AustralianWomen = People.withMutations({
-   *   where: { country: 'Australia', gender: 'female' },
-   *   with: ['spouse', 'children', 'jobs']
-   * });
-   *
-   * AustralianWomen = People.withMutations(mapper => {
-   *   return {
-   *     where: { country: 'Australia', gender: 'female' },
-   *     with: ['spouse', 'children', 'jobs']
-   *   }
-   * });
-   *
-   * @param {...(Array|string|Object|function)} initializer
-   *  An initializer callback, taking the ImmutableBase instance as its first
+   * @param {initialize} initializer
+   *  An initializer callback, taking the Chain instance as its first
    *  argument. Alternatively an object of {[method]: argument} pairs to be
    *  invoked.
    *
-   * @returns {ImmutableBase}
+   * @returns {Chain}
    *   Mutated copy of this instance.
    */
-  withMutations(...initializers) {
+  mutate(initialize) {
 
-    if (every(initializers, initializer =>
-      isEmpty(initializer) && !isFunction(initializer))
-    ) return this;
+    if (!isFunction(initialize)) {
+      return this;
+    }
 
     const wasMutable = this.isMutable();
+    const instance = this.asMutable();
 
-    const instance = this.asMutable().applyInitializers(initializers);
+    /**
+     * @summary Callback to be passed to {@link mutate}.
+     *
+     * The function receives a mutable copy of this instance. Any calls to
+     * {@link setState} will not cause copies to be made.
+     *
+     * @this {Chain}
+     *   The instance to mutate.
+     * @param {Chain} instance
+     *   The instance to mutate.
+     * @function initialize
+     */
+    initialize.call(instance, instance);
 
     return wasMutable ? instance : instance.asImmutable();
   }
-
-  /** @private */
-  applyInitializers(initializers) {
-    return reduce(initializers, (self, initializer) =>
-      self.applyInitializer(initializer)
-    , this);
-  }
-
-  /** @private */
-  applyInitializer(initializer) {
-
-    if (initializer == null) {
-      return this;
-    }
-
-    if (isArray(initializer)) {
-      return this.applyInitializers(initializer);
-    }
-
-    if (isString(initializer)) {
-      return this.invoke(initializer);
-    }
-
-    if (isFunction(initializer)) {
-      initializer.call(this, this);
-      return this;
-    }
-
-    if (isObject(initializer)) {
-      return reduce(initializer, (self, argument, method) =>
-        self.invoke(method, argument)
-      , this);
-    }
-
-    throw new TypeError(`Unexpected initializer: ${initializer}`);
-  }
-
-  /** @private */
-  invoke(method, ...args) {
-    if (!isFunction(this[method])) throw new TypeError(
-      `Could not find method '${method}' on Mapper.`
-    );
-    return this[method](...args);
-  }
 }
 
-export default ImmutableBase;
+export default Chain;

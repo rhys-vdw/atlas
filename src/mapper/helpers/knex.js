@@ -28,7 +28,7 @@ const createIsOwnColumn = table => column => {
   return index === -1 || (
     index === table.length && startsWith(column, table)
   );
-}
+};
 
 export const isQueryBuilderSpecifyingOwnColumns = handleMapper(queryBuilder => {
   if (queryBuilder._statements.length === 0) {

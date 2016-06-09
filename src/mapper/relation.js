@@ -1,11 +1,4 @@
-import { inspect } from 'util';
-import {
-  keyBy, keys as objectKeys, flatten, isArray, isEmpty, isFunction,
-  isString, groupBy
-} from 'lodash';
-import Mapper from './mapper';
-import EagerLoader from '../eager-loader';
-import { ALL, NONE } from '../constants';
+import { groupBy, isArray, isEmpty, keyBy } from 'lodash';
 import { mapperAttributeRef } from '../naming/default-column';
 import { isComposite } from '../arguments';
 
@@ -21,7 +14,7 @@ export default {
    * @returns {Mapper}
    */
   one(relationAttribute) {
-    return this.withMutations(mapper =>
+    return this.mutate(mapper =>
       mapper.single().setState({ relationAttribute })
     );
   },
@@ -36,7 +29,7 @@ export default {
    * @returns {Mapper}
    */
   many(relationAttribute) {
-    return this.withMutations(mapper =>
+    return this.mutate(mapper =>
       mapper.all().setState({ relationAttribute })
     );
   },
@@ -112,7 +105,7 @@ export default {
     // See issue #80
     //
     if (this.state.isSingle) {
-      return this.withMutations(mapper => {
+      return this.mutate(mapper => {
         mapper
           .all()
           .distinct(selfAttribute)
@@ -177,5 +170,4 @@ export default {
       return selfRecord || this.none();
     });
   },
-
-}
+};

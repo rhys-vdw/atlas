@@ -1,13 +1,10 @@
 import { inspect } from 'util';
 import {
-  keyBy, keys as objectKeys, flatten, isArray, isEmpty, isFunction,
-  isString, groupBy
+  keys as objectKeys, flatten, isEmpty, isFunction, isString
 } from 'lodash';
 import Mapper from './mapper';
 import EagerLoader from '../eager-loader';
 import { ALL, NONE } from '../constants';
-import { mapperAttributeRef } from '../naming/default-column';
-import { isComposite } from '../arguments';
 
 export default {
 
