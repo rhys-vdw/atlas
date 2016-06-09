@@ -61,33 +61,71 @@ function createCallSuper(prototype) {
  */
 
 /**
- * Base class for {@link Mapper}.
+ * Immutable chain builder.
  */
 class Chain {
 
-  /** @private */
-  constructor(options = {}) {
+  /**
+   * @summary Create a new chain
+   * @description
+   *
+   * Creates and {@link initialize}s a new instance of {@link Chain}.
+   *
+   * The new instance's {@link state} object can provided via the `state`
+   * argument. If this argument is provided then {@link initialize} *will not
+   * be invoked*.
+   *
+   * @param {Object} [state]
+   *   Initial state object for this instance. A reference to this object
+   *   should not be retained by calling code.
+   */
+  constructor(state = undefined) {
 
-    /**
-     * @summary
-     *
-     * Hash of values that constitute the object state.
-     *
-     * @description
-     *
-     * Typically accessed from methods when extending `Chain`.
-     *
-     * `state` should be considered read-only, and should only ever by modified
-     * indirectly via {@link Chain#setState setState}.
-     *
-     * @member {Object} Chain#state
-     * @readonly
-     * @see Chain#requireState
-     */
-    this.state = 'isMutable' in options
-      ? options
-      : { isMutable: false, ...options };
+    if (state == null) {
+
+      /**
+       * @summary
+       *
+       * Hash of values that constitute the chain state.
+       *
+       * @description
+       *
+       * Typically accessed from methods when extending {@link Chain}.
+       *
+       * `state` should be considered read-only, and should only ever by modified
+       * indirectly via {@link Chain#setState setState}.
+       *
+       * @member {Object} Chain#state
+       * @readonly
+       * @see Chain#requireState
+       */
+      this.state = { isMutable: true };
+
+      // Now initialize. This should set any desired state values.
+      this.initialize();
+
+      // Seal the instance once initialized.
+      this.asImmutable();
+
+    } else {
+      this.state = 'isMutable' in state
+        ? state
+        : { isMutable: false, ...state };
+    }
   }
+
+  /**
+   * @summary Initialize a new chain.
+   *
+   * This method is invoked when a new chain instance is constructed.
+   * Prefer to override this method instead of {@link constructor}.
+   *
+   * As in {@link mutate}, the chain instance is treated as
+   * {@link asMutable mutable} while initialize is running.
+   *
+   * @protected
+   */
+  initialize() { /* empty */ }
 
   toString() {
     const type = this.constructor.name || 'Chain';
@@ -112,7 +150,6 @@ class Chain {
    */
   requireState(key) {
 
-    // Options must be initialized before they are accessed.
     if (!(key in this.state)) {
       throw new UnsetStateError(key, this);
     }
