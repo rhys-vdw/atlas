@@ -159,8 +159,23 @@ export default {
    */
   relation(relationName) {
 
+    if (relationName instanceof Mapper) {
+
+      // Just return any mapper instance directly. This is so you can pass some
+      // relation directly.
+      return relationName;
+    }
+
+    if (isFunction(relationName)) {
+
+      // Permitting a `createRelation` function allows working with relations
+      // that are not registered with `Mapper#relations`.
+      return this.callCreateRelation(relationName);
+    }
+
     if (!isString(relationName)) throw new TypeError(
-      `Expected 'relationName' to be a string, got: ${inspect(relationName)}`
+      'Expected `relationName` to be a string, function or Mapper, ' +
+      `got: ${inspect(relationName)}`
     );
 
     const { relations } = this.state;
@@ -169,9 +184,14 @@ export default {
       `with '.relations({ ${relationName}: createRelation })'`
     );
 
-    const createRelation = relations[relationName];
+    return this.callCreateRelation(relations[relationName], relationName);
+  },
+
+  /** @private */
+  callCreateRelation(createRelation, name) {
+
     if (!isFunction(createRelation)) throw new TypeError(
-      `Expected relation '${relationName}' to be a function, ` +
+      `Expected 'createRelation' to be a function, ` +
       `got: ${inspect(createRelation)}`
     );
 
@@ -187,11 +207,11 @@ export default {
     const relation = createRelation.call(this, this);
 
     if (!relation instanceof Mapper) throw new TypeError(
-      `Expected 'createRelation' function named '${relationName}' to return
+      `Expected 'createRelation' function named '${name}' to return
       instance of 'Mapper', got: ${inspect(relation)}`
     );
 
-    return relation.as(relationName);
+    return name == null ? relation : relation.as(name);
   },
 
   /**

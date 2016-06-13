@@ -29,6 +29,29 @@ test('Mapper#relations', t => {
   t.end();
 });
 
+test('Mapper#relation(createRelation)', t => {
+
+  let result = null;
+  const createRelation = () => result = Mapper.as('thing');
+  const Parents = Mapper.table('parents');
+  const Relation = Parents.relation(createRelation);
+
+  t.equal(Relation, result, 'resolves function');
+
+  t.end();
+});
+
+test('Mapper#relation(Mapper)', t => {
+
+  const Thing = Mapper.as('thing');
+  const Parents = Mapper.table('parents');
+  const Relation = Parents.relation(Thing);
+
+  t.equal(Relation, Thing, 'returns mapper instance unmodified');
+
+  t.end();
+});
+
 test('Mapper#with(ALL)', t => {
 
   const Records = Mapper.table('records').relations({
