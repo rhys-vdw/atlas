@@ -21,7 +21,7 @@ test('Mapper#relations', t => {
   );
 
   t.equal(
-    Owner.getRelation('thingAlias').getName(),
+    Owner.relation('thingAlias').getName(),
     'thingAlias',
     'aliases relation'
   );
@@ -40,8 +40,8 @@ test('Mapper#with(ALL)', t => {
 
   t.deepEqual(related, ['a', 'b']);
 
-  t.equal(Records.getRelation('a').getName(), 'a');
-  t.equal(Records.getRelation('b').getName(), 'b');
+  t.equal(Records.relation('a').getName(), 'a');
+  t.equal(Records.relation('b').getName(), 'b');
 
   t.end();
 });

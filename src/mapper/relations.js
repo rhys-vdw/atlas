@@ -74,7 +74,7 @@ export default {
   },
 
   /**
-   * @method Mapper#getRelation
+   * @method Mapper#relation
    * @summary
    *
    * Get a named `Relation` instance from a `Mapper`.
@@ -105,7 +105,7 @@ export default {
    *
    * // Simple `GET` route, scoped by user.
    * express.route('/projects').get((req, res) =>
-   *   atlas('People').getRelation('projects').of(req.user).then(projects =>
+   *   atlas('People').relation('projects').of(req.user).then(projects =>
    *     res.json(projects)
    *   )
    * );
@@ -115,7 +115,7 @@ export default {
    * // Alternative to above - share relation `Mapper` between between `GET` and
    * // `POST`.
    * express.route('/projects').all((req, res) => {
-   *   req.Projects = atlas('People').getRelation('projects').of(req.user)
+   *   req.Projects = atlas('People').relation('projects').of(req.user)
    *   next();
    * }).get((req, res) =>
    *   req.Projects.fetch().then(res.json)
@@ -124,7 +124,7 @@ export default {
    * );
    *
    * express.route('/projects/:projectId').all((req, res) => {
-   *   req.Project = atlas('People').getRelation('projects').of(req.user).target(
+   *   req.Project = atlas('People').relation('projects').of(req.user).target(
    *     req.params.projectId
    *   ).require();
    *   next();
@@ -143,7 +143,7 @@ export default {
    * const sue = { id: 2, name: 'Sue' };
    *
    * // select * from projects where owner_id in (1, 2)
-   * Users.getRelation('projects').of(bob, sue).then(projects => {
+   * Users.relation('projects').of(bob, sue).then(projects => {
    *   console.log(
    *     'Projects belonging to either Bob or Sue:\n' +
    *     projects.map(p => p.name)
@@ -157,7 +157,7 @@ export default {
    *   The name of the relation to return
    * @returns {Relation}
    */
-  getRelation(relationName) {
+  relation(relationName) {
 
     if (!isString(relationName)) throw new TypeError(
       `Expected 'relationName' to be a string, got: ${inspect(relationName)}`

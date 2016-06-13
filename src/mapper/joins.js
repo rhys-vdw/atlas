@@ -29,7 +29,7 @@ export default {
    * @example
    *
    * const bob = { id: 1, name: 'Bob' };
-   * const BobsGroups = Users.getRelation('groups').of(bob).pivotAttributes('is_owner');
+   * const BobsGroups = Users.relation('groups').of(bob).pivotAttributes('is_owner');
    *
    * BobsGroups.fetch().then(groups => {
    *   console.log(groups);
@@ -163,7 +163,7 @@ export default {
    *   Mapper joined to given relation.
    */
   joinRelation(relationName) {
-    return this.join(this.getRelation(relationName));
+    return this.join(this.relation(relationName));
   },
 
 };

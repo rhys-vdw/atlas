@@ -26,7 +26,7 @@ export default function(atlas) {
 
   test.skip('Mapper - relations - BelongsToMany', t => {
 
-    t.databaseTest('`Mapper#getRelation()`', knex, tables, st => {
+    t.databaseTest('`Mapper#relation()`', knex, tables, st => {
 
       const Groups = Mapper.table('groups');
 
@@ -51,7 +51,7 @@ export default function(atlas) {
 
         return Promise.each(
           st.resolvesToDeep(
-            Users.getRelation('groups').of(1).attributes({ memberships: 'is_owner' }).fetch(),
+            Users.relation('groups').of(1).attributes({ memberships: 'is_owner' }).fetch(),
             [
               { _memberships_user_id: 1, _memberships_is_owner: true, id: 10,
                 name: `General` },
@@ -61,16 +61,16 @@ export default function(atlas) {
             `with pivot attributes`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of({ id: 2, name: 'Sarah' }).fetch(),
+            Users.relation('groups').of({ id: 2, name: 'Sarah' }).fetch(),
             [{
               _memberships_user_id: 2, id: 10, name: `General`
             }, {
               _memberships_user_id: 2, id: 12, name: `Off topic`
             }],
-            `Mapper#getRelation(relation).of({id}) resolves correctly`
+            `Mapper#relation(relation).of({id}) resolves correctly`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of(1, 3)
+            Users.relation('groups').of(1, 3)
               .omitPivot()
               .query('orderBy',
                 'memberships.user_id',
@@ -82,11 +82,11 @@ export default function(atlas) {
               { id: 10, name: `General` },
               { id: 12, name: `Off topic` },
             ],
-            `Mapper#getRelation(relation).of(id, id).omitPivot() resolves ` +
+            `Mapper#relation(relation).of(id, id).omitPivot() resolves ` +
             `correctly`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of([1, 3])
+            Users.relation('groups').of([1, 3])
               .omitPivot()
               .query('orderBy',
                 'memberships.user_id',
@@ -98,18 +98,18 @@ export default function(atlas) {
               { id: 10, name: `General` },
               { id: 12, name: `Off topic` },
             ],
-            `Mapper#getRelation(relation).of([id, id]).omitPivot() resolves ` +
+            `Mapper#relation(relation).of([id, id]).omitPivot() resolves ` +
             `correctly`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of({ id: 4 }).fetch(),
+            Users.relation('groups').of({ id: 4 }).fetch(),
             [],
-            `Mapper#getRelation(relation).of({id}) resolves to [] if none found`
+            `Mapper#relation(relation).of({id}) resolves to [] if none found`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of([{ id: 4 }, { id: 6 }]).fetch(),
+            Users.relation('groups').of([{ id: 4 }, { id: 6 }]).fetch(),
             [],
-            `Mapper#getRelation(relation).of([{id}, {id}]) resolves to [] if ` +
+            `Mapper#relation(relation).of([{id}, {id}]) resolves to [] if ` +
             `none found`
           )
         );

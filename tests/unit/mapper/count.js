@@ -30,7 +30,7 @@ test('Mapper#count(attribute)', t => {
   t.end();
 });
 
-test('Mapper.getRelation().of().count()', t => {
+test('Mapper.relation().of().count()', t => {
 
   const Parent = Mapper.table('parents');
   const Children = Mapper.table('children');

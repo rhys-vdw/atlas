@@ -21,7 +21,7 @@ class EagerLoader {
   constructor(Self, relations) {
     this.Self = Self;
     this.relations = flatten(relations).map(relation =>
-      Self.getRelation(relation)
+      Self.relation(relation)
     );
   }
 
