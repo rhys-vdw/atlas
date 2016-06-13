@@ -15,7 +15,7 @@ function postsTable(posts) {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex, related } = atlas;
+  const { knex } = atlas;
 
   test('Mapper - relations - belongsTo', t => {
 
