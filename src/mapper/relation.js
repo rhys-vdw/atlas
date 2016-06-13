@@ -1,6 +1,7 @@
 import { groupBy, isArray, isEmpty, keyBy } from 'lodash';
 import { mapperAttributeRef } from '../naming/default-column';
 import { isComposite } from '../arguments';
+import { isMapper } from './index';
 
 export default {
 
@@ -58,8 +59,8 @@ export default {
   of(...records) {
 
     const Other = this.requireState('relationOther');
-    const selfAttribute = this.getRelationAttribute();
-    const otherAttribute = Other.getRelationAttribute();
+    const selfAttribute = this.getRelationAttribute(Other);
+    const otherAttribute = Other.getRelationAttribute(this);
 
     // Get all the IDs.
     const id = Other.identifyBy(otherAttribute, ...records);
@@ -120,6 +121,10 @@ export default {
   },
 
   getRelationAttribute(Other) {
+    if (!isMapper(Other)) throw new TypeError(
+      `Expected instance of \`Mapper\`, got: ${Other}`
+    );
+
     return (
       this.state.relationAttribute ||
       this.getDefaultRelationAttribute(Other)
@@ -149,8 +154,8 @@ export default {
 
     const { isSingle, isRequired } = this.state;
     const Parent = this.requireState('relationOther');
-    const selfAttribute = this.getRelationAttribute();
-    const parentAttribute = Parent.getRelationAttribute();
+    const selfAttribute = this.getRelationAttribute(Parent);
+    const parentAttribute = Parent.getRelationAttribute(this);
 
     const keyFn = isSingle ? keyBy : groupBy;
 

@@ -101,6 +101,11 @@ test('Mapper#getRelationAttribute', t => {
   const Lefts = Mapper.table('lefts').idAttribute('l_id');
   const Rights = Mapper.table('rights').idAttribute('r_id');
 
+  t.throws(
+    () => Lefts.getRelationAttribute(), TypeError,
+    'should throw if no mapper is provided as an argument'
+  );
+
   t.equal(
     Lefts.many().getRelationAttribute(Rights), 'l_id',
     'gets default relation attribute if none is set'
