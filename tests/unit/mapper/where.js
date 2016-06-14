@@ -32,6 +32,23 @@ test('Mapper - where', t => {
     st.end();
   });
 
+  t.test(`where({ table: attribute }, value)`, st => {
+
+    const Others = Mapper.table('others');
+    const Things = Mapper.table('things')
+      .join(Others, 'a', 'b')
+      .where({ others: 'a' }, 'A');
+
+    st.queriesEqual(
+      Things.prepareFetch().toQueryBuilder(), `
+        select "things".* from "things"
+        inner join "others" on "things"."a" = "others"."b"
+        where "others"."a" = 'A'`
+    );
+
+    st.end();
+  });
+
   t.test(`where({ [attribute], value })`, st => {
 
     const Things = Mapper.table('things').where({ a: 'A', b: 'B' });

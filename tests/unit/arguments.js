@@ -1,158 +1,174 @@
 import test from 'tape';
 
 import {
-  assignResolved, assertKeysCompatible, ensureArray, defaultsResolved,
-  keyCardinality, keysCompatible, resolveObject
+  assertKeysCompatible, assignResolved, defaultsResolved, ensureArray,
+  flattenPairs, keyCardinality, keysCompatible, resolveObject
 } from '../../lib/arguments';
 
-test('Arguments', t => {
+test('keyCardinality', t => {
 
-  t.test('keyCardinality', st => {
+  t.equal(keyCardinality(null), 0);
+  t.equal(keyCardinality('a'), 1);
+  t.equal(keyCardinality(['a', 'b']), 2);
+  t.equal(keyCardinality([]), 0);
 
-    st.equal(keyCardinality(null), 0);
-    st.equal(keyCardinality('a'), 1);
-    st.equal(keyCardinality(['a', 'b']), 2);
-    st.equal(keyCardinality([]), 0);
+  t.end();
+});
 
-    st.end();
-  });
+test('keysCompatible', t => {
 
-  t.test('keysCompatible', st => {
+  t.equal(keysCompatible(undefined, undefined), false);
+  t.equal(keysCompatible(null, null), false);
+  t.equal(keysCompatible([], null), false);
+  t.equal(keysCompatible([], []), false);
+  t.equal(keysCompatible('a', []), false);
+  t.equal(keysCompatible(['a'], []), false);
 
-    st.equal(keysCompatible(undefined, undefined), false);
-    st.equal(keysCompatible(null, null), false);
-    st.equal(keysCompatible([], null), false);
-    st.equal(keysCompatible([], []), false);
-    st.equal(keysCompatible('a', []), false);
-    st.equal(keysCompatible(['a'], []), false);
+  t.equal(keysCompatible('a', 'b'), true);
+  t.equal(keysCompatible(['a', 'b'], ['c', 'd']), true);
+  t.equal(keysCompatible(['a'], ['c']), true);
 
-    st.equal(keysCompatible('a', 'b'), true);
-    st.equal(keysCompatible(['a', 'b'], ['c', 'd']), true);
-    st.equal(keysCompatible(['a'], ['c']), true);
+  t.end();
+});
 
-    st.end();
-  });
+test('assertKeysCompatible', t => {
 
-  t.test('assertKeysCompatible', st => {
+  t.throws(
+    () => assertKeysCompatible({a: undefined, b: undefined}),
+    TypeError
+  );
+  t.throws(
+    () => assertKeysCompatible({a: [], b: []}),
+    TypeError
+  );
+  t.throws(
+    () => assertKeysCompatible({a: ['a'], b: ['a', 'b']}),
+    TypeError
+  );
+  t.doesNotThrow(() => assertKeysCompatible({a: 'a', b: 'a'}));
+  t.doesNotThrow(() => assertKeysCompatible({a: ['a', 'b'], b: ['a', 'b']}));
 
-    st.throws(
-      () => assertKeysCompatible({a: undefined, b: undefined}),
-      TypeError
-    );
-    st.throws(
-      () => assertKeysCompatible({a: [], b: []}),
-      TypeError
-    );
-    st.throws(
-      () => assertKeysCompatible({a: ['a'], b: ['a', 'b']}),
-      TypeError
-    );
-    st.doesNotThrow(() => assertKeysCompatible({a: 'a', b: 'a'}));
-    st.doesNotThrow(() => assertKeysCompatible({a: ['a', 'b'], b: ['a', 'b']}));
+  t.end();
+});
 
-    st.end();
-  });
+test('ensureArray', t => {
 
-  t.test('ensureArray', st => {
+  t.deepEqual(ensureArray(), []);
+  t.deepEqual(ensureArray([]), []);
+  t.deepEqual(ensureArray(null), [null]);
+  t.deepEqual(ensureArray('a'), ['a']);
+  t.deepEqual(ensureArray([1, 2]), [1, 2]);
 
-    st.deepEqual(ensureArray(), []);
-    st.deepEqual(ensureArray([]), []);
-    st.deepEqual(ensureArray(null), [null]);
-    st.deepEqual(ensureArray('a'), ['a']);
-    st.deepEqual(ensureArray([1, 2]), [1, 2]);
+  t.end();
+});
 
-    st.end();
-  });
+test('resolveObject', t => {
+  t.deepEqual(resolveObject(), {});
+  t.deepEqual(resolveObject({a: 'a', b: () => 'b'}), {a: 'a', b: 'b'});
+  t.deepEqual(resolveObject({a: 'a', b: a => a}, 'b'), {a: 'a', b: 'b'});
+  t.deepEqual(resolveObject({a: undefined, b() {}}), {});
 
-  t.test('resolveObject', st => {
-    st.deepEqual(resolveObject(), {});
-    st.deepEqual(resolveObject({a: 'a', b: () => 'b'}), {a: 'a', b: 'b'});
-    st.deepEqual(resolveObject({a: 'a', b: a => a}, 'b'), {a: 'a', b: 'b'});
-    st.deepEqual(resolveObject({a: undefined, b() {}}), {});
+  const X = {};
+  resolveObject.call(X, { whatever() {
+    t.equal(this, X, 'rebinds bound value to callback');
+  } });
 
-    const X = {};
-    resolveObject.call(X, { whatever() {
-      st.equal(this, X, 'rebinds bound value to callback');
-    } });
+  t.end();
+});
 
-    st.end();
-  });
+test('defaultsResolved', t => {
+  const object = {a: 'a'};
 
-  t.test('defaultsResolved', st => {
-    const object = {a: 'a'};
+  t.equal(defaultsResolved(object, null), object);
+  t.equal(defaultsResolved(object, {}), object);
+  t.equal(defaultsResolved(object, {a: 'b'}), object);
 
-    st.equal(defaultsResolved(object, null), object);
-    st.equal(defaultsResolved(object, {}), object);
-    st.equal(defaultsResolved(object, {a: 'b'}), object);
+  t.deepEqual(defaultsResolved(object, null), {a: 'a'});
+  t.deepEqual(defaultsResolved(object, {}), {a: 'a'});
+  t.deepEqual(defaultsResolved(object, {a: 'b'}), {a: 'a'});
 
-    st.deepEqual(defaultsResolved(object, null), {a: 'a'});
-    st.deepEqual(defaultsResolved(object, {}), {a: 'a'});
-    st.deepEqual(defaultsResolved(object, {a: 'b'}), {a: 'a'});
+  t.notEqual(defaultsResolved(object, {b: 'b'}), object);
 
-    st.notEqual(defaultsResolved(object, {b: 'b'}), object);
+  t.deepEqual(defaultsResolved(), {});
+  t.deepEqual(defaultsResolved({}), {});
+  t.deepEqual(defaultsResolved({b: 'b'}, {a: 'a'}), {a: 'a', b: 'b'});
+  t.deepEqual(
+    defaultsResolved({a: 'a'}, {a: 'c', b: () => 'b'}),
+    {a: 'a', b: 'b'}
+  );
 
-    st.deepEqual(defaultsResolved(), {});
-    st.deepEqual(defaultsResolved({}), {});
-    st.deepEqual(defaultsResolved({b: 'b'}, {a: 'a'}), {a: 'a', b: 'b'});
-    st.deepEqual(
-      defaultsResolved({a: 'a'}, {a: 'c', b: () => 'b'}),
-      {a: 'a', b: 'b'}
-    );
+  function unnecessaryDefault() {
+    t.fail('defaultsResolved should not evaluate functions unnecessarily');
+  }
+  t.deepEqual(
+    defaultsResolved(
+      { a: 'a' },
+      { a: unnecessaryDefault, b: (v1, v2) => v1 + v2 },
+      'd', 'e'
+    ),
+    {a: 'a', b: 'de'},
+    `passes arguments to resolver function callbacks`
+  );
 
-    function unnecessaryDefault() {
-      st.fail('defaultsResolved should not evaluate functions unnecessarily');
-    }
-    st.deepEqual(
-      defaultsResolved(
-        { a: 'a' },
-        { a: unnecessaryDefault, b: (v1, v2) => v1 + v2 },
-        'd', 'e'
-      ),
-      {a: 'a', b: 'de'},
-      `passes arguments to resolver function callbacks`
-    );
+  const X = {};
+  defaultsResolved.call(X, undefined, { whatever() {
+    t.equal(this, X, 'rebinds bound value to callback');
+  } });
 
-    const X = {};
-    defaultsResolved.call(X, undefined, { whatever() {
-      st.equal(this, X, 'rebinds bound value to callback');
-    } });
+  t.end();
+});
 
-    st.end();
-  });
+test('assignResolved', t => {
+  const object = {a: 'a'};
 
-  t.test('assignResolved', st => {
-    const object = {a: 'a'};
+  t.equal(assignResolved(object, null), object);
+  t.equal(assignResolved(object, {}), object);
 
-    st.equal(assignResolved(object, null), object);
-    st.equal(assignResolved(object, {}), object);
+  t.deepEqual(assignResolved(object, null), {a: 'a'});
+  t.deepEqual(assignResolved(object, {}), {a: 'a'});
+  t.deepEqual(assignResolved(object, {a: 'b'}), {a: 'b'});
 
-    st.deepEqual(assignResolved(object, null), {a: 'a'});
-    st.deepEqual(assignResolved(object, {}), {a: 'a'});
-    st.deepEqual(assignResolved(object, {a: 'b'}), {a: 'b'});
+  t.notEqual(assignResolved(object, {b: 'b'}), object);
 
-    st.notEqual(assignResolved(object, {b: 'b'}), object);
+  t.deepEqual(assignResolved(), {});
+  t.deepEqual(assignResolved({}), {});
+  t.deepEqual(assignResolved({b: 'b'}, {a: 'a'}), {a: 'a', b: 'b'});
+  t.deepEqual(assignResolved({b: 'b'}, {b: () => 'a'}), {b: 'a'});
 
-    st.deepEqual(assignResolved(), {});
-    st.deepEqual(assignResolved({}), {});
-    st.deepEqual(assignResolved({b: 'b'}, {a: 'a'}), {a: 'a', b: 'b'});
-    st.deepEqual(assignResolved({b: 'b'}, {b: () => 'a'}), {b: 'a'});
+  t.deepEqual(
+    assignResolved(
+      { a: 'a' },
+      { a: (v1, v2) => v1 + v2 },
+      'd', 'e'
+    ),
+    {a: 'de'},
+    `passes arguments to resolver function callbacks`
+  );
 
-    st.deepEqual(
-      assignResolved(
-        { a: 'a' },
-        { a: (v1, v2) => v1 + v2 },
-        'd', 'e'
-      ),
-      {a: 'de'},
-      `passes arguments to resolver function callbacks`
-    );
+  const X = {};
+  assignResolved.call(X, undefined, { whatever() {
+    t.equal(this, X, 'rebinds bound value to callback');
+  } });
 
-    const X = {};
-    assignResolved.call(X, undefined, { whatever() {
-      st.equal(this, X, 'rebinds bound value to callback');
-    } });
+  t.end();
+});
 
-    st.end();
-  });
+test('flattenPairs', t => {
 
+  t.deepEqual(
+    flattenPairs({ a: 'b' }),
+    [['a', 'b']]
+  );
+
+  t.deepEqual(
+    flattenPairs({ a: ['b', 'c'] }),
+    [['a', 'b'], ['a', 'c']]
+  );
+
+  t.deepEqual(
+    flattenPairs({ a: ['b', 'c'], d: 'a' }),
+    [['a', 'b'], ['a', 'c'], ['d', 'a']]
+  );
+
+  t.end();
 });

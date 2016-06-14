@@ -1,7 +1,7 @@
-import { isArray, isObject, isString } from 'lodash';
+import { isArray, isObject, isString, zipObject } from 'lodash';
 import { isMapper } from './index';
 import { isQueryBuilderSpecifyingColumns } from './helpers/knex';
-import { keyValueToObject } from './../arguments';
+import { ensureArray, flattenPairs, keyValueToObject } from './../arguments';
 
 export default {
 
@@ -78,37 +78,62 @@ export default {
    * @returns {Mapper}
    */
   where(attribute, ...args) {
-
     return this.mutate(mapper => {
 
-      let column = null;
+      if (args.length === 0) {
+        if (!isObject(attribute)) throw new TypeError(
+          'Unexpected `where` arguments'
+        );
+        // ({ [string]: mixed })
+        mapper.strictAttributes(attribute);
+        mapper.query('where', mapper.attributesToTableColumns(attribute));
+        return;
+      }
+
       if (isString(attribute)) {
+
         if (args.length === 1) {
-          // (string, mixed)
+          // (attribute, value)
           mapper.strictAttribute(attribute, args[0]);
-        } else if (args.length === 2 && args[0] === '=') {
-          // (string, '=', mixed)
+        } else if (args[0] === '=') {
+          // (attribute, operator, value)
           mapper.strictAttribute(attribute, args[1]);
         }
-        column = mapper.attributeToTableColumn(attribute);
-      } else if (isArray(attribute)) {
+
+        mapper.query(
+          'where', mapper.attributeToTableColumn(attribute), ...args
+        );
+        return;
+      }
+
+      if (isArray(attribute)) {
         // (string[], mixed[])
         mapper.strictAttribute(attribute, args[0]);
-        column = keyValueToObject(
+        const columns = keyValueToObject(
           attribute.map(mapper.attributeToTableColumn.bind(mapper)),
           args[0]
         );
-        args = [];
-      } else if (isObject(attribute)) {
-        // ({ [string]: mixed })
-        mapper.strictAttributes(attribute);
-        column = mapper.attributesToTableColumns(attribute);
-      } else {
-        // (function)
-        column = attribute;
+
+        mapper.query('where', columns);
+        return;
       }
 
-      return mapper.query('where', column, ...args);
+      // ({ [table]: column }, value)
+      if (isObject(attribute)) {
+        if (args.length > 1) throw new TypeError(
+          'NYI - nested attribute with operator'
+        );
+        const columns = flattenPairs(attribute).map(([table, attr]) =>
+          // TODO: Use proper `attributeToColumn` from join table.
+          `${table}.${mapper.attributeToColumn(attr)}`
+        );
+
+        const values = ensureArray(args[0]);
+        mapper.query('where', zipObject(columns, values));
+        return;
+      }
+
+      throw new TypeError('Unexpected arguments');
     });
   },
 
