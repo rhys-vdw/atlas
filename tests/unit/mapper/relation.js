@@ -66,6 +66,79 @@ test('Mapper#many(attribute)', t => {
   t.end();
 });
 
+test('Mapper#through - many-to-many', t => {
+
+  const Users = Mapper.table('users');
+  const Groups = Mapper.table('groups');
+  const Memberships = Mapper.table('groups_users').as('memberships');
+
+  const GroupsThroughMemberships = Users.one().to(
+    Groups.through(g => g.one().to(Memberships.many()))
+  );
+
+  t.queriesEqual(
+    GroupsThroughMemberships.prepareFetch().toQueryBuilder(), `
+      select "groups".* from "groups"
+      inner join "groups_users" as "memberships"
+      on "groups"."id" = "memberships"."group_id"
+    `,
+    'correctly joins with default attributes'
+  );
+
+
+  const GroupsThroughMembershipsCustom = Users.one().to(
+    Groups.through(g => g.one('my_id').to(Memberships.many('my_group_id')))
+  );
+
+  t.queriesEqual(
+    GroupsThroughMembershipsCustom.prepareFetch().toQueryBuilder(), `
+      select "groups".* from "groups"
+      inner join "groups_users" as "memberships"
+      on "groups"."my_id" = "memberships"."my_group_id"
+    `,
+    'correctly joins with custom attributes'
+  );
+
+  const UserGroups = Users.one().to(
+    Groups.through(g => g.one().to(Memberships.many()))
+  );
+
+  t.queriesEqual(
+    UserGroups.of(1, 2, 3).prepareFetch().toQueryBuilder(), `
+      select "groups".* from "groups"
+      inner join "groups_users" as "memberships"
+      on "groups"."id" = "memberships"."group_id"
+      where "memberships"."user_id" in (1, 2, 3)
+    `
+  );
+
+  t.queriesEqual(
+    UserGroups.of(1).prepareFetch().toQueryBuilder(), `
+      select "groups".* from "groups"
+      inner join "groups_users" as "memberships"
+      on "groups"."id" = "memberships"."group_id"
+      where "memberships"."user_id" = 1
+    `
+  );
+
+  const UserGroupsCustom = Users.one().to(
+    Groups.through(g => g.one('my_id').to(Memberships.many('my_group_id')))
+      .many('my_user_id')
+  );
+
+  t.queriesEqual(
+    UserGroupsCustom.of(1).prepareFetch().toQueryBuilder(), `
+      select "groups".* from "groups"
+      inner join "groups_users" as "memberships"
+      on "groups"."my_id" = "memberships"."my_group_id"
+      where "memberships"."my_user_id" = 1
+    `
+  );
+
+
+  t.end();
+});
+
 test('Mapper#getDefaultRelationAttribute', t => {
 
   const Lefts = Mapper.table('lefts').idAttribute('l_id');

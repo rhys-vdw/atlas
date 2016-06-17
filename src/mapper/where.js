@@ -162,10 +162,21 @@ export default {
   /** @private */
   _whereIn(attribute, values) {
 
-    const columns = isArray(attribute)
-      ? attribute.map(attr => this.attributeToTableColumn(attr))
-      : this.attributeToTableColumn(attribute);
+    let column = null;
 
-    return this.query('whereIn', columns, values);
+    if (isArray(attribute)) {
+      column = attribute.map(attr => this.attributeToTableColumn(attr));
+    } else if (isObject(attribute)) {
+      const columns = flattenPairs(attribute).map(([table, attr]) =>
+        // TODO: Use proper `attributeToColumn` from join table.
+        `${table}.${this.attributeToColumn(attr)}`
+      );
+
+      column = columns.length === 1 ? columns[0] : columns;
+    } else {
+      column = this.attributeToTableColumn(attribute);
+    }
+
+    return this.query('whereIn', column, values);
   }
 };

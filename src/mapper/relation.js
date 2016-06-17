@@ -1,4 +1,4 @@
-import { groupBy, isArray, isEmpty, keyBy } from 'lodash';
+import { last, groupBy, isArray, isEmpty, isObject, keyBy } from 'lodash';
 import { mapperAttributeRef } from '../naming/default-column';
 import { isComposite } from '../arguments';
 import { isMapper } from './index';
@@ -54,6 +54,31 @@ export default {
       relationAttribute: otherAttribute,
       relationOther: this.setState({ relationAttribute: selfAttribute })
     });
+  },
+
+  through(relation) {
+
+    // Since `through`s can be chained, we must select the previous link in the
+    // chain.
+    //
+    const Relation = (this.state.through || this).relation(relation);
+
+    // When we do the join it must be with the configured instance stored within
+    // the relation. This means that `through` can definitely only receive
+    // relations.
+    //
+    // TODO: This logic should be part of the `join` function.
+    //
+    const ThisAsOther = Relation.requireState('relationOther');
+
+    const selfAttribute = ThisAsOther.getRelationAttribute(Relation);
+    const otherAttribute = Relation.getRelationAttribute(ThisAsOther);
+
+    const result = this.join(Relation, selfAttribute, otherAttribute).setState({
+      through: Relation
+    });
+
+    return result;
   },
 
   of(...records) {
@@ -125,10 +150,28 @@ export default {
       `Expected instance of \`Mapper\`, got: ${Other}`
     );
 
-    return (
-      this.state.relationAttribute ||
-      this.getDefaultRelationAttribute(Other)
-    );
+    const specifiedRelationAttribute = this.state.relationAttribute;
+
+    // If the attribute already specifies a specific table and key,
+    // we're done. Nothing left to default.
+    if (isObject(specifiedRelationAttribute)) {
+      return specifiedRelationAttribute;
+    }
+
+    // If this is a 'through' relation, then we need to key this key
+    // beneath its relation name.
+    const Through = this.state.through;
+    if (this.state.through != null) {
+      const relationAttribute = specifiedRelationAttribute == null
+        ? Through.getDefaultRelationAttribute(Other)
+        : specifiedRelationAttribute;
+
+      return { [Through.getName()]: relationAttribute };
+    }
+
+    // Otherwise just return the already set relation attribute.
+    // If none has been set then generate the default.
+    return specifiedRelationAttribute || this.getDefaultRelationAttribute(Other);
   },
 
   getDefaultRelationAttribute(Other) {
