@@ -106,7 +106,7 @@ export default {
    */
   join(
     Other,
-    selfAttribute = this.getRelationAttribute(Other),
+    selfAttribute = Other.getOtherRelationAttribute(this),
     otherAttribute = Other.getRelationAttribute(this)
   ) {
 

@@ -82,7 +82,7 @@ test('Mapper#through - many-to-many', t => {
       inner join "groups_users" as "memberships"
       on "groups"."id" = "memberships"."group_id"
     `,
-    'correctly joins with default attributes'
+    'joins with default attributes'
   );
 
 
@@ -96,20 +96,11 @@ test('Mapper#through - many-to-many', t => {
       inner join "groups_users" as "memberships"
       on "groups"."my_id" = "memberships"."my_group_id"
     `,
-    'correctly joins with custom attributes'
+    'joins with custom attributes'
   );
 
   const UserGroups = Users.one().to(
     Groups.through(g => g.one().to(Memberships.many()))
-  );
-
-  t.queriesEqual(
-    UserGroups.of(1, 2, 3).prepareFetch().toQueryBuilder(), `
-      select "groups".* from "groups"
-      inner join "groups_users" as "memberships"
-      on "groups"."id" = "memberships"."group_id"
-      where "memberships"."user_id" in (1, 2, 3)
-    `
   );
 
   t.queriesEqual(
@@ -118,7 +109,18 @@ test('Mapper#through - many-to-many', t => {
       inner join "groups_users" as "memberships"
       on "groups"."id" = "memberships"."group_id"
       where "memberships"."user_id" = 1
-    `
+    `,
+    '`.of(id)`'
+  );
+
+  t.queriesEqual(
+    UserGroups.of(1, 2, 3).prepareFetch().toQueryBuilder(), `
+      select "groups".* from "groups"
+      inner join "groups_users" as "memberships"
+      on "groups"."id" = "memberships"."group_id"
+      where "memberships"."user_id" in (1, 2, 3)
+    `,
+    '`.of(...ids)`'
   );
 
   const UserGroupsCustom = Users.one().to(
@@ -132,7 +134,8 @@ test('Mapper#through - many-to-many', t => {
       inner join "groups_users" as "memberships"
       on "groups"."my_id" = "memberships"."my_group_id"
       where "memberships"."my_user_id" = 1
-    `
+    `,
+    'uses custom attributes in join and relation'
   );
 
 

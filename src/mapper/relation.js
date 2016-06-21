@@ -61,24 +61,11 @@ export default {
     // Since `through`s can be chained, we must select the previous link in the
     // chain.
     //
-    const Relation = (this.state.through || this).relation(relation);
+    const through = (this.state.through || this).relation(relation);
 
-    // When we do the join it must be with the configured instance stored within
-    // the relation. This means that `through` can definitely only receive
-    // relations.
-    //
-    // TODO: This logic should be part of the `join` function.
-    //
-    const ThisAsOther = Relation.requireState('relationOther');
-
-    const selfAttribute = ThisAsOther.getRelationAttribute(Relation);
-    const otherAttribute = Relation.getRelationAttribute(ThisAsOther);
-
-    const result = this.join(Relation, selfAttribute, otherAttribute).setState({
-      through: Relation
-    });
-
-    return result;
+    return this.mutate(mapper =>
+      mapper.join(through).setState({ through })
+    );
   },
 
   of(...records) {
@@ -145,6 +132,25 @@ export default {
       : this.where(selfAttribute, id);
   },
 
+  /**
+   * Opposite of `getRelationAttribute`.
+   *
+   * Get the opposite key in a relation. Eg. The key that belongs to the passed
+   * mapper `Other`. This argument will be ignored if this mapper is already a
+   * relation.
+   *
+   * @private
+   */
+  getOtherRelationAttribute(Other) {
+    const { relationOther } = this.state;
+    return (relationOther || Other).getRelationAttribute(this);
+  },
+
+  /**
+   * Get the attribute on this mapper that links this relation to its parent.
+   *
+   * @private
+   */
   getRelationAttribute(Other) {
     if (!isMapper(Other)) throw new TypeError(
       `Expected instance of \`Mapper\`, got: ${Other}`
