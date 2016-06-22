@@ -1,8 +1,8 @@
+/* eslint no-console:0 */
+
 const gulp = require('gulp');
 const sourcemaps = require('gulp-sourcemaps');
 const babel = require('gulp-babel');
-const tape = require('gulp-tape');
-const tapColorize = require('tap-colorize');
 const eslint = require('gulp-eslint');
 const exec = require('child_process').exec;
 
