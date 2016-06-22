@@ -144,6 +144,12 @@ test('Mapper#through(createRelation) - many-to-many', t => {
 
 test('Mapper#through(relationName) - many-to-many', t => {
 
+  t.throws(
+    () => Mapper.through('unknown'),
+    /No relation called 'unknown'./,
+    'throws with unknown relation'
+  );
+
   const Users = Mapper.table('users');
   const Memberships = Mapper.table('groups_users').as('memberships');
   const Groups = Mapper.table('groups').relations({

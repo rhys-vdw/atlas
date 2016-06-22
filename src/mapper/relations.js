@@ -179,10 +179,12 @@ export default {
     );
 
     const { relations } = this.state;
-    if (!(relationName in relations)) throw new TypeError(
-      `No relation called '${relationName}'. Make sure you've registered it ` +
-      `with '.relations({ ${relationName}: createRelation })'`
-    );
+    if (!(relations && relations.hasOwnProperty(relationName))) {
+      throw new TypeError(
+        `No relation called '${relationName}'. Make sure you've registered ` +
+        `it with '.relations({ ${relationName}: createRelation })'`
+      );
+    }
 
     return this.callCreateRelation(relations[relationName], relationName);
   },
