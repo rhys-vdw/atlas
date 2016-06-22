@@ -15,9 +15,9 @@ function postsTable(posts) {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex, related } = atlas;
+  const { knex } = atlas;
 
-  test('Mapper - relations - HasMany', t => {
+  test('Mapper#hasMany', t => {
 
     t.databaseTest('`Mapper#relation()`', knex, { posts: postsTable }, st => {
 

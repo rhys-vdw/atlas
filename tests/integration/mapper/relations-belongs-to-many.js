@@ -22,7 +22,7 @@ const tables = {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex, related } = atlas;
+  const { knex } = atlas;
 
   test.skip('Mapper - relations - BelongsToMany', t => {
 

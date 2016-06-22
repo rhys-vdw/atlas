@@ -15,7 +15,7 @@ function avatarsTable(avatars) {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex, related } = atlas;
+  const { knex } = atlas;
 
   test('Mapper - relations - HasOne', t => {
 
@@ -125,7 +125,7 @@ export default function(atlas) {
               }, { id: 4, name: 'Other', avatar: null }
             ], 'loads null into one record and null into another'
           )
-        )
+        );
       });
     });
 

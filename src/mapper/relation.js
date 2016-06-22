@@ -14,7 +14,7 @@ export default {
    * @param {string|string[]} [attribute]
    * @returns {Mapper}
    */
-  one(relationAttribute) {
+  one(relationAttribute = this.state.relationAttribute) {
     return this.mutate(mapper =>
       mapper.single().setState({ relationAttribute })
     );
@@ -29,7 +29,7 @@ export default {
    * @param {string|string[]} [attribute]
    * @returns {Mapper}
    */
-  many(relationAttribute) {
+  many(relationAttribute = this.state.relationAttribute) {
     return this.mutate(mapper =>
       mapper.all().setState({ relationAttribute })
     );
@@ -121,7 +121,7 @@ export default {
       return this.mutate(mapper => {
         mapper
           .all()
-          .distinct(selfAttribute)
+          .distinct()
           .whereIn(selfAttribute, id);
       });
     }

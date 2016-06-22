@@ -6,44 +6,44 @@ import CamelCase from '../../../lib/plugins/CamelCase';
 
 const Pg = Mapper.knex(Knex({ client: 'pg' }));
 
-test('Mapper.insert()', st => {
+test('Mapper.insert()', t => {
 
-  st.plan(5);
+  t.plan(5);
 
-  st.throws(
+  t.throws(
     () => Mapper.insert(),
     TypeError,
     'throws `TypeError` synchronously with no arguments'
   );
 
-  st.resolvesTo(
+  t.resolvesTo(
     Mapper.insert(null), null,
     'resolves `null` to `null`'
   );
 
-  st.resolvesToDeep(
+  t.resolvesToDeep(
     Mapper.insert([]), [],
     'resolves empty array to empty array'
   );
 
-  st.resolvesToDeep(
+  t.resolvesToDeep(
     Mapper.insert([null, null]), [],
     'resolves array of `null` values to an empty array'
   );
 
-  st.resolvesToDeep(
+  t.resolvesToDeep(
     Mapper.insert(null, null), [],
     'resolves multiple `null` value arguments to an empty array'
   );
 });
 
-test('Mapper.prepareInsert()', st => {
+test('Mapper.prepareInsert()', t => {
 
   const Records = Mapper.table('records').prepareInsert(
     { text: 'a' }
   );
 
-  st.queriesEqual(
+  t.queriesEqual(
     Records.toQueryBuilder(),
     `insert into "records" ("text") values ('a')`,
     `single record - SQL`
@@ -53,7 +53,7 @@ test('Mapper.prepareInsert()', st => {
     { item: 'a' }
   );
 
-  st.queriesEqual(
+  t.queriesEqual(
     Things.toQueryBuilder(),
     `insert into "things" ("item") values ('a') returning *`,
     `single record - PostgreSQL`
@@ -64,58 +64,58 @@ test('Mapper.prepareInsert()', st => {
     { color: 'green' }
   ]);
 
-  st.queriesEqual(
+  t.queriesEqual(
     Apples.toQueryBuilder(),
     `insert into "apples" ("color") values ('red'), ('green')`,
     `multiple records`
   );
 
-  st.end();
+  t.end();
 });
 
-test('Mapper.handleInsertOneResponse()', st => {
+test('Mapper.handleInsertOneResponse()', t => {
 
   const Records = Mapper.idAttribute('record_id');
 
-  st.deepEqual(
+  t.deepEqual(
     Records.handleInsertOneResponse([5], { text: 'a' }),
     { record_id: 5, text: 'a' },
     'ID array response'
   );
 
-  st.deepEqual(
+  t.deepEqual(
     Records.handleInsertOneResponse([], { item: 'a' }),
     { item: 'a' },
     'Empty response'
   );
 
-  st.end();
+  t.end();
 });
 
 test(
   'Mapper.handleInsertOneResponse() - respects `columnToAttribute`'
-, st => {
+, t => {
 
   const Records = Mapper.extend(CamelCase()).idAttribute('recordId');
 
-  st.deepEqual(
+  t.deepEqual(
     Records.handleInsertOneResponse([5], { someValue: 'a' }),
     { recordId: 5, someValue: 'a' },
     'ID array response'
   );
 
   const objectResponse = [{ record_id: 5, some_value: 'a' }];
-  st.deepEqual(
+  t.deepEqual(
     Records.handleInsertOneResponse(objectResponse, { someValue: 'a' }),
     { recordId: 5, someValue: 'a' },
     'ID array response'
   );
 
-  st.end();
+  t.end();
 });
 
 
-test('Mapper.handleInsertManyResponse() - single ID response', st => {
+test('Mapper.handleInsertManyResponse() - single ID response', t => {
 
   const records = [
     { code: 1234, color: 'red' },
@@ -124,16 +124,16 @@ test('Mapper.handleInsertManyResponse() - single ID response', st => {
 
   const Records = Mapper.idAttribute('code');
 
-  st.deepEqual(
+  t.deepEqual(
     Records.handleInsertManyResponse([1234], records),
     [{ code: 1234, color: 'red' }, { color: 'green' }],
     'assigns ID attribute to first record only'
   );
 
-  st.end();
+  t.end();
 });
 
-test('Mapper.handleInsertManyResponse() - PostgreSQL response', st => {
+test('Mapper.handleInsertManyResponse() - PostgreSQL response', t => {
   const Oranges = Pg.table('oranges');
   const oranges = [{ name: 'valencia' }, { name: 'navel'}];
 
@@ -144,10 +144,10 @@ test('Mapper.handleInsertManyResponse() - PostgreSQL response', st => {
 
   const result = Oranges.handleInsertManyResponse(response, oranges);
 
-  st.deepEqual(oranges[0], { name: 'valencia' }, 'record 0 is unchanged');
-  st.deepEqual(oranges[1], { name: 'navel' }, 'record 1 is unchanged');
+  t.deepEqual(oranges[0], { name: 'valencia' }, 'record 0 is unchanged');
+  t.deepEqual(oranges[1], { name: 'navel' }, 'record 1 is unchanged');
 
-  st.deepEqual(
+  t.deepEqual(
     result,
     [
       { id: 1, name: 'valencia', created_at: 'some_date' },
@@ -156,13 +156,13 @@ test('Mapper.handleInsertManyResponse() - PostgreSQL response', st => {
     'returns updates records'
   );
 
-  st.end();
+  t.end();
 });
 
 test(
   'Mapper.handleInsertManyResponse() - object response - ' +
   'respects `attributeToColumn`',
-st => {
+t => {
 
   const Oranges = Mapper.extend(CamelCase())
     .table('oranges').idAttribute('orangeId');
@@ -174,7 +174,7 @@ st => {
     { orange_id: 2, orange_type: 'navel', created_at: 'some_time' }
   ];
 
-  st.deepEqual(
+  t.deepEqual(
     Oranges.handleInsertManyResponse(response, oranges),
     [
       { orangeId: 1, orangeType: 'valencia', createdAt: 'some_date' },
@@ -183,21 +183,21 @@ st => {
     'returns updated records'
   );
 
-  st.end();
+  t.end();
 });
 
 
 test(
   'Mapper.handleInsertManyResponse() - idResponse - ' +
   'respects `attributeToColumn`',
-st => {
+t => {
 
   const Oranges = Mapper.extend(CamelCase())
     .table('oranges').idAttribute('orangeId');
 
   const oranges = [{ orangeType: 'valencia' }, { orangeType: 'navel'}];
 
-  st.deepEqual(
+  t.deepEqual(
     Oranges.handleInsertManyResponse([1], oranges),
     [
       { orangeId: 1, orangeType: 'valencia' },
@@ -206,7 +206,7 @@ st => {
     'returns records with one updated (single ID response)'
   );
 
-  st.deepEqual(
+  t.deepEqual(
     Oranges.handleInsertManyResponse([1, 2], oranges),
     [
       { orangeId: 1, orangeType: 'valencia' },
@@ -215,22 +215,22 @@ st => {
     'returns updated records (multi ID response)'
   );
 
-  st.end();
+  t.end();
 });
 
 
-test('Mapper.defaultAttributes().prepareInsert()', st => {
+test('Mapper.defaultAttributes().prepareInsert()', t => {
 
   const Defaults = Mapper.table('table').defaultAttributes({
     default: 'default'
   });
 
-  st.queriesEqual(
+  t.queriesEqual(
     Defaults.prepareInsert({ default: 'override' }).toQueryBuilder(),
     `insert into "table" ("default") values ('override')`
   );
 
-  st.queriesEqual(
+  t.queriesEqual(
     Defaults.prepareInsert({}).toQueryBuilder(),
     `insert into "table" ("default") values ('default')`
   );
@@ -244,7 +244,7 @@ test('Mapper.defaultAttributes().prepareInsert()', st => {
     }
   });
 
-  st.queriesEqual(
+  t.queriesEqual(
     FnDefaults.prepareInsert({ set: 'set_value' }).toQueryBuilder(), `
     insert into "table"
       ("default", "default_fn", "set")
@@ -253,21 +253,21 @@ test('Mapper.defaultAttributes().prepareInsert()', st => {
     `
   );
 
-  st.end();
+  t.end();
 });
 
-test('Mapper.strictAttributes().prepareInsert()', st => {
+test('Mapper.strictAttributes().prepareInsert()', t => {
 
   const Strict = Mapper.table('table').strictAttributes({
     strict: 'strict_value'
   });
 
-  st.queriesEqual(
+  t.queriesEqual(
     Strict.prepareInsert({ strict: 'overridden' }).toQueryBuilder(),
     `insert into "table" ("strict") values ('strict_value')`
   );
 
-  st.queriesEqual(
+  t.queriesEqual(
     Strict.prepareInsert({}).toQueryBuilder(),
     `insert into "table" ("strict") values ('strict_value')`
   );
@@ -281,17 +281,17 @@ test('Mapper.strictAttributes().prepareInsert()', st => {
     }
   });
 
-  st.queriesEqual(
+  t.queriesEqual(
     FnStrict.prepareInsert({ strict: 'set' }).toQueryBuilder(), `
       insert into "table" ("strict", "strict_fn")
       values ('strict_value', 'state_value/set')
     `
   );
 
-  st.end();
+  t.end();
 });
 
-test('Mapper.defaultAttributes().strictAttributes().prepareInsert()', st => {
+test('Mapper.defaultAttributes().strictAttributes().prepareInsert()', t => {
 
   const DefaultStrict = Mapper.table('table').defaultAttributes({
     default: 'default_value'
@@ -299,7 +299,7 @@ test('Mapper.defaultAttributes().strictAttributes().prepareInsert()', st => {
     strict_fn: attributes => attributes.default + '/' + attributes.set
   });
 
-  st.queriesEqual(
+  t.queriesEqual(
     DefaultStrict.prepareInsert({
       strict_fn: 'overridden', set: 'set_value'
     }).toQueryBuilder(), `
@@ -309,10 +309,10 @@ test('Mapper.defaultAttributes().strictAttributes().prepareInsert()', st => {
     'resolves strict with defaulted attributes'
   );
 
-  st.end();
+  t.end();
 });
 
-test('Mapper.extend(CamelCase()).prepareInsert()', st => {
+test('Mapper.extend(CamelCase()).prepareInsert()', t => {
 
   const Shapes = Mapper.table('shapes').extend(CamelCase());
 
@@ -321,7 +321,7 @@ test('Mapper.extend(CamelCase()).prepareInsert()', st => {
     { shapeType: 'triangle', sideCount: 3 }
   ];
 
-  st.queriesEqual(
+  t.queriesEqual(
     Shapes.prepareInsert(records).toQueryBuilder(), `
       insert into "shapes" ("shape_type", "side_count")
       values ('square', 4), ('triangle', 3)
@@ -329,5 +329,5 @@ test('Mapper.extend(CamelCase()).prepareInsert()', st => {
     'respects `attributeToColumn`'
   );
 
-  st.end();
+  t.end();
 });

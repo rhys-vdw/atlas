@@ -13,7 +13,7 @@ import Query from './query';
 import RecordAdapter from './record-adapter';
 import Relation from './relation';
 import Relations from './relations';
-import * as RelationTypes from '../relations';
+import RelationTypes from './relation-types';
 import Retrieval from './retrieval';
 import Save from './save';
 import Target from './target';
