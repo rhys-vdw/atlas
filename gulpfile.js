@@ -6,6 +6,8 @@ const babel = require('gulp-babel');
 const eslint = require('gulp-eslint');
 const exec = require('child_process').exec;
 
+const TEST_CMD = 'node compiled-tests/index.js | $(npm bin)/tap-colorize';
+
 gulp.task('build', () => {
   return gulp.src('src/**/*.js')
     .pipe(eslint())
@@ -33,14 +35,11 @@ gulp.task('default', () => {
 });
 
 function runTests(callback) {
-  exec(
-    'node compiled-tests/index.js | $(npm bin)/tap-colorize',
-    (err, stdout, stderr) => {
-      console.log(stdout);
-      console.log(stderr);
-      callback(err);
-    }
-  );
+  exec(TEST_CMD, (err, stdout, stderr) => {
+    console.log(stdout);
+    console.log(stderr);
+    callback(err);
+  });
 }
 
 gulp.task('build-and-test', ['build', 'build-tests'], runTests);
