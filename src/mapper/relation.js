@@ -1,4 +1,4 @@
-import { last, groupBy, isArray, isEmpty, isObject, keyBy } from 'lodash';
+import { groupBy, isArray, isEmpty, isObject, keyBy } from 'lodash';
 import { mapperAttributeRef } from '../naming/default-column';
 import { isComposite } from '../arguments';
 import { isMapper } from './index';
@@ -167,7 +167,7 @@ export default {
     // If this is a 'through' relation, then we need to key this key
     // beneath its relation name.
     const Through = this.state.through;
-    if (this.state.through != null) {
+    if (Through != null) {
       const relationAttribute = specifiedRelationAttribute == null
         ? Through.getDefaultRelationAttribute(Other)
         : specifiedRelationAttribute;

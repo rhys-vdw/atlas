@@ -66,7 +66,7 @@ test('Mapper#many(attribute)', t => {
   t.end();
 });
 
-test('Mapper#through - many-to-many', t => {
+test('Mapper#through(createRelation) - many-to-many', t => {
 
   const Users = Mapper.table('users');
   const Groups = Mapper.table('groups');
@@ -138,6 +138,30 @@ test('Mapper#through - many-to-many', t => {
     'uses custom attributes in join and relation'
   );
 
+
+  t.end();
+});
+
+test('Mapper#through(relationName) - many-to-many', t => {
+
+  const Users = Mapper.table('users');
+  const Memberships = Mapper.table('groups_users').as('memberships');
+  const Groups = Mapper.table('groups').relations({
+    memberships() { return this.one().to(Memberships.many()); }
+  });
+
+  const GroupsThroughMemberships = Users.one().to(
+    Groups.through('memberships').many('user_id')
+  );
+
+  t.queriesEqual(
+    GroupsThroughMemberships.prepareFetch().toQueryBuilder(), `
+      select "groups".* from "groups"
+      inner join "groups_users" as "memberships"
+      on "groups"."id" = "memberships"."group_id"
+    `,
+    'joins with default attributes'
+  );
 
   t.end();
 });
