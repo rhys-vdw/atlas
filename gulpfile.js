@@ -6,14 +6,20 @@ const babel = require('gulp-babel');
 const eslint = require('gulp-eslint');
 const exec = require('child_process').exec;
 const clean = require('gulp-clean');
+const pipeErrorStop = require('pipe-error-stop');
+const notify = require('gulp-notify');
 
-const TEST_CMD = 'node compiled-tests/index.js | $(npm bin)/tap-colorize';
+const TEST_GLOB = 'compiled-tests/index.js';
+const TEST_CMD = `set -o pipefail; $(npm bin)/tape ${TEST_GLOB} | $(npm bin)/tap-colorize`;
+
+const errorCallback = notify.onError('<%= error.message %>');
 
 gulp.task('build', ['clean-lib'], () => {
   return gulp.src('src/**/*.js')
     .pipe(eslint())
     .pipe(eslint.format())
     .pipe(eslint.failAfterError())
+    .pipe(pipeErrorStop({ errorCallback }))
     .pipe(sourcemaps.init())
     .pipe(babel())
     .pipe(sourcemaps.write('.'))
@@ -35,6 +41,7 @@ gulp.task('build-tests', ['clean-compiled-tests'], () => {
     .pipe(eslint())
     .pipe(eslint.format())
     .pipe(eslint.failAfterError())
+    .pipe(pipeErrorStop({ errorCallback }))
     .pipe(sourcemaps.init())
     .pipe(babel())
     .pipe(sourcemaps.write('.'))
@@ -48,7 +55,7 @@ gulp.task('default', () => {
 function runTests(callback) {
   exec(TEST_CMD, (err, stdout, stderr) => {
     console.log(stdout);
-    console.log(stderr);
+    console.error(stderr);
     callback(err);
   });
 }
