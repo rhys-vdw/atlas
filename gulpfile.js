@@ -5,10 +5,11 @@ const sourcemaps = require('gulp-sourcemaps');
 const babel = require('gulp-babel');
 const eslint = require('gulp-eslint');
 const exec = require('child_process').exec;
+const clean = require('gulp-clean');
 
 const TEST_CMD = 'node compiled-tests/index.js | $(npm bin)/tap-colorize';
 
-gulp.task('build', () => {
+gulp.task('build', ['clean-lib'], () => {
   return gulp.src('src/**/*.js')
     .pipe(eslint())
     .pipe(eslint.format())
@@ -19,7 +20,17 @@ gulp.task('build', () => {
     .pipe(gulp.dest('lib'));
 });
 
-gulp.task('build-tests', () => {
+gulp.task('clean-lib', () => {
+  return gulp.src('lib/**/*.js', { read: false })
+   .pipe(clean());
+});
+
+gulp.task('clean-compiled-tests', () => {
+  return gulp.src('compiled-tests/**/*.js', { read: false })
+   .pipe(clean());
+});
+
+gulp.task('build-tests', ['clean-compiled-tests'], () => {
   return gulp.src('tests/**/*.js')
     .pipe(eslint())
     .pipe(eslint.format())
