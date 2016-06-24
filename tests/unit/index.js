@@ -1,8 +1,6 @@
 import './arguments';
 import './atlas';
-import './immutable-base';
+import './chain';
 import './mapper';
 import './registry';
-import './related';
-import './relations';
 import './plugins';

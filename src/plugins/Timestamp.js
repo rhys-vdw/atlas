@@ -24,7 +24,7 @@ function assignHelpers(target, attribute, verb) {
   };
 
   target[`${verb}Between`] = function(min, max) {
-    return this.withMutations(mapper => {
+    return this.mutate(mapper => {
       mapper
         .where(attribute, '>', min)
         .where(attribute, '<', max);

@@ -45,6 +45,17 @@ test('Mapper - retrieval', t => {
       `correct query when fetching one`
     );
 
+    t.queriesEqual(
+      Things.attributes('id', { other: 'column' }).prepareFetch().toQueryBuilder(),
+      `select "things"."id", "other"."column" as "_other_column" from "things"`,
+      `selects from joined tables by name`
+    );
+
+    t.queriesEqual(
+      Things.attributes({ other: 'column' }).prepareFetch().toQueryBuilder(),
+      `select "other"."column" as "_other_column", "things".* from "things"`,
+      `still defaults to selecting all own columns when selecting other columns`
+    );
     t.end();
   });
 

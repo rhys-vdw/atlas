@@ -17,7 +17,7 @@ export function mapperColumnRef(Mapper, column) {
 }
 
 export function mapperAttributeRef(Mapper, attribute) {
-  const table = Mapper.requireState('table');
+  const table = Mapper.getName();
   const column = isArray(attribute)
     ? map(attribute, Mapper.attributeToColumn, Mapper)
     : Mapper.attributeToColumn(attribute);

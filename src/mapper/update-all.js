@@ -26,7 +26,7 @@ export default {
 
   /** @private */
   prepareUpdateAll(attributes = {}) {
-    return this.withMutations(mapper => {
+    return this.mutate(mapper => {
 
       // Update statements do not support joins, so filter by ID.
       if (isQueryBuilderJoined(this)) {

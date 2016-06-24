@@ -89,14 +89,14 @@ export default {
       `'destroy' expects one or more IDs or records, got ${inspect(ids)}. ` +
       `Did you mean to call 'destroyAll()'?`
     );
-    return this.withMutations(mapper => {
+    return this.mutate(mapper => {
       mapper.target(...ids).prepareDestroyAll();
     });
   },
 
   /** @private */
   prepareDestroyAll() {
-    return this.withMutations(mapper => {
+    return this.mutate(mapper => {
 
       // Delete statements do not support joins, so filter by ID.
       if (isQueryBuilderJoined(this)) {

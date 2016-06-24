@@ -6,7 +6,7 @@ export default function(atlas) {
   const Mapper = atlas('Mapper');
   const { knex, related, relations } = atlas;
 
-  test('Mapper - eager loading', t => {
+  test.skip('Mapper - eager loading', t => {
 
     const filmTables = {
       actors(actors) {
@@ -69,11 +69,11 @@ export default function(atlas) {
             related('movies').mapper({pivotAttributes: 'character_name'})
           ).find(1),
           { id: 1, name: 'Kurt Russel', movies: [
-            { _pivot_actor_id: 1, _pivot_character_name: 'MacReady',
+            { _roles_actor_id: 1, _roles_character_name: 'MacReady',
               id: 1, title: 'The Thing', director_id: 1 },
-            { _pivot_actor_id: 1, _pivot_character_name: 'Snake',
+            { _roles_actor_id: 1, _roles_character_name: 'Snake',
               id: 2, title: 'Escape From LA', director_id: 1 },
-            { _pivot_actor_id: 1, _pivot_character_name: "Col. O'Neil",
+            { _roles_actor_id: 1, _roles_character_name: "Col. O'Neil",
               id: 3, title: 'Stargate', director_id: 2 },
           ]},
           'eager loads single `belongsToMany`, specifying `pivotAttributes`'
@@ -82,7 +82,7 @@ export default function(atlas) {
         st.resolvesToDeep(
           Actors.with(related('movies').with('director')).find(2),
           { id: 2, name: 'James Spader', movies: [
-            { _pivot_actor_id: 2, id: 3, title: 'Stargate', director_id: 2,
+            { _roles_actor_id: 2, id: 3, title: 'Stargate', director_id: 2,
               director: { id: 2, name: 'Roland Emmerich' }
             },
           ]},
@@ -97,12 +97,12 @@ export default function(atlas) {
               [ { id: 1,
                   title: 'The Thing',
                   director_id: 1,
-                  cast: [ { id: 1, name: 'Kurt Russel', _pivot_movie_id: 1 } ],
+                  cast: [ { id: 1, name: 'Kurt Russel', _roles_movie_id: 1 } ],
                   director: { id: 1, name: 'John Carpenter' } },
                 { id: 2,
                   title: 'Escape From LA',
                   director_id: 1,
-                  cast: [ { id: 1, name: 'Kurt Russel', _pivot_movie_id: 2 } ],
+                  cast: [ { id: 1, name: 'Kurt Russel', _roles_movie_id: 2 } ],
                   director: { id: 1, name: 'John Carpenter' }
             }]
           }, { id: 2,
@@ -112,8 +112,8 @@ export default function(atlas) {
                  director_id: 2,
                  title: 'Stargate',
                  cast: [
-                   { id: 1, name: 'Kurt Russel', _pivot_movie_id: 3 },
-                   { id: 2, name: 'James Spader', _pivot_movie_id: 3 } ],
+                   { id: 1, name: 'Kurt Russel', _roles_movie_id: 3 },
+                   { id: 2, name: 'James Spader', _roles_movie_id: 3 } ],
                  director: { id: 2, name: 'Roland Emmerich' }
                } ]
           }]

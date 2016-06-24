@@ -1,9 +1,9 @@
 import { isObject, isString, each } from 'lodash';
 import Registry from './registry';
 import Mapper from './mapper';
-import { related } from './related';
 import plugins from './plugins';
 import * as errors from './errors';
+import * as constants from './constants';
 import { version as VERSION } from '../package.json';
 
 const createRegistry = () => new Registry({ Mapper });
@@ -18,7 +18,9 @@ const createAtlas = (knex, registry) => {
   const toMapper = createToMapper(registry);
   return function atlas(mapperOrName) {
     const mapper = toMapper(mapperOrName);
-    return mapper && mapper.withMutations({ atlas, knex });
+    return mapper && mapper.mutate(mapper =>
+      mapper.knex(knex).atlas(atlas)
+    );
   };
 };
 
@@ -267,14 +269,6 @@ export default function Atlas(knex, registry = createRegistry()) {
     );
   };
 
-  /**
-   * Accessor for `related` helper function.
-   * @member {related} Atlas#related
-   * @readonly
-   * @see related
-   */
-  atlas.related = related;
-
   return atlas;
 }
 
@@ -290,6 +284,19 @@ Atlas.plugins = plugins;
  * @member {errors} Atlas.errors
  */
 Atlas.errors = errors;
+
+/**
+ * Select all relations
+ * @constant
+ */
+Atlas.ALL = constants.ALL;
+
+/**
+ * Clear all relations
+ * @constant
+ */
+Atlas.NONE = constants.NONE;
+
 
 /**
  * Installed version of **Atlas**.

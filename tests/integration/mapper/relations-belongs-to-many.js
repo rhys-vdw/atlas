@@ -22,11 +22,11 @@ const tables = {
 export default function(atlas) {
 
   const Mapper = atlas('Mapper');
-  const { knex, related } = atlas;
+  const { knex } = atlas;
 
-  test('Mapper - relations - BelongsToMany', t => {
+  test.skip('Mapper - relations - BelongsToMany', t => {
 
-    t.databaseTest('`Mapper#getRelation()`', knex, tables, st => {
+    t.databaseTest('`Mapper#relation()`', knex, tables, st => {
 
       const Groups = Mapper.table('groups');
 
@@ -49,28 +49,28 @@ export default function(atlas) {
         { user_id: 3, group_id: 12, is_owner: true },
       ])).then(() => {
 
-        return Promise.join(
+        return Promise.each(
           st.resolvesToDeep(
-            Users.getRelation('groups').of(1).pivotAttributes('is_owner').fetch(),
+            Users.relation('groups').of(1).attributes({ memberships: 'is_owner' }).fetch(),
             [
-              { _pivot_user_id: 1, _pivot_is_owner: true, id: 10,
+              { _memberships_user_id: 1, _memberships_is_owner: true, id: 10,
                 name: `General` },
-              { _pivot_user_id: 1, _pivot_is_owner: true, id: 11,
+              { _memberships_user_id: 1, _memberships_is_owner: true, id: 11,
                 name: `Balloon Enthusiasts` }
             ],
             `with pivot attributes`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of({ id: 2, name: 'Sarah' }).fetch(),
+            Users.relation('groups').of({ id: 2, name: 'Sarah' }).fetch(),
             [{
-              _pivot_user_id: 2, id: 10, name: `General`
+              _memberships_user_id: 2, id: 10, name: `General`
             }, {
-              _pivot_user_id: 2, id: 12, name: `Off topic`
+              _memberships_user_id: 2, id: 12, name: `Off topic`
             }],
-            `Mapper#getRelation(relation).of({id}) resolves correctly`
+            `Mapper#relation(relation).of({id}) resolves correctly`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of(1, 3)
+            Users.relation('groups').of(1, 3)
               .omitPivot()
               .query('orderBy',
                 'memberships.user_id',
@@ -82,11 +82,11 @@ export default function(atlas) {
               { id: 10, name: `General` },
               { id: 12, name: `Off topic` },
             ],
-            `Mapper#getRelation(relation).of(id, id).omitPivot() resolves ` +
+            `Mapper#relation(relation).of(id, id).omitPivot() resolves ` +
             `correctly`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of([1, 3])
+            Users.relation('groups').of([1, 3])
               .omitPivot()
               .query('orderBy',
                 'memberships.user_id',
@@ -98,18 +98,18 @@ export default function(atlas) {
               { id: 10, name: `General` },
               { id: 12, name: `Off topic` },
             ],
-            `Mapper#getRelation(relation).of([id, id]).omitPivot() resolves ` +
+            `Mapper#relation(relation).of([id, id]).omitPivot() resolves ` +
             `correctly`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of({ id: 4 }).fetch(),
+            Users.relation('groups').of({ id: 4 }).fetch(),
             [],
-            `Mapper#getRelation(relation).of({id}) resolves to [] if none found`
+            `Mapper#relation(relation).of({id}) resolves to [] if none found`
           ),
           st.resolvesToDeep(
-            Users.getRelation('groups').of([{ id: 4 }, { id: 6 }]).fetch(),
+            Users.relation('groups').of([{ id: 4 }, { id: 6 }]).fetch(),
             [],
-            `Mapper#getRelation(relation).of([{id}, {id}]) resolves to [] if ` +
+            `Mapper#relation(relation).of([{id}, {id}]) resolves to [] if ` +
             `none found`
           )
         );
@@ -148,20 +148,20 @@ export default function(atlas) {
           st.resolvesToDeep(
             Users.load('groups').into({ id: 1, name: 'dean' }),
             { id: 1, name: 'dean', groups: [
-              { _pivot_user_id: 1, id: 10, name: `General` },
-              { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
+              { _memberships_user_id: 1, id: 10, name: `General` },
+              { _memberships_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
             ] },
             'loads into single record'
           ),
           st.resolvesToDeep(
             Users.load('groups').into(sarah, baz), [
               { id: 2, name: 'Sarah', groups: [
-                { _pivot_user_id: 2, id: 10, name: `General` },
-                { _pivot_user_id: 2, id: 12, name: `Off topic` }
+                { _memberships_user_id: 2, id: 10, name: `General` },
+                { _memberships_user_id: 2, id: 12, name: `Off topic` }
               ] },
               { id: 3, name: 'Baz', groups: [
-                { _pivot_user_id: 3, id: 10, name: `General` },
-                { _pivot_user_id: 3, id: 12, name: `Off topic` }
+                { _memberships_user_id: 3, id: 10, name: `General` },
+                { _memberships_user_id: 3, id: 12, name: `Off topic` }
               ] }
             ], 'loads into multiple records'
 
@@ -169,8 +169,8 @@ export default function(atlas) {
           st.resolvesToDeep(
             Users.load('groups').into(dean, other), [
               { id: 1, name: 'dean', groups: [
-                { _pivot_user_id: 1, id: 10, name: `General` },
-                { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
+                { _memberships_user_id: 1, id: 10, name: `General` },
+                { _memberships_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
               ] },
               { id: 4, name: 'Other', groups: [] }
             ], 'loads related into one record and [] into another'
@@ -210,16 +210,16 @@ export default function(atlas) {
         return st.resolvesToDeep(
           Users.query('orderBy', 'id').with('groups').fetch(), [
             { id: 1, name: 'Dean', groups: [
-              { _pivot_user_id: 1, id: 10, name: `General` },
-              { _pivot_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
+              { _memberships_user_id: 1, id: 10, name: `General` },
+              { _memberships_user_id: 1, id: 11, name: `Balloon Enthusiasts` }
             ] },
             { id: 2, name: 'Sarah', groups: [
-              { _pivot_user_id: 2, id: 10, name: `General` },
-              { _pivot_user_id: 2, id: 12, name: `Off topic` }
+              { _memberships_user_id: 2, id: 10, name: `General` },
+              { _memberships_user_id: 2, id: 12, name: `Off topic` }
             ] },
             { id: 3, name: 'Baz', groups: [
-              { _pivot_user_id: 3, id: 10, name: `General` },
-              { _pivot_user_id: 3, id: 12, name: `Off topic` }
+              { _memberships_user_id: 3, id: 10, name: `General` },
+              { _memberships_user_id: 3, id: 12, name: `Off topic` }
             ] },
             { id: 4, name: 'Other', groups: [] }
           ], 'fetches records with related models'

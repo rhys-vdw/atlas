@@ -9,6 +9,8 @@ import './insert';
 import './joins';
 import './order';
 import './query';
+import './relation';
+import './relation-types';
 import './relations';
 import './retrieval';
 import './target';

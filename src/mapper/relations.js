@@ -1,8 +1,8 @@
 import { inspect } from 'util';
 import {
-  keys as objectKeys, reject, isEmpty, isFunction, isString
+  keys as objectKeys, flatten, isEmpty, isFunction, isString
 } from 'lodash';
-import { normalizeRelated, isRelated } from '../related';
+import Mapper from './mapper';
 import EagerLoader from '../eager-loader';
 import { ALL, NONE } from '../constants';
 
@@ -74,7 +74,7 @@ export default {
   },
 
   /**
-   * @method Mapper#getRelation
+   * @method Mapper#relation
    * @summary
    *
    * Get a named `Relation` instance from a `Mapper`.
@@ -105,7 +105,7 @@ export default {
    *
    * // Simple `GET` route, scoped by user.
    * express.route('/projects').get((req, res) =>
-   *   atlas('People').getRelation('projects').of(req.user).then(projects =>
+   *   atlas('People').relation('projects').of(req.user).then(projects =>
    *     res.json(projects)
    *   )
    * );
@@ -115,7 +115,7 @@ export default {
    * // Alternative to above - share relation `Mapper` between between `GET` and
    * // `POST`.
    * express.route('/projects').all((req, res) => {
-   *   req.Projects = atlas('People').getRelation('projects').of(req.user)
+   *   req.Projects = atlas('People').relation('projects').of(req.user)
    *   next();
    * }).get((req, res) =>
    *   req.Projects.fetch().then(res.json)
@@ -124,7 +124,7 @@ export default {
    * );
    *
    * express.route('/projects/:projectId').all((req, res) => {
-   *   req.Project = atlas('People').getRelation('projects').of(req.user).target(
+   *   req.Project = atlas('People').relation('projects').of(req.user).target(
    *     req.params.projectId
    *   ).require();
    *   next();
@@ -143,7 +143,7 @@ export default {
    * const sue = { id: 2, name: 'Sue' };
    *
    * // select * from projects where owner_id in (1, 2)
-   * Users.getRelation('projects').of(bob, sue).then(projects => {
+   * Users.relation('projects').of(bob, sue).then(projects => {
    *   console.log(
    *     'Projects belonging to either Bob or Sue:\n' +
    *     projects.map(p => p.name)
@@ -157,21 +157,44 @@ export default {
    *   The name of the relation to return
    * @returns {Relation}
    */
-  getRelation(relationName) {
+  relation(relationName) {
+
+    if (relationName instanceof Mapper) {
+
+      // Just return any mapper instance directly. This is so you can pass some
+      // relation directly.
+      return relationName;
+    }
+
+    if (isFunction(relationName)) {
+
+      // Permitting a `createRelation` function allows working with relations
+      // that are not registered with `Mapper#relations`.
+      return this.callCreateRelation(relationName);
+    }
 
     if (!isString(relationName)) throw new TypeError(
-      `Expected 'relationName' to be a string, got: ${relationName}`
+      'Expected `relationName` to be a string, function or Mapper, ' +
+      `got: ${inspect(relationName)}`
     );
 
     const { relations } = this.state;
-    if (!(relationName in relations)) throw new TypeError(
-      `Unknown relation, got: '${relationName}'`
-    );
+    if (!(relations && relations.hasOwnProperty(relationName))) {
+      throw new TypeError(
+        `No relation called '${relationName}'. Make sure you've registered ` +
+        `it with '.relations({ ${relationName}: createRelation })'`
+      );
+    }
 
-    const createRelation = relations[relationName];
+    return this.callCreateRelation(relations[relationName], relationName);
+  },
+
+  /** @private */
+  callCreateRelation(createRelation, name) {
+
     if (!isFunction(createRelation)) throw new TypeError(
-      `Expected relation '${relationName}' to be a function, ` +
-      `got: ${createRelation}`
+      `Expected 'createRelation' to be a function, ` +
+      `got: ${inspect(createRelation)}`
     );
 
     /**
@@ -181,9 +204,16 @@ export default {
      * @this Mapper
      * @param {Mapper} Mapper
      *   The Mapper upon which this relation is being invoked.
-     * @returns {Relation} A relation instance.
+     * @returns {Mapper} A relation instance.
      */
-    return createRelation.call(this, this);
+    const relation = createRelation.call(this, this);
+
+    if (!relation instanceof Mapper) throw new TypeError(
+      `Expected 'createRelation' function named '${name}' to return
+      instance of 'Mapper', got: ${inspect(relation)}`
+    );
+
+    return name == null ? relation : relation.as(name);
   },
 
   /**
@@ -240,9 +270,7 @@ export default {
   with(...related) {
 
     if (related[0] === ALL) {
-      return this.setState({
-        related: normalizeRelated(this.getRelationNames())
-      });
+      return this.setState({ related: this.getRelationNames() });
     }
 
     if (related[0] === NONE) {
@@ -250,18 +278,8 @@ export default {
       return isEmpty(previous) ? this : this.setState({ related: [] });
     }
 
-    const flattened = normalizeRelated(...related);
-
-    if (flattened.length === 0) {
-      return this;
-    }
-
-    const invalid = reject(flattened, isRelated);
-    if (invalid.length > 0) throw new TypeError(
-      `Expected instance(s) of Related, got: ${inspect(invalid)}`
-    );
-
     const previous = this.state.related || [];
+    const flattened = flatten(related);
 
     return this.setState({
       related: [ ...previous, ...flattened ]
@@ -315,15 +333,17 @@ export default {
    *   An EagerLoader instance configured to load the given relations into
    *   records.
    */
-  load(...related) {
+  load(...relations) {
 
-    if (related[0] === ALL) {
-      related = this.getRelationNames();
-    } else if (related[0] === NONE) {
-      related = [];
+    if (relations[0] === ALL) {
+      relations = this.getRelationNames();
+    } else if (relations[0] === NONE) {
+      relations = [];
+    } else {
+      relations = flatten(relations);
     }
 
-    return new EagerLoader(this, normalizeRelated(...related));
+    return new EagerLoader(this, relations);
   }
 
 };

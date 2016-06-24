@@ -152,3 +152,20 @@ export function isValidId(id) {
     : id != null;
   return result;
 }
+
+// in: { a: ['b', 'c'], d: 'e' }
+// out: [
+//  ['a', 'b']
+//  ['a', 'c']
+//  ['d', 'e']
+// ]
+export function flattenPairs(object) {
+  return reduce(object, (result, value, key) => {
+    if (isArray(value)) {
+      result.push(...value.map(v => [key, v]));
+    } else {
+      result.push([key, value]);
+    }
+    return result;
+  }, []);
+}

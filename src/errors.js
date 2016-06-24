@@ -63,18 +63,18 @@ class UnidentifiableRecordError extends AtlasError {
  * // ERROR: Tried to retrieve unset state 'table'!
  * ```
  *
- * @see ImmutableBase#requireState
+ * @see Chain#requireState
  */
 class UnsetStateError extends AtlasError {
-  constructor(key, Mapper) {
+  constructor(key, chain) {
+    const type = chain.constructor.name || 'Chain';
     super(
       'UnsetStateError',
-      `Tried to retrieve unset state key "${key}" on mapper:
-      ${Mapper}`
+      `Tried to retrieve unset state key "${key}" on instance of ${type}.`
     );
 
     this.key = key;
-    this.Mapper = Mapper;
+    this.chain = chain;
   }
 }
 

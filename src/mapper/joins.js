@@ -1,17 +1,13 @@
-import { assertKeysCompatible, ensureArray } from '../arguments';
-import { flatten, uniq, zipObject, map } from 'lodash';
+import { flatten, uniq } from 'lodash';
+import {
+  assertKeysCompatible, ensureArray, keyValueToObject
+} from '../arguments';
 import { isQueryBuilderEmpty } from './helpers/knex';
-import { PIVOT_ALIAS } from '../constants';
 
 export default {
 
   initialize() {
-    this.setState({
-      omitPivot: false,
-      pivotAlias: null,
-      pivotAttributes: [],
-      pivotRelationName: null,
-    });
+    this.setState({ omitPivot: false });
   },
 
   /**
@@ -33,7 +29,7 @@ export default {
    * @example
    *
    * const bob = { id: 1, name: 'Bob' };
-   * const BobsGroups = Users.getRelation('groups').of(bob).pivotAttributes('is_owner');
+   * const BobsGroups = Users.relation('groups').of(bob).pivotAttributes('is_owner');
    *
    * BobsGroups.fetch().then(groups => {
    *   console.log(groups);
@@ -74,7 +70,7 @@ export default {
    *   .where('receipts.created_at', >, yesterday)
    *   .then(receipts => {
    *     console.log('Purchases today: \n' + receipts.map(r =>
-   *       `${r.name} spent $${r._pivot_total_cost} at ${r._pivot_created_at}`
+   *       `${r.name} spent ${r._pivot_total_cost} at ${r._pivot_created_at}`
    *     ));
    *   });
    *
@@ -86,7 +82,7 @@ export default {
    */
   pivotAttributes(...attributes) {
     const pivotAttributes = uniq([
-      ...this.state.pivotAttributes,
+      ...(this.state.pivotAttributes || []),
       ...flatten(attributes)
     ]);
     return this.setState({ pivotAttributes });
@@ -105,50 +101,46 @@ export default {
    *
    * @param {Mapper} Other
    *   Mapper with query to join.
-   * @param {string|string[]} selfAttribute
-   *   The attribute(s) on this Mapper to join on.
-   * @param {string|string[]} otherAttribute
-   *   The attribute(s) on Other to join on.
    * @return {Mapper}
    *   Mapper joined to Other.
    */
-  joinMapper(Other, selfAttribute, otherAttribute) {
+  join(
+    Other,
+    selfAttribute = Other.getOtherRelationAttribute(this),
+    otherAttribute = Other.getRelationAttribute(this)
+  ) {
+
     assertKeysCompatible({ selfAttribute, otherAttribute });
 
-    const selfKeys = ensureArray(selfAttribute);
-    const otherKeys = ensureArray(otherAttribute);
+    const previousJoins = this.state.joins || [];
 
-    let joinTable = null;
-    let pivotAlias = null;
+    // Use a default alias if there's a name conflict.
+    const previousName = Other.getName();
+    Other = Other.setState({ name:
+      previousName  === this.getName()
+        ? `${previousName}_${previousJoins.length}`
+        : previousName
+    });
 
-    if (isQueryBuilderEmpty(Other)) {
+    // If the other query builder has some state, we must wrap it.
+    const joinTable = isQueryBuilderEmpty(Other)
+      ? Other.getAliasedTable()
+      : Other.prepareFetch().toQueryBuilder().as(Other.getName());
 
-      const selfTable = this.requireState('table');
-      const otherTable = Other.requireState('table');
+    // Convert attributes to correct database identfiers.
+    const selfColumns = ensureArray(selfAttribute)
+      .map(a => this.attributeToTableColumn(a));
 
-      if (selfTable === otherTable) {
-        pivotAlias = PIVOT_ALIAS;
-        joinTable = `${otherTable} as ${pivotAlias}`;
-      } else {
-        pivotAlias = otherTable;
-        joinTable = otherTable;
-      }
-    } else {
-      pivotAlias = PIVOT_ALIAS;
-      joinTable = Other.prepareFetch().toQueryBuilder().as(pivotAlias);
-    }
+    const otherColumns = ensureArray(otherAttribute)
+      .map(a => Other.attributeToTableColumn(a));
 
-    const selfColumns = map(selfKeys, attribute =>
-      this.attributeToTableColumn(attribute)
-    );
-    const otherColumns = map(otherKeys, attribute =>
-      `${pivotAlias}.${Other.attributeToColumn(attribute)}`
-    );
-    const joinColumns = zipObject(selfColumns, otherColumns);
+    const joinColumns = keyValueToObject(selfColumns, otherColumns);
 
-    return this.withMutations(mapper => {
-      mapper.setState({ pivotAlias });
+    return this.mutate(mapper => {
       mapper.query('join', joinTable, joinColumns);
+      mapper.setState({
+        joins: [ ...previousJoins, Other ]
+      });
     });
   },
 
@@ -163,20 +155,15 @@ export default {
    * Performs an inner join between the {@link Mapper#table table} of this
    * `Mapper`, and that of the named {@link Mapper#relations relation}.
    *
+   * @todo remove this entirely. relations are to become mappers.
+   *
    * @param {String} relationName
    *   The name of the relation with which to perform an inner join.
    * @return {Mapper}
    *   Mapper joined to given relation.
    */
   joinRelation(relationName) {
-    const relation = this.getRelation(relationName);
-    const { selfAttribute, otherAttribute, Other } = relation;
-
-    return this.withMutations(mapper =>
-      mapper
-        .setState({ pivotRelationName: relationName })
-        .joinMapper(Other, selfAttribute, otherAttribute)
-    );
+    return this.join(this.relation(relationName));
   },
 
 };

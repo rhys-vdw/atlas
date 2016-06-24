@@ -39,7 +39,7 @@ export default {
     const isSingle = !isArray(normalized) ||
       isComposite && !isCompositeKey(head(normalized));
 
-    return this.withMutations(mapper => {
+    return this.mutate(mapper => {
       mapper.setState({ isSingle });
 
       if (isSingle) {
