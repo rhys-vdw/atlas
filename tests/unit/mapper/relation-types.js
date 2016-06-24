@@ -164,3 +164,50 @@ test('Mapper.belongsTo(Other, attributes).of()', t => {
 
   t.end();
 });
+
+test('Mapper.belongsToMany(Mapper).through(Mapper)', t => {
+
+  const Users = Mapper.table('users');
+  const Groups = Mapper.table('groups');
+  const Memberships = Mapper.table('groups_users');
+
+  const GroupMembers = Groups.belongsToMany(Users).through(Memberships);
+
+  t.queriesEqual(
+    GroupMembers.of(5).prepareFetch().toQueryBuilder(),
+    `select "users".* from "users"
+    inner join "groups_users"
+    on "users"."id" = "groups_users"."user_id"
+    where "groups_users"."group_id" = 5`
+  );
+
+  // TODO: https://github.com/rhys-vdw/atlas/issues/85
+  t.skip(
+    GroupMembers.of(5).forge({ name: 'Bob' }),
+    { name: 'Bob', groups_users: { group_id: 5 } }
+  );
+
+  t.end();
+});
+
+test('Mapper.belongsToMany(Mapper, attributes).through()', t => {
+
+  const Users = Mapper.table('users');
+  const Groups = Mapper.table('groups');
+  const Memberships = Mapper.table('groups_users');
+
+  const GroupMembers = Groups
+    .belongsToMany(Users, { groups: 'g_id', users: 'u_id' })
+    .through(Memberships.many('user_u_id'))
+    .many('group_g_id');
+
+  t.queriesEqual(
+    GroupMembers.of({ g_id: 5 }).prepareFetch().toQueryBuilder(),
+    `select "users".* from "users"
+    inner join "groups_users"
+    on "users"."u_id" = "groups_users"."user_u_id"
+    where "groups_users"."group_g_id" = 5`
+  );
+
+  t.end();
+});

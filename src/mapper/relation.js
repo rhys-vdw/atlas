@@ -63,9 +63,18 @@ export default {
     //
     const through = (this.state.through || this).relation(relation);
 
-    return this.mutate(mapper =>
-      mapper.join(through).setState({ through })
-    );
+    return this.mutate(mapper => {
+
+      // Set the `through` state for chaining of through relations.
+      // Set the new mappers `isSingle` to that of the `through` relation.
+      // TODO: This is probably not smart enough to support `one-to-one-to-one` etc.
+      // Set `relationAttribute` to null. This can be changed by chaining a
+      // `many` or `one` after `through`.
+      //
+      mapper.join(through).setState({
+        through, isSingle: through.state.isSingle, relationAttribute: null
+      });
+    });
   },
 
   of(...records) {

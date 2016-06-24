@@ -29,7 +29,7 @@ export default {
   belongsToMany(Other, attributes) {
     const selfAttribute = getAttribute(attributes, this);
     const otherAttribute = getAttribute(attributes, Other);
-    return this.many(selfAttribute).to(Other.many(otherAttribute));
+    return this.one(selfAttribute).to(Other.one(otherAttribute));
   },
 
 };
