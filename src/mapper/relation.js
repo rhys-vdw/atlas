@@ -101,28 +101,13 @@ export default {
     //   // ...
     // )
     //
-    // Since the query actually fetches multiple rows the query must be marked
-    // 'distinct'.
-    //
-    // TODO:
-    //
-    // For now the `distinct` clause will cause the query to fail due to
-    // conflicts. Something more intelligent is required to generate:
-    //
-    // select * from messages inner join (
-    //   select user_id, max(received_at) from messages
-    //   where messages.user_id in (1, 2)
-    //   group by user_id
-    // ) as sub on sub.user_id = messages.id
+    // TODO: Generate correct query for the above case.
     //
     // See issue #80
     //
     if (this.state.isSingle) {
       return this.mutate(mapper => {
-        mapper
-          .all()
-          .distinct()
-          .whereIn(selfAttribute, id);
+        mapper.all().whereIn(selfAttribute, id);
       });
     }
 

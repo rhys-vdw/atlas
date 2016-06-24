@@ -16,7 +16,7 @@ test('Mapper.hasOne(Other).of()', t => {
 
   t.queriesEqual(
     UserAvatar.of(1, 2).prepareFetch().toQueryBuilder(),
-    `select distinct "avatars".* from "avatars" ` +
+    `select "avatars".* from "avatars" ` +
     `where "avatars"."user_id" in (1, 2)`,
     'multiple parent fetch query'
   );
@@ -107,3 +107,60 @@ test('Mapper.hasMany(Other, attributes).of()', t => {
   t.end();
 });
 
+
+test('Mapper.belongsTo(Other).of()', t => {
+
+  const Users = Mapper.table('users');
+  const Documents = Mapper.table('documents');
+  const DocumentOwners = Documents.belongsTo(Users);
+
+  const a = { user_id: 5 };
+  const b = { user_id: 6 };
+
+  t.queriesEqual(
+    DocumentOwners.of(a).prepareFetch().toQueryBuilder(),
+    `select "users".* from "users" ` +
+    `where "users"."id" = 5 limit 1`,
+    'single parent fetch query'
+  );
+
+  t.queriesEqual(
+    DocumentOwners.of(a, b).prepareFetch().toQueryBuilder(),
+    `select "users".* from "users" ` +
+    `where "users"."id" in (5, 6)`,
+    'single parent fetch query'
+  );
+
+  t.deepEqual(
+    DocumentOwners.of(a).forge({ id: 2, name: 'bob' }),
+    { id: 5, name: 'bob' },
+    '`.forge()` overrides primary key'
+  );
+
+  t.end();
+});
+
+test('Mapper.belongsTo(Other, attributes).of()', t => {
+
+  const Users = Mapper.table('users');
+  const Documents = Mapper.table('documents');
+  const CustomDocumentOwners = Documents.belongsTo(Users, {
+    documents: 'owner_id', users: 'my_id'
+  });
+
+  t.queriesEqual(
+    CustomDocumentOwners.of({ owner_id: 42 }).prepareFetch().toQueryBuilder(),
+    `select "users".* from "users" ` +
+    `where "users"."my_id" = 42 limit 1`,
+    'single parent fetch query'
+  );
+
+  const attributes = { my_id: 2, name: 'bob' };
+  t.deepEqual(
+    CustomDocumentOwners.of({ owner_id: 5 }).forge(attributes),
+    { my_id: 5, name: 'bob' },
+    '`.forge()` overrides primary key - custom attributes'
+  );
+
+  t.end();
+});
